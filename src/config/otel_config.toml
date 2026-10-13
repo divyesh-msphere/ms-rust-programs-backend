@@ -1,0 +1,36 @@
+# General Service Information
+service_name = "global-settings"
+environment = "production"
+namespace = "backend-services"
+
+# OpenTelemetry (SigNoz) Configuration
+[otel]
+# The gRPC endpoint for your collector. 
+# If left empty (""), traces/metrics are disabled and logs fallback to console-only.
+endpoint = "http://localhost:4317"    
+
+[otel.logs]
+level = "info"          # Options: "trace", "debug", "info", "warn", "error"
+format = "pretty"       # Options: "json" (best for servers) or "pretty" (best for local dev)
+console_only = false    # If true, logs will print to terminal but won't be sent to 
+otel_level = "info"     # Minimum level of logs to export to SigNoz
+
+[otel.metrics]
+enabled = true         # If true, sends CPU, Memory, and custom metrics
+
+[otel.tracing]
+enabled = true          # If true, exports distributed traces
+
+# NATS JetStream Audit Configuration
+[nats]
+enabled = true
+url = "nats://localhost:4222"
+auth = false            # Set to true if using NKEY authentication
+
+[nats.nkey]
+key = ""                # Your NKEY public key (if auth = true)
+seed = ""               # Your NKEY private seed (if auth = true)
+
+[nats.stream]
+name = "AUDIT_STREAM"   # The JetStream stream to push to
+subject = "audit.events.>" # The specific subject topic

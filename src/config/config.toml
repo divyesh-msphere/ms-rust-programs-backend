@@ -1,0 +1,11 @@
+app_name = "global-settings"
+http_port = 8080
+grpc_port = 50051
+
+[postgres]
+host = "localhost"
+port = 5432
+database = "test"
+username = "postgres"
+password = "12341234"
+max_connections = 10

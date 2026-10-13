@@ -1,0 +1,38 @@
+version: v2
+
+inputs:
+  # - git_repo: https://github.com/MobileSentrix/ms-protos.git
+  - git_repo: ssh://git@github.com/MobileSentrix/ms-protos.git
+    subdir: proto
+    branch: rust-service-test
+    paths:
+      - global_settings/v1
+
+plugins:
+  - remote: buf.build/community/neoeinstein-prost:v0.5.0
+    out: src/adapters/generated/grpc_services
+
+  - remote: buf.build/community/neoeinstein-tonic:v0.5.0
+    out: src/adapters/generated/grpc_services
+
+  # remote repo for protoc-gen-prost-crate local
+  # - remote: buf.build/community/neoeinstein-prost-crate:v0.5.0
+  #   out: src/adapters/generated/grpc_services
+
+  - local: protoc-gen-prost-crate
+    out: src/adapters/generated/grpc_services
+    strategy: all
+    opt:
+      - no_features
+      
+      
+      
+      docker run --rm -v "$PWD":/work --entrypoint sh ms-openapi-gen -c '
+  buf build --path global_settings/v1 --as-file-descriptor-set -o /tmp/image.binpb &&
+  gen-route-manifest -in /tmp/image.binpb -check -service global_settings'
+  
+  docker run --rm -v "$PWD":/work --entrypoint sh ms-openapi-gen -c '
+  buf build --path global_settings/v1 --as-file-descriptor-set -o /tmp/image.binpb &&
+  gen-route-manifest -in /tmp/image.binpb -out connect_routes.json -service global_settings'
+  
+  grpc.dev.msrestapi.com/
