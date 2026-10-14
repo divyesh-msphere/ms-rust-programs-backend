@@ -1,0 +1,5961 @@
+openapi: 3.0.3
+info:
+  title: Programs API
+  description: |
+    API for managing programs: the module tree, per-program settings sourced from global-settings libraries, GoRules rule sets, publications, enrollment, agreements and reports.
+    This API follows AEP (API Enhancement Proposal) guidelines.
+
+    All `date-time` fields are always UTC, formatted as `YYYY-MM-DDTHH:MM:SS[.ffffff]`, with no timezone offset or `Z` suffix.
+  version: 0.1.0
+  contact:
+    name: API Support
+    email: devops@mobilesentrix.com
+  license:
+    name: Proprietary
+    url: https://mobilesentrix.com/terms
+  termsOfService: https://mobilesentrix.com/terms
+servers:
+- url: https://api.dev.mobilesentrix.com/programs
+  description: Development environment
+  x-name: development
+security:
+- cookieAuth: []
+- bearerAuth: []
+- clientIdHeader: []
+  clientSecretHeader: []
+x-ignore-rules:
+- rule: aep-133-id-parameter
+  reason: Health check is a liveness probe, not an AEP resource collection.
+- rule: aep-132-operation-id
+  reason: Health check is a liveness probe, not an AEP resource collection.
+tags:
+- name: health
+  x-summary: Health
+  description: Health check endpoint
+- name: programs
+  x-summary: Programs
+  description: A program (e.g. KBB, CPO, Credit Line) and its configuration root.
+- name: blueprints
+  x-summary: Blueprints
+  description: Starting point for the create-program wizard. Its modules and default config are copied
+    into the program at creation.
+- name: module-definitions
+  x-summary: Module Definitions
+  description: A node of the module tree (group or leaf). Seeded; the tree can nest to any depth.
+- name: module-fields
+  x-summary: Module Fields
+  description: A field rendered on a field_form leaf.
+- name: blueprint-modules
+  x-summary: Blueprint Modules
+  description: A module a blueprint includes, with its default config.
+- name: program-modules
+  x-summary: Program Modules
+  description: A module enabled on a program. GET returns the form (fields, values, options); PATCH saves
+    changed `field_values`.
+- name: module-records
+  x-summary: Module Records
+  description: A row in a small list owned by a module (3PL fees, grade mapping, upsell products).
+- name: program-overrides
+  x-summary: Program Overrides
+  description: Domain- or store-level config. Precedence is program < domain < store.
+- name: program-domains
+  x-summary: Program Domains
+  description: A website a program applies to, with its customer group.
+- name: rule-sets
+  x-summary: Rule Sets
+  description: The GoRules decision graph of one family (pre_enrollment, discount, markup...) for a program.
+    The id is the family.
+- name: rule-versions
+  x-summary: Rule Versions
+  description: An immutable version of a rule set. Saving a draft is Create.
+- name: publications
+  x-summary: Publications
+  description: A published, immutable bundle the pricing service loads. Create returns an operation.
+- name: requirements
+  x-summary: Requirements
+  description: An enrollment requirement.
+- name: approval-steps
+  x-summary: Approval Steps
+  description: A step of the application approval chain.
+- name: applications
+  x-summary: Applications
+  description: A store's application to enroll in a program.
+- name: signoffs
+  x-summary: Signoffs
+  description: One approver's decision on one approval step.
+- name: enrollments
+  x-summary: Enrollments
+  description: A store enrolled in a program. Created by the system when the last signoff is approved.
+- name: agreement-templates
+  x-summary: Agreement Templates
+  description: A reusable agreement template; its text lives in immutable versions.
+- name: agreement-template-versions
+  x-summary: Agreement Template Versions
+  description: An immutable version of an agreement template.
+- name: agreement-contracts
+  x-summary: Agreement Contracts
+  description: An agreement pinned to a specific template version.
+- name: document-folders
+  x-summary: Document Folders
+  description: A folder of program documents.
+- name: documents
+  x-summary: Documents
+  description: A program document or manual.
+- name: import-jobs
+  x-summary: Import Jobs
+  description: A bulk import. Create returns an operation.
+- name: import-job-rows
+  x-summary: Import Job Rows
+  description: One row of an import job.
+- name: sku-prices
+  x-summary: Sku Prices
+  description: A program-specific SKU price.
+- name: core-return-fees
+  x-summary: Core Return Fees
+  description: A core return fee.
+- name: report-definitions
+  x-summary: Report Definitions
+  description: A report that can be run for a program.
+- name: report-runs
+  x-summary: Report Runs
+  description: One execution of a report. Create returns an operation.
+- name: audit-logs
+  x-summary: Audit Logs
+  description: Who changed what, with before and after. Read-only; backs History and View changes.
+- name: operations
+  x-summary: Operations
+  description: Long-running operations (publish, imports, report runs)
+paths:
+  /health:
+    x-info:
+      health-endpoint: true
+    get:
+      operationId: ListHealthCheck
+      summary: Health check
+      tags:
+      - health
+      description: Returns service liveness status; used by uptime checks and load balancers.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+  /programs:
+    get:
+      operationId: ListPrograms
+      summary: List programs
+      tags:
+      - programs
+      description: Returns programs.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      - $ref: '#/components/parameters/showDeleted'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProgramsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateProgram
+      summary: Create a program
+      tags:
+      - programs
+      description: Creates a program.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Program'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: GetProgram
+      summary: Get a program
+      tags:
+      - programs
+      description: Returns a single program.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateProgram
+      summary: Update a program
+      tags:
+      - programs
+      description: Partially updates a program. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: program
+                plural: programs
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                  nullable: true
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteProgram
+      summary: Delete a program
+      tags:
+      - programs
+      description: Soft-deletes (AEP-135); reversible with `:undelete`.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}:clone:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    post:
+      operationId: :CloneProgram
+      summary: Create a program like this one
+      tags:
+      - programs
+      description: Create a program like this one (AEP-136 custom method).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloneProgramRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}:undelete:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    post:
+      operationId: :UndeleteProgram
+      summary: Undelete a program
+      tags:
+      - programs
+      description: Undelete a program (AEP-136 custom method).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /blueprints:
+    get:
+      operationId: ListBlueprints
+      summary: List blueprints
+      tags:
+      - blueprints
+      description: Returns blueprints.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      - $ref: '#/components/parameters/showDeleted'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlueprintsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateBlueprint
+      summary: Create a blueprint
+      tags:
+      - blueprints
+      description: Creates a blueprint.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Blueprint'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blueprint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /blueprints/{blueprint}:
+    parameters:
+    - name: blueprint
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the blueprint.
+    get:
+      operationId: GetBlueprint
+      summary: Get a blueprint
+      tags:
+      - blueprints
+      description: Returns a single blueprint.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blueprint'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateBlueprint
+      summary: Update a blueprint
+      tags:
+      - blueprints
+      description: Partially updates a blueprint. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: blueprint
+                plural: blueprints
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                  nullable: true
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blueprint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteBlueprint
+      summary: Delete a blueprint
+      tags:
+      - blueprints
+      description: Soft-deletes (AEP-135); reversible with `:undelete`.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /blueprints/{blueprint}:undelete:
+    parameters:
+    - name: blueprint
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the blueprint.
+    post:
+      operationId: :UndeleteBlueprint
+      summary: Undelete a blueprint
+      tags:
+      - blueprints
+      description: Undelete a blueprint (AEP-136 custom method).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blueprint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /module-definitions:
+    get:
+      operationId: ListModuleDefinitions
+      summary: List module definitions
+      tags:
+      - module-definitions
+      description: Returns module definitions.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ModuleDefinitionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateModuleDefinition
+      summary: Create a module definition
+      tags:
+      - module-definitions
+      description: Creates a module definition.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleDefinition'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /module-definitions/{module_definition}:
+    parameters:
+    - name: module_definition
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module definition.
+    get:
+      operationId: GetModuleDefinition
+      summary: Get a module definition
+      tags:
+      - module-definitions
+      description: Returns a single module definition.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateModuleDefinition
+      summary: Update a module definition
+      tags:
+      - module-definitions
+      description: Partially updates a module definition. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: module-definition
+                plural: module-definitions
+              properties:
+                name:
+                  type: string
+                position:
+                  type: integer
+                  format: int32
+                ui_component:
+                  type: string
+                  nullable: true
+                  description: 'How the frontend renders a leaf: `rule_playground`, `field_form`, or `custom:<name>`.'
+                requires_publish:
+                  type: boolean
+                  description: True when changes only take effect after a Publication.
+                permission_key:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /module-definitions/{module_definition}/fields:
+    parameters:
+    - name: module_definition
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module definition.
+    get:
+      operationId: ListModuleFields
+      summary: List fields
+      tags:
+      - module-fields
+      description: Returns fields.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ModuleFieldsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateModuleField
+      summary: Create a module field
+      tags:
+      - module-fields
+      description: Creates a module field.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleField'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleField'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /module-definitions/{module_definition}/fields/{field}:
+    parameters:
+    - name: module_definition
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module definition.
+    - name: field
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the field.
+    get:
+      operationId: GetModuleField
+      summary: Get a module field
+      tags:
+      - module-fields
+      description: Returns a single module field.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleField'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateModuleField
+      summary: Update a module field
+      tags:
+      - module-fields
+      description: Partially updates a module field. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: module-field
+                plural: fields
+              properties:
+                label:
+                  type: string
+                default_value:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                required:
+                  type: boolean
+                position:
+                  type: integer
+                  format: int32
+                help_text:
+                  type: string
+                  nullable: true
+                visible_when_field_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                visible_when_value:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleField'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteModuleField
+      summary: Delete a module field
+      tags:
+      - module-fields
+      description: Deletes a module field.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /blueprints/{blueprint}/modules:
+    parameters:
+    - name: blueprint
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the blueprint.
+    get:
+      operationId: ListBlueprintModules
+      summary: List modules
+      tags:
+      - blueprint-modules
+      description: Returns modules.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlueprintModulesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateBlueprintModule
+      summary: Create a blueprint module
+      tags:
+      - blueprint-modules
+      description: Creates a blueprint module.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlueprintModule'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintModule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /blueprints/{blueprint}/modules/{module}:
+    parameters:
+    - name: blueprint
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the blueprint.
+    - name: module
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module.
+    get:
+      operationId: GetBlueprintModule
+      summary: Get a blueprint module
+      tags:
+      - blueprint-modules
+      description: Returns a single blueprint module.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintModule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateBlueprintModule
+      summary: Update a blueprint module
+      tags:
+      - blueprint-modules
+      description: Partially updates a blueprint module. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: blueprint-module
+                plural: modules
+              properties:
+                default_config:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintModule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteBlueprintModule
+      summary: Delete a blueprint module
+      tags:
+      - blueprint-modules
+      description: Deletes a blueprint module.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/modules:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListProgramModules
+      summary: List modules
+      tags:
+      - program-modules
+      description: Returns modules.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProgramModulesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/modules/{module}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: module
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module.
+    get:
+      operationId: GetProgramModule
+      summary: Get a program module
+      tags:
+      - program-modules
+      description: Returns a single program module.
+      parameters:
+      - name: include_options
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+        description: When true, each select/multi_select field carries its library's active options, read
+          through the programs service's cache of the global-settings API.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramModule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateProgramModule
+      summary: Update a program module
+      tags:
+      - program-modules
+      description: Partially updates a program module. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: program-module
+                plural: modules
+              properties:
+                enabled:
+                  type: boolean
+                config:
+                  type: object
+                  additionalProperties: true
+                field_values:
+                  type: object
+                  writeOnly: true
+                  additionalProperties:
+                    $ref: '#/components/schemas/FieldValue'
+                  description: Changed field values keyed by field key. Only changed fields are sent.
+                version:
+                  type: integer
+                  format: int32
+                  description: Optimistic-concurrency version; send it back on PATCH.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramModule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/modules/{module}/records:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: module
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module.
+    get:
+      operationId: ListModuleRecords
+      summary: List records
+      tags:
+      - module-records
+      description: Returns records.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ModuleRecordsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateModuleRecord
+      summary: Create a module record
+      tags:
+      - module-records
+      description: Creates a module record.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleRecord'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/modules/{module}/records/{module_record}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: module
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module.
+    - name: module_record
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the module record.
+    get:
+      operationId: GetModuleRecord
+      summary: Get a module record
+      tags:
+      - module-records
+      description: Returns a single module record.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleRecord'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateModuleRecord
+      summary: Update a module record
+      tags:
+      - module-records
+      description: Partially updates a module record. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: module-record
+                plural: records
+              properties:
+                data:
+                  type: object
+                  additionalProperties: true
+                position:
+                  type: integer
+                  format: int32
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleRecord'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteModuleRecord
+      summary: Delete a module record
+      tags:
+      - module-records
+      description: Deletes a module record.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/overrides:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListProgramOverrides
+      summary: List overrides
+      tags:
+      - program-overrides
+      description: Returns overrides.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProgramOverridesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateProgramOverride
+      summary: Create a program override
+      tags:
+      - program-overrides
+      description: Creates a program override.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramOverride'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramOverride'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/overrides/{program_override}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: program_override
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program override.
+    get:
+      operationId: GetProgramOverride
+      summary: Get a program override
+      tags:
+      - program-overrides
+      description: Returns a single program override.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramOverride'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateProgramOverride
+      summary: Update a program override
+      tags:
+      - program-overrides
+      description: Partially updates a program override. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: program-override
+                plural: overrides
+              properties:
+                config:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramOverride'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteProgramOverride
+      summary: Delete a program override
+      tags:
+      - program-overrides
+      description: Deletes a program override.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/domains:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListProgramDomains
+      summary: List domains
+      tags:
+      - program-domains
+      description: Returns domains.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProgramDomainsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateProgramDomain
+      summary: Create a program domain
+      tags:
+      - program-domains
+      description: Creates a program domain.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramDomain'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramDomain'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/domains/{program_domain}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: program_domain
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program domain.
+    get:
+      operationId: GetProgramDomain
+      summary: Get a program domain
+      tags:
+      - program-domains
+      description: Returns a single program domain.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramDomain'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateProgramDomain
+      summary: Update a program domain
+      tags:
+      - program-domains
+      description: Partially updates a program domain. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: program-domain
+                plural: domains
+              properties:
+                domain:
+                  type: string
+                customer_group_id:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramDomain'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteProgramDomain
+      summary: Delete a program domain
+      tags:
+      - program-domains
+      description: Deletes a program domain.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/rule-sets:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListRuleSets
+      summary: List rule sets
+      tags:
+      - rule-sets
+      description: Returns rule sets.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/RuleSetsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/rule-sets/{rule_set}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: rule_set
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the rule set.
+    get:
+      operationId: GetRuleSet
+      summary: Get a rule set
+      tags:
+      - rule-sets
+      description: Returns a single rule set.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleSet'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/rule-sets/{rule_set}:simulate:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: rule_set
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the rule set.
+    post:
+      operationId: :SimulateRuleSet
+      summary: Simulate a rule set
+      tags:
+      - rule-sets
+      description: Simulate a rule set (AEP-136 custom method).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulateRuleSetRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulateRuleSetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/rule-sets/{rule_set}/versions:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: rule_set
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the rule set.
+    get:
+      operationId: ListRuleVersions
+      summary: List versions
+      tags:
+      - rule-versions
+      description: Returns versions.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/RuleVersionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateRuleVersion
+      summary: Create a rule version
+      tags:
+      - rule-versions
+      description: Creates a rule version.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleVersion'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/rule-sets/{rule_set}/versions/{version}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: rule_set
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the rule set.
+    - name: version
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the version.
+    get:
+      operationId: GetRuleVersion
+      summary: Get a rule version
+      tags:
+      - rule-versions
+      description: Returns a single rule version.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleVersion'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/publications:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListPublications
+      summary: List publications
+      tags:
+      - publications
+      description: Returns publications.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/PublicationsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreatePublication
+      summary: Create a publication
+      tags:
+      - publications
+      description: Creates a publication.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/publications/{publication}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: publication
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the publication.
+    get:
+      operationId: GetPublication
+      summary: Get a publication
+      tags:
+      - publications
+      description: Returns a single publication.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/requirements:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListRequirements
+      summary: List requirements
+      tags:
+      - requirements
+      description: Returns requirements.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequirementsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateRequirement
+      summary: Create a requirement
+      tags:
+      - requirements
+      description: Creates a requirement.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Requirement'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Requirement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/requirements/{requirement}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: requirement
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the requirement.
+    get:
+      operationId: GetRequirement
+      summary: Get a requirement
+      tags:
+      - requirements
+      description: Returns a single requirement.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Requirement'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateRequirement
+      summary: Update a requirement
+      tags:
+      - requirements
+      description: Partially updates a requirement. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: requirement
+                plural: requirements
+              properties:
+                name:
+                  type: string
+                config:
+                  type: object
+                  additionalProperties: true
+                position:
+                  type: integer
+                  format: int32
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Requirement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteRequirement
+      summary: Delete a requirement
+      tags:
+      - requirements
+      description: Deletes a requirement.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/approval-steps:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListApprovalSteps
+      summary: List approval steps
+      tags:
+      - approval-steps
+      description: Returns approval steps.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ApprovalStepsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateApprovalStep
+      summary: Create a approval step
+      tags:
+      - approval-steps
+      description: Creates a approval step.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalStep'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalStep'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/approval-steps/{approval_step}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: approval_step
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the approval step.
+    get:
+      operationId: GetApprovalStep
+      summary: Get a approval step
+      tags:
+      - approval-steps
+      description: Returns a single approval step.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalStep'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateApprovalStep
+      summary: Update a approval step
+      tags:
+      - approval-steps
+      description: Partially updates a approval step. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: approval-step
+                plural: approval-steps
+              properties:
+                name:
+                  type: string
+                position:
+                  type: integer
+                  format: int32
+                approver_role:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalStep'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteApprovalStep
+      summary: Delete a approval step
+      tags:
+      - approval-steps
+      description: Deletes a approval step.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListApplications
+      summary: List applications
+      tags:
+      - applications
+      description: Returns applications.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ApplicationsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateApplication
+      summary: Create a application
+      tags:
+      - applications
+      description: Creates a application.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    get:
+      operationId: GetApplication
+      summary: Get a application
+      tags:
+      - applications
+      description: Returns a single application.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}:submit:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    post:
+      operationId: :SubmitApplication
+      summary: Submit an application
+      tags:
+      - applications
+      description: Submit an application (AEP-136 custom method).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}/signoffs:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    get:
+      operationId: ListSignoffs
+      summary: List signoffs
+      tags:
+      - signoffs
+      description: Returns signoffs.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/SignoffsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateSignoff
+      summary: Create a signoff
+      tags:
+      - signoffs
+      description: Creates a signoff.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Signoff'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signoff'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}/signoffs/{signoff}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    - name: signoff
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the signoff.
+    get:
+      operationId: GetSignoff
+      summary: Get a signoff
+      tags:
+      - signoffs
+      description: Returns a single signoff.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signoff'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/enrollments:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListEnrollments
+      summary: List enrollments
+      tags:
+      - enrollments
+      description: Returns enrollments.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/EnrollmentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/enrollments/{enrollment}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: enrollment
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the enrollment.
+    get:
+      operationId: GetEnrollment
+      summary: Get a enrollment
+      tags:
+      - enrollments
+      description: Returns a single enrollment.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateEnrollment
+      summary: Update a enrollment
+      tags:
+      - enrollments
+      description: Partially updates a enrollment. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: enrollment
+                plural: enrollments
+              properties:
+                status:
+                  type: string
+                  enum:
+                  - pending
+                  - active
+                  - suspended
+                  - ended
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /agreement-templates:
+    get:
+      operationId: ListAgreementTemplates
+      summary: List agreement templates
+      tags:
+      - agreement-templates
+      description: Returns agreement templates.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/AgreementTemplatesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateAgreementTemplate
+      summary: Create a agreement template
+      tags:
+      - agreement-templates
+      description: Creates a agreement template.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementTemplate'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementTemplate'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /agreement-templates/{agreement_template}:
+    parameters:
+    - name: agreement_template
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the agreement template.
+    get:
+      operationId: GetAgreementTemplate
+      summary: Get a agreement template
+      tags:
+      - agreement-templates
+      description: Returns a single agreement template.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementTemplate'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateAgreementTemplate
+      summary: Update a agreement template
+      tags:
+      - agreement-templates
+      description: Partially updates a agreement template. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: agreement-template
+                plural: agreement-templates
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementTemplate'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteAgreementTemplate
+      summary: Delete a agreement template
+      tags:
+      - agreement-templates
+      description: Deletes a agreement template.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /agreement-templates/{agreement_template}/versions:
+    parameters:
+    - name: agreement_template
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the agreement template.
+    get:
+      operationId: ListAgreementTemplateVersions
+      summary: List versions
+      tags:
+      - agreement-template-versions
+      description: Returns versions.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/AgreementTemplateVersionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateAgreementTemplateVersion
+      summary: Create a agreement template version
+      tags:
+      - agreement-template-versions
+      description: Creates a agreement template version.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementTemplateVersion'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementTemplateVersion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /agreement-templates/{agreement_template}/versions/{agreement_template_version}:
+    parameters:
+    - name: agreement_template
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the agreement template.
+    - name: agreement_template_version
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the agreement template version.
+    get:
+      operationId: GetAgreementTemplateVersion
+      summary: Get a agreement template version
+      tags:
+      - agreement-template-versions
+      description: Returns a single agreement template version.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementTemplateVersion'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/agreement-contracts:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListAgreementContracts
+      summary: List agreement contracts
+      tags:
+      - agreement-contracts
+      description: Returns agreement contracts.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/AgreementContractsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateAgreementContract
+      summary: Create a agreement contract
+      tags:
+      - agreement-contracts
+      description: Creates a agreement contract.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementContract'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementContract'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/agreement-contracts/{agreement_contract}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: agreement_contract
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the agreement contract.
+    get:
+      operationId: GetAgreementContract
+      summary: Get a agreement contract
+      tags:
+      - agreement-contracts
+      description: Returns a single agreement contract.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementContract'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateAgreementContract
+      summary: Update a agreement contract
+      tags:
+      - agreement-contracts
+      description: Partially updates a agreement contract. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: agreement-contract
+                plural: agreement-contracts
+              properties:
+                status:
+                  type: string
+                  enum:
+                  - pending
+                  - signed
+                  - void
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementContract'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/document-folders:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListDocumentFolders
+      summary: List document folders
+      tags:
+      - document-folders
+      description: Returns document folders.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/DocumentFoldersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateDocumentFolder
+      summary: Create a document folder
+      tags:
+      - document-folders
+      description: Creates a document folder.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentFolder'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentFolder'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/document-folders/{document_folder}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: document_folder
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the document folder.
+    get:
+      operationId: GetDocumentFolder
+      summary: Get a document folder
+      tags:
+      - document-folders
+      description: Returns a single document folder.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentFolder'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateDocumentFolder
+      summary: Update a document folder
+      tags:
+      - document-folders
+      description: Partially updates a document folder. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: document-folder
+                plural: document-folders
+              properties:
+                name:
+                  type: string
+                parent_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentFolder'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteDocumentFolder
+      summary: Delete a document folder
+      tags:
+      - document-folders
+      description: Deletes a document folder.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/documents:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListDocuments
+      summary: List documents
+      tags:
+      - documents
+      description: Returns documents.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/DocumentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateDocument
+      summary: Create a document
+      tags:
+      - documents
+      description: Creates a document.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/documents/{document}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: document
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the document.
+    get:
+      operationId: GetDocument
+      summary: Get a document
+      tags:
+      - documents
+      description: Returns a single document.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateDocument
+      summary: Update a document
+      tags:
+      - documents
+      description: Partially updates a document. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: document
+                plural: documents
+              properties:
+                name:
+                  type: string
+                folder_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteDocument
+      summary: Delete a document
+      tags:
+      - documents
+      description: Deletes a document.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/import-jobs:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListImportJobs
+      summary: List import jobs
+      tags:
+      - import-jobs
+      description: Returns import jobs.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ImportJobsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateImportJob
+      summary: Create a import job
+      tags:
+      - import-jobs
+      description: Creates a import job.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportJob'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/import-jobs/{import_job}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: import_job
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the import job.
+    get:
+      operationId: GetImportJob
+      summary: Get a import job
+      tags:
+      - import-jobs
+      description: Returns a single import job.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJob'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/import-jobs/{import_job}:cancel:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: import_job
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the import job.
+    post:
+      operationId: :CancelImportJob
+      summary: Cancel an import job
+      tags:
+      - import-jobs
+      description: Cancel an import job (AEP-136 custom method).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJob'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/import-jobs/{import_job}/rows:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: import_job
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the import job.
+    get:
+      operationId: ListImportJobRows
+      summary: List rows
+      tags:
+      - import-job-rows
+      description: Returns rows.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ImportJobRowsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/import-jobs/{import_job}/rows/{import_job_row}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: import_job
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the import job.
+    - name: import_job_row
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the import job row.
+    get:
+      operationId: GetImportJobRow
+      summary: Get a import job row
+      tags:
+      - import-job-rows
+      description: Returns a single import job row.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJobRow'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/sku-prices:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListSkuPrices
+      summary: List sku prices
+      tags:
+      - sku-prices
+      description: Returns sku prices.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/SkuPricesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateSkuPrice
+      summary: Create a sku price
+      tags:
+      - sku-prices
+      description: Creates a sku price.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkuPrice'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkuPrice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/sku-prices/{sku_price}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: sku_price
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the sku price.
+    get:
+      operationId: GetSkuPrice
+      summary: Get a sku price
+      tags:
+      - sku-prices
+      description: Returns a single sku price.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkuPrice'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateSkuPrice
+      summary: Update a sku price
+      tags:
+      - sku-prices
+      description: Partially updates a sku price. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: sku-price
+                plural: sku-prices
+              properties:
+                price:
+                  type: number
+                currency_code:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkuPrice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteSkuPrice
+      summary: Delete a sku price
+      tags:
+      - sku-prices
+      description: Deletes a sku price.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/core-return-fees:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListCoreReturnFees
+      summary: List core return fees
+      tags:
+      - core-return-fees
+      description: Returns core return fees.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/CoreReturnFeesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateCoreReturnFee
+      summary: Create a core return fee
+      tags:
+      - core-return-fees
+      description: Creates a core return fee.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoreReturnFee'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoreReturnFee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/core-return-fees/{core_return_fee}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: core_return_fee
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the core return fee.
+    get:
+      operationId: GetCoreReturnFee
+      summary: Get a core return fee
+      tags:
+      - core-return-fees
+      description: Returns a single core return fee.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoreReturnFee'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateCoreReturnFee
+      summary: Update a core return fee
+      tags:
+      - core-return-fees
+      description: Partially updates a core return fee. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: core-return-fee
+                plural: core-return-fees
+              properties:
+                fee:
+                  type: number
+                currency_code:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoreReturnFee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteCoreReturnFee
+      summary: Delete a core return fee
+      tags:
+      - core-return-fees
+      description: Deletes a core return fee.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /report-definitions:
+    get:
+      operationId: ListReportDefinitions
+      summary: List report definitions
+      tags:
+      - report-definitions
+      description: Returns report definitions.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReportDefinitionsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateReportDefinition
+      summary: Create a report definition
+      tags:
+      - report-definitions
+      description: Creates a report definition.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportDefinition'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /report-definitions/{report_definition}:
+    parameters:
+    - name: report_definition
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the report definition.
+    get:
+      operationId: GetReportDefinition
+      summary: Get a report definition
+      tags:
+      - report-definitions
+      description: Returns a single report definition.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateReportDefinition
+      summary: Update a report definition
+      tags:
+      - report-definitions
+      description: Partially updates a report definition. Fields not sent are left unchanged.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              x-aep-resource:
+                singular: report-definition
+                plural: report-definitions
+              properties:
+                name:
+                  type: string
+                config:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version conflict or unique-key collision.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteReportDefinition
+      summary: Delete a report definition
+      tags:
+      - report-definitions
+      description: Deletes a report definition.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/report-runs:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListReportRuns
+      summary: List report runs
+      tags:
+      - report-runs
+      description: Returns report runs.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReportRunsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateReportRun
+      summary: Create a report run
+      tags:
+      - report-runs
+      description: Creates a report run.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRun'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A resource with the same unique key already exists.
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/report-runs/{report_run}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: report_run
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the report run.
+    get:
+      operationId: GetReportRun
+      summary: Get a report run
+      tags:
+      - report-runs
+      description: Returns a single report run.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportRun'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/audit-logs:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    get:
+      operationId: ListAuditLogs
+      summary: List audit logs
+      tags:
+      - audit-logs
+      description: Returns audit logs.
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      - $ref: '#/components/parameters/orderBy'
+      responses:
+        '200':
+          $ref: '#/components/responses/AuditLogsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/audit-logs/{audit_log}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the program.
+    - name: audit_log
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the audit log.
+    get:
+      operationId: GetAuditLog
+      summary: Get a audit log
+      tags:
+      - audit-logs
+      description: Returns a single audit log.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /operations:
+    get:
+      operationId: ListOperations
+      summary: List operations
+      tags:
+      - operations
+      description: Returns long-running operations (AEP-151).
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - $ref: '#/components/parameters/filter'
+      responses:
+        '200':
+          $ref: '#/components/responses/OperationsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /operations/{operation}:
+    parameters:
+    - name: operation
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the operation.
+    get:
+      operationId: GetOperation
+      summary: Get an operation
+      tags:
+      - operations
+      description: Returns a single long-running operation, including `done`, `response` and `error`.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: __Host-ms_session
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your bearer token in the format **Bearer token**
+    clientIdHeader:
+      type: apiKey
+      in: header
+      name: X-Client-ID
+      description: Client ID for service-to-service authentication
+    clientSecretHeader:
+      type: apiKey
+      in: header
+      name: X-Client-Secret
+      description: Client secret for service-to-service authentication
+  parameters:
+    clientId:
+      name: id
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Optional client-specified ID for the resource being created (AEP-133). Must be a valid
+        UUID; the server generates one if omitted.
+    pageToken:
+      name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: The next_page_token value returned from a previous list request.
+    maxPageSize:
+      name: max_page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+      description: The maximum number of items to return per page.
+    filter:
+      name: filter
+      in: query
+      required: false
+      schema:
+        type: string
+      description: 'Optional single-clause equality filter: "<field> == ''<value>''". Text comparisons
+        are a case-insensitive substring match. Omit to return the unfiltered list.'
+    orderBy:
+      name: order_by
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Comma-separated list of fields to order by, each optionally followed by `desc` (AEP-132).
+    showDeleted:
+      name: show_deleted
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: AEP-135 soft-delete flag. When false (default) only active resources are returned;
+        when true, only soft-deleted resources are returned (the list does not mix the two).
+  responses:
+    BadRequest:
+      description: The request was invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: The request was well-formed but a field's value violates a format rule.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: An internal server error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    EmptyResponse:
+      description: Successful response (no content).
+    ProgramsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}
+              singular: program
+              plural: programs
+              type: msrestapi.com/programs/program
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Program'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    BlueprintsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - blueprints/{blueprint}
+              singular: blueprint
+              plural: blueprints
+              type: msrestapi.com/programs/blueprint
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Blueprint'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ModuleDefinitionsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - module-definitions/{module_definition}
+              singular: module-definition
+              plural: module-definitions
+              type: msrestapi.com/programs/module-definition
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModuleDefinition'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ModuleFieldsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - module-definitions/{module_definition}/fields/{field}
+              singular: module-field
+              plural: fields
+              type: msrestapi.com/programs/module-field
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModuleField'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    BlueprintModulesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - blueprints/{blueprint}/modules/{module}
+              singular: blueprint-module
+              plural: modules
+              type: msrestapi.com/programs/blueprint-module
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlueprintModule'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ProgramModulesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/modules/{module}
+              singular: program-module
+              plural: modules
+              type: msrestapi.com/programs/program-module
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgramModule'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ModuleRecordsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/modules/{module}/records/{module_record}
+              singular: module-record
+              plural: records
+              type: msrestapi.com/programs/module-record
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModuleRecord'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ProgramOverridesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/overrides/{program_override}
+              singular: program-override
+              plural: overrides
+              type: msrestapi.com/programs/program-override
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgramOverride'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ProgramDomainsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/domains/{program_domain}
+              singular: program-domain
+              plural: domains
+              type: msrestapi.com/programs/program-domain
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgramDomain'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    RuleSetsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/rule-sets/{rule_set}
+              singular: rule-set
+              plural: rule-sets
+              type: msrestapi.com/programs/rule-set
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RuleSet'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    RuleVersionsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/rule-sets/{rule_set}/versions/{version}
+              singular: rule-version
+              plural: versions
+              type: msrestapi.com/programs/rule-version
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RuleVersion'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    PublicationsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/publications/{publication}
+              singular: publication
+              plural: publications
+              type: msrestapi.com/programs/publication
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Publication'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    RequirementsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/requirements/{requirement}
+              singular: requirement
+              plural: requirements
+              type: msrestapi.com/programs/requirement
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Requirement'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ApprovalStepsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/approval-steps/{approval_step}
+              singular: approval-step
+              plural: approval-steps
+              type: msrestapi.com/programs/approval-step
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApprovalStep'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ApplicationsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/applications/{application}
+              singular: application
+              plural: applications
+              type: msrestapi.com/programs/application
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    SignoffsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/applications/{application}/signoffs/{signoff}
+              singular: signoff
+              plural: signoffs
+              type: msrestapi.com/programs/signoff
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Signoff'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    EnrollmentsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/enrollments/{enrollment}
+              singular: enrollment
+              plural: enrollments
+              type: msrestapi.com/programs/enrollment
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Enrollment'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    AgreementTemplatesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - agreement-templates/{agreement_template}
+              singular: agreement-template
+              plural: agreement-templates
+              type: msrestapi.com/programs/agreement-template
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgreementTemplate'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    AgreementTemplateVersionsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - agreement-templates/{agreement_template}/versions/{agreement_template_version}
+              singular: agreement-template-version
+              plural: versions
+              type: msrestapi.com/programs/agreement-template-version
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgreementTemplateVersion'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    AgreementContractsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/agreement-contracts/{agreement_contract}
+              singular: agreement-contract
+              plural: agreement-contracts
+              type: msrestapi.com/programs/agreement-contract
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgreementContract'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    DocumentFoldersResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/document-folders/{document_folder}
+              singular: document-folder
+              plural: document-folders
+              type: msrestapi.com/programs/document-folder
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentFolder'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    DocumentsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/documents/{document}
+              singular: document
+              plural: documents
+              type: msrestapi.com/programs/document
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ImportJobsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/import-jobs/{import_job}
+              singular: import-job
+              plural: import-jobs
+              type: msrestapi.com/programs/import-job
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportJob'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ImportJobRowsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/import-jobs/{import_job}/rows/{import_job_row}
+              singular: import-job-row
+              plural: rows
+              type: msrestapi.com/programs/import-job-row
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportJobRow'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    SkuPricesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/sku-prices/{sku_price}
+              singular: sku-price
+              plural: sku-prices
+              type: msrestapi.com/programs/sku-price
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SkuPrice'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    CoreReturnFeesResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/core-return-fees/{core_return_fee}
+              singular: core-return-fee
+              plural: core-return-fees
+              type: msrestapi.com/programs/core-return-fee
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CoreReturnFee'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ReportDefinitionsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - report-definitions/{report_definition}
+              singular: report-definition
+              plural: report-definitions
+              type: msrestapi.com/programs/report-definition
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportDefinition'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    ReportRunsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/report-runs/{report_run}
+              singular: report-run
+              plural: report-runs
+              type: msrestapi.com/programs/report-run
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportRun'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    AuditLogsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/audit-logs/{audit_log}
+              singular: audit-log
+              plural: audit-logs
+              type: msrestapi.com/programs/audit-log
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+    OperationsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - operations/{operation}
+              singular: operation
+              plural: operations
+              type: msrestapi.com/programs/operation
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Operation'
+              next_page_token:
+                type: string
+                nullable: true
+              total_size:
+                type: integer
+                format: int64
+  schemas:
+    Program:
+      type: object
+      description: A program (e.g. KBB, CPO, Credit Line) and its configuration root.
+      x-aep-resource:
+        patterns:
+        - programs/{program}
+        singular: program
+        plural: programs
+        type: msrestapi.com/programs/program
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        slug:
+          type: string
+          description: Unique among non-deleted programs. Immutable after create.
+        description:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        blueprint_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Blueprint the program was created from; copied at creation, NOT live-linked. Null
+            means from scratch.
+        cloned_from_id:
+          type: string
+          format: uuid
+          nullable: true
+        config_version:
+          type: integer
+          format: int32
+          description: Bumped on every configuration change.
+        config_hash:
+          type: string
+          description: Hash of the current configuration; compared with the latest Publication to detect
+            drift.
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+        state:
+          $ref: '#/components/schemas/ResourceState'
+      required:
+      - name
+      - slug
+    Blueprint:
+      type: object
+      description: Starting point for the create-program wizard. Its modules and default config are copied
+        into the program at creation.
+      x-aep-resource:
+        patterns:
+        - blueprints/{blueprint}
+        singular: blueprint
+        plural: blueprints
+        type: msrestapi.com/programs/blueprint
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          description: Stable identifier, e.g. `kbb`, `cpo`. Unique among non-deleted blueprints.
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+        state:
+          $ref: '#/components/schemas/ResourceState'
+      required:
+      - key
+      - name
+    ModuleDefinition:
+      type: object
+      description: A node of the module tree (group or leaf). Seeded; the tree can nest to any depth.
+      x-aep-resource:
+        patterns:
+        - module-definitions/{module_definition}
+        singular: module-definition
+        plural: module-definitions
+        type: msrestapi.com/programs/module-definition
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          description: Stable dotted key, e.g. `catalog_pricing.products_rules.pre_enrollment`.
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+          - group
+          - leaf
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        ancestry:
+          type: string
+          description: ltree-style path; allows fetching a whole subtree at any depth.
+        position:
+          type: integer
+          format: int32
+        ui_component:
+          type: string
+          nullable: true
+          description: 'How the frontend renders a leaf: `rule_playground`, `field_form`, or `custom:<name>`.'
+        rule_family:
+          type: string
+          nullable: true
+          description: GoRules family for rule leaves, e.g. `pre_enrollment`.
+        universal:
+          type: boolean
+          description: True when every program gets this module.
+        requires_publish:
+          type: boolean
+          description: True when changes only take effect after a Publication.
+        permission_key:
+          type: string
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - key
+      - name
+      - kind
+    ModuleField:
+      type: object
+      description: A field rendered on a field_form leaf.
+      x-aep-resource:
+        patterns:
+        - module-definitions/{module_definition}/fields/{field}
+        singular: module-field
+        plural: fields
+        type: msrestapi.com/programs/module-field
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+        label:
+          type: string
+        field_type:
+          type: string
+          enum:
+          - toggle
+          - select
+          - multi_select
+          - text
+          - number
+          - derived
+        library_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Global-settings library that supplies this field's options.
+        default_value:
+          type: object
+          additionalProperties: true
+          nullable: true
+        required:
+          type: boolean
+        position:
+          type: integer
+          format: int32
+        help_text:
+          type: string
+          nullable: true
+        visible_when_field_id:
+          type: string
+          format: uuid
+          nullable: true
+        visible_when_value:
+          type: object
+          additionalProperties: true
+          nullable: true
+        derived_from:
+          type: string
+          nullable: true
+          description: Source of a read-only derived field, e.g. `enrollment_requirements`.
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - key
+      - label
+      - field_type
+    BlueprintModule:
+      type: object
+      description: A module a blueprint includes, with its default config.
+      x-aep-resource:
+        patterns:
+        - blueprints/{blueprint}/modules/{module}
+        singular: blueprint-module
+        plural: modules
+        type: msrestapi.com/programs/blueprint-module
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        module_id:
+          type: string
+          format: uuid
+        default_config:
+          type: object
+          additionalProperties: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - module_id
+    ProgramModule:
+      type: object
+      description: A module enabled on a program. GET returns the form (fields, values, options); PATCH
+        saves changed `field_values`.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/modules/{module}
+        singular: program-module
+        plural: modules
+        type: msrestapi.com/programs/program-module
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        module_id:
+          type: string
+          format: uuid
+        enabled:
+          type: boolean
+        config:
+          type: object
+          additionalProperties: true
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramModuleField'
+          description: Present when the module is field-driven. Each field carries its current value and,
+            with `include_options=true`, the library options.
+        version:
+          type: integer
+          format: int32
+          description: Optimistic-concurrency version; send it back on PATCH.
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+        field_values:
+          type: object
+          writeOnly: true
+          additionalProperties:
+            $ref: '#/components/schemas/FieldValue'
+          description: Changed field values keyed by field key. Only changed fields are sent.
+    ModuleRecord:
+      type: object
+      description: A row in a small list owned by a module (3PL fees, grade mapping, upsell products).
+      x-aep-resource:
+        patterns:
+        - programs/{program}/modules/{module}/records/{module_record}
+        singular: module-record
+        plural: records
+        type: msrestapi.com/programs/module-record
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        data:
+          type: object
+          additionalProperties: true
+        position:
+          type: integer
+          format: int32
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - data
+    ProgramOverride:
+      type: object
+      description: Domain- or store-level config. Precedence is program < domain < store.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/overrides/{program_override}
+        singular: program-override
+        plural: overrides
+        type: msrestapi.com/programs/program-override
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        scope_type:
+          type: string
+          enum:
+          - domain
+          - store
+        scope_id:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - scope_type
+      - scope_id
+      - config
+    ProgramDomain:
+      type: object
+      description: A website a program applies to, with its customer group.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/domains/{program_domain}
+        singular: program-domain
+        plural: domains
+        type: msrestapi.com/programs/program-domain
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        website_id:
+          type: string
+        domain:
+          type: string
+        customer_group_id:
+          type: string
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - website_id
+      - domain
+    RuleSet:
+      type: object
+      description: The GoRules decision graph of one family (pre_enrollment, discount, markup...) for
+        a program. The id is the family.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/rule-sets/{rule_set}
+        singular: rule-set
+        plural: rule-sets
+        type: msrestapi.com/programs/rule-set
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        family:
+          type: string
+        draft_version:
+          type: integer
+          format: int32
+          nullable: true
+        published_version:
+          type: integer
+          format: int32
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+    RuleVersion:
+      type: object
+      description: An immutable version of a rule set. Saving a draft is Create.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/rule-sets/{rule_set}/versions/{version}
+        singular: rule-version
+        plural: versions
+        type: msrestapi.com/programs/rule-version
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+          - superseded
+        content_hash:
+          type: string
+        jdm_uri:
+          type: string
+          description: Short-lived presigned S3 URL of the JDM document.
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+        jdm:
+          type: object
+          additionalProperties: true
+          writeOnly: true
+          description: The JDM decision graph. Stored in S3 under its sha256.
+      required:
+      - jdm
+    Publication:
+      type: object
+      description: A published, immutable bundle the pricing service loads. Create returns an operation.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/publications/{publication}
+        singular: publication
+        plural: publications
+        type: msrestapi.com/programs/publication
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        config_version:
+          type: integer
+          format: int32
+        config_hash:
+          type: string
+        bundle_uri:
+          type: string
+        drift:
+          type: boolean
+          description: True when the program changed after this publication was built.
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+    Requirement:
+      type: object
+      description: An enrollment requirement.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/requirements/{requirement}
+        singular: requirement
+        plural: requirements
+        type: msrestapi.com/programs/requirement
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          type: string
+        name:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        position:
+          type: integer
+          format: int32
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - type
+      - name
+    ApprovalStep:
+      type: object
+      description: A step of the application approval chain.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/approval-steps/{approval_step}
+        singular: approval-step
+        plural: approval-steps
+        type: msrestapi.com/programs/approval-step
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        position:
+          type: integer
+          format: int32
+        approver_role:
+          type: string
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - approver_role
+    Application:
+      type: object
+      description: A store's application to enroll in a program.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/applications/{application}
+        singular: application
+        plural: applications
+        type: msrestapi.com/programs/application
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        store_id:
+          type: string
+        website_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - approved
+          - rejected
+        requirements_snapshot:
+          type: object
+          additionalProperties: true
+          description: Requirements frozen at submission.
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - store_id
+      - website_id
+    Signoff:
+      type: object
+      description: One approver's decision on one approval step.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/applications/{application}/signoffs/{signoff}
+        singular: signoff
+        plural: signoffs
+        type: msrestapi.com/programs/signoff
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        approval_step_id:
+          type: string
+          format: uuid
+        decision:
+          type: string
+          enum:
+          - approved
+          - rejected
+        comment:
+          type: string
+          nullable: true
+        actor:
+          type: string
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approval_step_id
+      - decision
+    Enrollment:
+      type: object
+      description: A store enrolled in a program. Created by the system when the last signoff is approved.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/enrollments/{enrollment}
+        singular: enrollment
+        plural: enrollments
+        type: msrestapi.com/programs/enrollment
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        store_id:
+          type: string
+        website_id:
+          type: string
+        application_id:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          type: string
+          enum:
+          - pending
+          - active
+          - suspended
+          - ended
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+    AgreementTemplate:
+      type: object
+      description: A reusable agreement template; its text lives in immutable versions.
+      x-aep-resource:
+        patterns:
+        - agreement-templates/{agreement_template}
+        singular: agreement-template
+        plural: agreement-templates
+        type: msrestapi.com/programs/agreement-template
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        code:
+          type: string
+        latest_version:
+          type: integer
+          format: int32
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - code
+    AgreementTemplateVersion:
+      type: object
+      description: An immutable version of an agreement template.
+      x-aep-resource:
+        patterns:
+        - agreement-templates/{agreement_template}/versions/{agreement_template_version}
+        singular: agreement-template-version
+        plural: versions
+        type: msrestapi.com/programs/agreement-template-version
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          format: int32
+        body:
+          type: string
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+    AgreementContract:
+      type: object
+      description: An agreement pinned to a specific template version.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/agreement-contracts/{agreement_contract}
+        singular: agreement-contract
+        plural: agreement-contracts
+        type: msrestapi.com/programs/agreement-contract
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        enrollment_id:
+          type: string
+          format: uuid
+        template_id:
+          type: string
+          format: uuid
+        template_version:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - pending
+          - signed
+          - void
+        signed_time:
+          type: string
+          format: date-time
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - enrollment_id
+      - template_id
+      - template_version
+    DocumentFolder:
+      type: object
+      description: A folder of program documents.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/document-folders/{document_folder}
+        singular: document-folder
+        plural: document-folders
+        type: msrestapi.com/programs/document-folder
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+    Document:
+      type: object
+      description: A program document or manual.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/documents/{document}
+        singular: document
+        plural: documents
+        type: msrestapi.com/programs/document
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        folder_id:
+          type: string
+          format: uuid
+          nullable: true
+        module_id:
+          type: string
+          format: uuid
+          nullable: true
+        content_type:
+          type: string
+        size_bytes:
+          type: integer
+          format: int32
+        file_uri:
+          type: string
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - content_type
+    ImportJob:
+      type: object
+      description: A bulk import. Create returns an operation.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/import-jobs/{import_job}
+        singular: import-job
+        plural: import-jobs
+        type: msrestapi.com/programs/import-job
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          type: string
+          enum:
+          - price_import
+          - consignment_upload
+        status:
+          type: string
+          enum:
+          - pending
+          - running
+          - succeeded
+          - failed
+          - cancelled
+        file_uri:
+          type: string
+        total_rows:
+          type: integer
+          format: int32
+        failed_rows:
+          type: integer
+          format: int32
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - kind
+      - file_uri
+    ImportJobRow:
+      type: object
+      description: One row of an import job.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/import-jobs/{import_job}/rows/{import_job_row}
+        singular: import-job-row
+        plural: rows
+        type: msrestapi.com/programs/import-job-row
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        row_number:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - ok
+          - failed
+        data:
+          type: object
+          additionalProperties: true
+        error:
+          type: string
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+    SkuPrice:
+      type: object
+      description: A program-specific SKU price.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/sku-prices/{sku_price}
+        singular: sku-price
+        plural: sku-prices
+        type: msrestapi.com/programs/sku-price
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+        price:
+          type: number
+        currency_code:
+          type: string
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - sku
+      - price
+      - currency_code
+    CoreReturnFee:
+      type: object
+      description: A core return fee.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/core-return-fees/{core_return_fee}
+        singular: core-return-fee
+        plural: core-return-fees
+        type: msrestapi.com/programs/core-return-fee
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+        fee:
+          type: number
+        currency_code:
+          type: string
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - sku
+      - fee
+      - currency_code
+    ReportDefinition:
+      type: object
+      description: A report that can be run for a program.
+      x-aep-resource:
+        patterns:
+        - report-definitions/{report_definition}
+        singular: report-definition
+        plural: report-definitions
+        type: msrestapi.com/programs/report-definition
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        code:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - code
+    ReportRun:
+      type: object
+      description: One execution of a report. Create returns an operation.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/report-runs/{report_run}
+        singular: report-run
+        plural: report-runs
+        type: msrestapi.com/programs/report-run
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        report_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - pending
+          - running
+          - succeeded
+          - failed
+        result_uri:
+          type: string
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - report_id
+    AuditLog:
+      type: object
+      description: Who changed what, with before and after. Read-only; backs History and View changes.
+      x-aep-resource:
+        patterns:
+        - programs/{program}/audit-logs/{audit_log}
+        singular: audit-log
+        plural: audit-logs
+        type: msrestapi.com/programs/audit-log
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        actor:
+          type: string
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: string
+        before:
+          type: object
+          additionalProperties: true
+          nullable: true
+        after:
+          type: object
+          additionalProperties: true
+          nullable: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+    ProgramModuleField:
+      type: object
+      description: A field of a field-driven module with its current value.
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum:
+          - toggle
+          - select
+          - multi_select
+          - text
+          - number
+          - derived
+        value:
+          type: object
+          additionalProperties: true
+          nullable: true
+        selected:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Selected library option ids.
+        options:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: 'Present only with `include_options=true`. Removed options appear as `{id, deleted:
+            true}`.'
+        visible:
+          type: boolean
+        source:
+          type: string
+          nullable: true
+    FieldValue:
+      type: object
+      description: A new value for one field. Use `option_ids` for library picks, `value` otherwise.
+      properties:
+        value:
+          type: object
+          additionalProperties: true
+          nullable: true
+        option_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    CloneProgramRequest:
+      type: object
+      required:
+      - name
+      - slug
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+    SimulateRuleSetRequest:
+      type: object
+      required:
+      - jdm
+      - input
+      properties:
+        jdm:
+          type: object
+          additionalProperties: true
+          description: Current editor content.
+        input:
+          type: object
+          additionalProperties: true
+    SimulateRuleSetResponse:
+      type: object
+      properties:
+        output:
+          type: object
+          additionalProperties: true
+        trace:
+          type: object
+          additionalProperties: true
+    Operation:
+      type: object
+      description: AEP-151 long-running operation.
+      x-aep-resource:
+        patterns:
+        - operations/{operation}
+        singular: operation
+        plural: operations
+        type: msrestapi.com/programs/operation
+      properties:
+        path:
+          type: string
+          example: operations/9f3a
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        done:
+          type: boolean
+        metadata:
+          type: object
+          additionalProperties: true
+        response:
+          type: object
+          additionalProperties: true
+        error:
+          $ref: '#/components/schemas/Error'
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+          example: 400
+        message:
+          type: string
+          example: The request was invalid.
+        detail:
+          type: string
+          example: INVALID_ARGUMENT
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: field_violation
+              field:
+                type: string
+                example: name
+              description:
+                type: string
+                example: Name is required
+    ResourceState:
+      type: string
+      readOnly: true
+      enum:
+      - STATE_UNSPECIFIED
+      - ACTIVE
+      - DELETED
+      description: AEP-216 resource state, used per AEP-135 as the soft-delete marker. DELETED resources
+        are excluded from Get/List by default and surfaced with show_deleted=true.
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok

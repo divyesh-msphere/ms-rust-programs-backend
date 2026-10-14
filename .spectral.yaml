@@ -1,0 +1,52 @@
+extends:
+  [
+    "spectral:oas",
+    "https://raw.githubusercontent.com/aep-dev/aep-openapi-linter/main/spectral.yaml",
+  ]
+
+overrides:
+  # /health is a liveness probe, not an AEP resource collection — the linter's
+  # path-shape heuristic misclassifies its single-segment path as a
+  # collection and expects List-style naming/pagination params that would be
+  # actively wrong here.
+  - files: ["openapi.yaml#/paths/~1health/get"]
+    rules:
+      aep-132-operation-id: "off"
+      aep-158-max-page-size-parameter: "off"
+      aep-158-page-token-parameter: "off"
+  # HealthCheck is a plain status payload, not an AEP list response — it will
+  # never have a results array or next_page_token.
+  - files: ["openapi.yaml#/components/schemas/HealthCheck"]
+    rules:
+      aep-158-response-array-property: "off"
+      aep-158-response-next-page-token-property: "off"
+  # UnitSettings/UserSettings are AEP-156 singleton sub-resources fetched with
+  # a standard Get, not a List — the linter's path-shape heuristic expects
+  # List-style naming/pagination/array-response for these because their path
+  # ends in a literal segment ("settings") rather than a path parameter.
+  # NOTE: could not get Spectral's `overrides.files` glob to match path keys
+  # containing `{param}` segments (tried plain, backslash-escaped, and
+  # bracket-escaped braces — all failed to suppress), so the operation-level
+  # findings here (aep-132-operation-id, aep-158-max-page-size/page-token on
+  # GetUnitSettings/GetUserSettings) remain visible in `spectral lint` output.
+  # They're accepted false positives per the reasoning above and are also
+  # marked with `x-ignore-rules` directly on each operation in openapi.yaml.
+  - files:
+      - "openapi.yaml#/components/schemas/UnitSettings"
+      - "openapi.yaml#/components/schemas/UserSettings"
+    rules:
+      aep-158-response-array-property: "off"
+      aep-158-response-next-page-token-property: "off"
+  # Lookups (currencies, languages, date/time formats, symbol positions,
+  # number formats) use their own client-supplied, immutable `code` as the
+  # natural key in the request body — there is no server-generated opaque ID
+  # for an `id` query parameter to override.
+  - files:
+      - "openapi.yaml#/paths/~1currencies/post"
+      - "openapi.yaml#/paths/~1languages/post"
+      - "openapi.yaml#/paths/~1date-formats/post"
+      - "openapi.yaml#/paths/~1time-formats/post"
+      - "openapi.yaml#/paths/~1symbol-positions/post"
+      - "openapi.yaml#/paths/~1number-formats/post"
+    rules:
+      aep-133-id-parameter: "off"

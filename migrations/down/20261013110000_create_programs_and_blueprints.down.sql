@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS programs;
+DROP TABLE IF EXISTS blueprints;

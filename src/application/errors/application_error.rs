@@ -9,6 +9,10 @@ pub enum ApplicationErrorKind {
     Unauthenticated,
     FailedPrecondition,
     ResourceExhausted,
+    /// A well-formed request whose content violates a resource-format rule
+    /// (e.g. AEP-122 `code` pattern) — distinct from `InvalidArgument`
+    /// (400) so this class of validation can map to 422 instead.
+    UnprocessableEntity,
     Internal,
 }
 
@@ -59,6 +63,15 @@ impl ApplicationError {
             None,
             ApplicationErrorKind::InvalidArgument,
             Some(format!("Validation error: {}", msg)),
+            None,
+        )
+    }
+
+    pub fn unprocessable_entity(msg: &str) -> Self {
+        Self::into::<std::io::Error>(
+            None,
+            ApplicationErrorKind::UnprocessableEntity,
+            Some(msg.to_string()),
             None,
         )
     }

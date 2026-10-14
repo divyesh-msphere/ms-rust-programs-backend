@@ -1,38 +1,29 @@
 version: v2
 
 inputs:
-  # - git_repo: https://github.com/MobileSentrix/ms-protos.git
   - git_repo: ssh://git@github.com/MobileSentrix/ms-protos.git
     subdir: proto
-    branch: rust-service-test
+    branch: release/global_settings_proto
     paths:
-      - global_settings/v1
+      - programs/v1
 
 plugins:
-  - remote: buf.build/community/neoeinstein-prost:v0.5.0
-    out: src/adapters/generated/grpc_services
-
-  - remote: buf.build/community/neoeinstein-tonic:v0.5.0
-    out: src/adapters/generated/grpc_services
-
-  # remote repo for protoc-gen-prost-crate local
-  # - remote: buf.build/community/neoeinstein-prost-crate:v0.5.0
-  #   out: src/adapters/generated/grpc_services
-
-  - local: protoc-gen-prost-crate
-    out: src/adapters/generated/grpc_services
-    strategy: all
+  # Message types. connect-rust (ConnectRPC's Rust implementation, replacing
+  # tonic/prost) uses buffa instead of prost. Pinned to a BSR remote plugin
+  # rather than `local: protoc-gen-buffa` — the crates.io-published binary
+  # (`cargo install protoc-gen-buffa`) sends a malformed CodeGeneratorResponse
+  # (FEATURE_SUPPORTS_EDITIONS set with no minimum_edition) that buf rejects;
+  # the BSR-hosted build doesn't have that bug. No local plugin install needed.
+  - remote: buf.build/anthropics/buffa:v0.9.2
+    out: src/adapters/generated/grpc_services/buffa
     opt:
-      - no_features
-      
-      
-      
-      docker run --rm -v "$PWD":/work --entrypoint sh ms-openapi-gen -c '
-  buf build --path global_settings/v1 --as-file-descriptor-set -o /tmp/image.binpb &&
-  gen-route-manifest -in /tmp/image.binpb -check -service global_settings'
-  
-  docker run --rm -v "$PWD":/work --entrypoint sh ms-openapi-gen -c '
-  buf build --path global_settings/v1 --as-file-descriptor-set -o /tmp/image.binpb &&
-  gen-route-manifest -in /tmp/image.binpb -out connect_routes.json -service global_settings'
-  
-  grpc.dev.msrestapi.com/
+      - views=true
+      - json=true
+      - file_per_package=true
+
+  # Service traits + clients, referencing the buffa output above.
+  - remote: buf.build/connectrpc/rust:v0.9.0
+    out: src/adapters/generated/grpc_services/connect
+    opt:
+      - buffa_module=crate::adapters::generated::grpc_services::buffa
+      - file_per_package

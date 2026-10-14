@@ -1,11 +1,13 @@
 use ms_telemetry_rs::{TelemetryConfig, init_telemetry_with_fallback};
-use global_settings::config::ApplicationConfig;
-use global_settings::infrastructure::grpc_server::grpc_server;
-use global_settings::infrastructure::shutdown::install_signal_handler;
+use programs::config::ApplicationConfig;
+use programs::infrastructure::grpc_server::grpc_server;
+use programs::infrastructure::shutdown::install_signal_handler;
 use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
+
     let application_config = ApplicationConfig::new().expect("Failed to load application config");
 
     let otel_cfg =

@@ -1,5 +1,5 @@
 # General Service Information
-service_name = "global-settings"
+service_name = "programs"
 environment = "production"
 namespace = "backend-services"
 

@@ -76,6 +76,11 @@ impl ErrorResponse {
                 "RESOURCE_EXHAUSTED",
                 "Too Many Requests",
             ),
+            ApplicationErrorKind::UnprocessableEntity => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "UNPROCESSABLE_ENTITY",
+                "Unprocessable Entity",
+            ),
             ApplicationErrorKind::Internal => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "INTERNAL",

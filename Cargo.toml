@@ -1,24 +1,25 @@
 [package]
-name = "global-settings"
+name = "programs"
 version = "0.1.0"
 edition = "2024"
 
 [[bin]]
-name = "global_settings_grpc"
+name = "programs_grpc"
 path = "src/main_grpc.rs"
 
 [[bin]]
-name = "global_settings_http"
+name = "programs_http"
 path = "src/main_http.rs"
 
 [[bin]]
-name = "global_settings"
+name = "programs"
 path = "src/main.rs"
 
 [dependencies]
 actix-web = "4.13.0"
 async-trait = "0.1.89"
 config = "0.15.23"
+dotenvy = "0.15.7"
 derive_more = "2.1.1"
 serde = { version = "1.0.149", features = ["derive"] }
 serde_json = "1.0.149"
@@ -34,14 +35,13 @@ sqlx = { version = "0.8.6", features = [
     "default",
 ] }
 thiserror = "2.0.18"
-tokio = "1.52.3"
-tonic = "0.14.6"
-tonic-prost = "0.14.6"
-tonic-reflection = "0.14.6"
-prost = "0.14.3"
-prost-types = "0.14.3"
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "sync", "signal", "time"] }
 uuid = { version = "1.23.1", features = ["serde", "v4", "v7"] }
 ms-telemetry-rs = { git = "ssh://git@github.com/Mobilesentrix/ms-telemetry-rs.git", tag = "v0.1.1" }
 tracing-actix-web = "0.7.21"
 tracing = "0.1.44"
 chrono = { version = "0.4.44", features = ["serde"] }
+connectrpc = { version = "0.9", features = ["server", "client"] }
+connectrpc-reflection = "0.9"
+buffa = { version = "0.9", features = ["json"] }
+buffa-types = { version = "0.9", features = ["json"] }
