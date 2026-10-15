@@ -1,0 +1,25 @@
+syntax = "proto3";
+package programs.v1;
+
+import "msapi/v1/annotations.proto";
+import "programs/v1/types.proto";
+
+service ProgramsService {
+  // ---- Module definitions (read-only) ----
+  rpc ListModuleDefinitions(ListModuleDefinitionsRequest) returns (ListModuleDefinitionsResponse) {
+    option (msapi.v1.sso_permission) = {permission: "programs.module_definitions" action: "reader" collection_scope: true};
+  }
+  rpc GetModuleDefinition(GetModuleDefinitionRequest) returns (GetModuleDefinitionResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.module_definitions"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "module-definitions/*"}]
+    };
+  }
+
+  // ---- Health ----
+  rpc ListHealthCheck(ListHealthCheckRequest) returns (ListHealthCheckResponse) {
+    // Open to everyone (load balancer / monitoring probes) — no permission check.
+    option (msapi.v1.sso_permission) = {skip: true};
+  }
+}

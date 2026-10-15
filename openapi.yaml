@@ -510,12 +510,27 @@ paths:
       summary: List module definitions
       tags:
       - module-definitions
-      description: Returns module definitions.
+      description: Returns the direct children of `parent_id`, or the root-level (main) modules when it
+        is omitted, in display order. Pass `full_tree=true` to get the whole tree in one response instead,
+        nested under `children`; combined with `parent_id` it returns everything beneath that module.
       parameters:
+      - name: parent_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: List the direct children of this module. Omitted returns the root-level (main) modules.
       - $ref: '#/components/parameters/maxPageSize'
       - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
+      - name: full_tree
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+        description: When true, ignores `max_page_size` / `page_token` and returns the whole tree (or,
+          with `parent_id`, the subtree beneath that module) as nested `children`, in a single response.
       responses:
         '200':
           $ref: '#/components/responses/ModuleDefinitionsResponse'
@@ -523,35 +538,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    post:
-      operationId: CreateModuleDefinition
-      summary: Create a module definition
-      tags:
-      - module-definitions
-      description: Creates a module definition.
-      parameters:
-      - $ref: '#/components/parameters/clientId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModuleDefinition'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModuleDefinition'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          description: A resource with the same unique key already exists.
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /module-definitions/{module_definition}:
     parameters:
     - name: module_definition
@@ -559,14 +547,13 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the module definition.
+      description: The module definition's ID, or its key (e.g. `catalog_pricing`).
     get:
       operationId: GetModuleDefinition
       summary: Get a module definition
       tags:
       - module-definitions
-      description: Returns a single module definition.
+      description: Returns a single module definition by ID or by key.
       responses:
         '200':
           description: Successful response
@@ -576,54 +563,6 @@ paths:
                 $ref: '#/components/schemas/ModuleDefinition'
         '404':
           $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    patch:
-      operationId: UpdateModuleDefinition
-      summary: Update a module definition
-      tags:
-      - module-definitions
-      description: Partially updates a module definition. Fields not sent are left unchanged.
-      requestBody:
-        required: true
-        content:
-          application/merge-patch+json:
-            schema:
-              type: object
-              x-aep-resource:
-                singular: module-definition
-                plural: module-definitions
-              properties:
-                name:
-                  type: string
-                position:
-                  type: integer
-                  format: int32
-                ui_component:
-                  type: string
-                  nullable: true
-                  description: 'How the frontend renders a leaf: `rule_playground`, `field_form`, or `custom:<name>`.'
-                requires_publish:
-                  type: boolean
-                  description: True when changes only take effect after a Publication.
-                permission_key:
-                  type: string
-                  nullable: true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModuleDefinition'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          description: Version conflict or unique-key collision.
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /module-definitions/{module_definition}/fields:
@@ -3965,7 +3904,10 @@ components:
               results:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ModuleDefinition'
+                  oneOf:
+                  - $ref: '#/components/schemas/ModuleDefinition'
+                  - $ref: '#/components/schemas/ModuleDefinitionTreeNode'
+                  description: Flat `ModuleDefinition`s, or nested `ModuleDefinitionTreeNode`s when `full_tree=true`.
               next_page_token:
                 type: string
                 nullable: true
@@ -4755,10 +4697,6 @@ components:
           type: string
           format: date-time
           readOnly: true
-      required:
-      - key
-      - name
-      - kind
     ModuleField:
       type: object
       description: A field rendered on a field_form leaf.
@@ -5959,3 +5897,14 @@ components:
         status:
           type: string
           example: ok
+    ModuleDefinitionTreeNode:
+      description: A module with its descendants nested under `children` (`full_tree=true`). Carries every
+        ModuleDefinition field.
+      allOf:
+      - $ref: '#/components/schemas/ModuleDefinition'
+      type: object
+      properties:
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleDefinitionTreeNode'

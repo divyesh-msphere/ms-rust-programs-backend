@@ -1,0 +1,534 @@
+{
+  "info": {
+    "name": "Programs API (local)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Module definitions: read-only. Create/update/delete are intentionally not exposed."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8090"
+    },
+    {
+      "key": "module_id",
+      "value": ""
+    },
+    {
+      "key": "page_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('status ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Module Definitions",
+      "item": [
+        {
+          "name": "List main modules (roots)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ]
+            },
+            "description": "Root-level modules in display order. Omit parent_id to get the main modules."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('has the 5 main modules', () => pm.expect(body.total_size).to.eql(5));",
+                  "pm.test('in display order', () => pm.expect(body.results.map(r => r.key)).to.eql(['catalog_pricing','enrollment','document_agreement','order_transaction','configuration_oversight']));",
+                  "// keep ids for the other requests",
+                  "if (body.results.length) { pm.collectionVariables.set('module_id', body.results[0].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List - page 1 (max_page_size=2)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions?max_page_size=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ],
+              "query": [
+                {
+                  "key": "max_page_size",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('2 results + next token', () => { pm.expect(b.results.length).to.eql(2); pm.expect(b.next_page_token).to.be.a('string'); });",
+                  "pm.collectionVariables.set('page_token', b.next_page_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List - page 2 (uses page_token from page 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions?max_page_size=2&page_token={{page_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ],
+              "query": [
+                {
+                  "key": "max_page_size",
+                  "value": "2"
+                },
+                {
+                  "key": "page_token",
+                  "value": "{{page_token}}"
+                }
+              ]
+            },
+            "description": "Run 'List - page 1' first; it stores page_token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('next page', () => pm.expect(pm.response.json().results[0].key).to.eql('document_agreement'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List children of a module",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions?parent_id={{module_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ],
+              "query": [
+                {
+                  "key": "parent_id",
+                  "value": "{{module_id}}"
+                }
+              ]
+            },
+            "description": "Direct children of the module in {{module_id}} (set by 'List main modules'). Empty until sub-modules are seeded."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get by key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions/catalog_pricing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions",
+                "catalog_pricing"
+              ]
+            },
+            "description": "The path segment accepts an id or a key: catalog_pricing, enrollment, document_agreement, order_transaction, configuration_oversight."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('catalog_pricing', () => pm.expect(b.name).to.eql('Catalog & Pricing'));",
+                  "pm.collectionVariables.set('module_id', b.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions/{{module_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions",
+                "{{module_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Full tree (everything, nested)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions?full_tree=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ],
+              "query": [
+                {
+                  "key": "full_tree",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "The whole module tree in one call, nested under `children`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('5 roots', () => pm.expect(b.results.length).to.eql(5));",
+                  "const cp = b.results.find(r => r.key === 'catalog_pricing');",
+                  "pm.test('Catalog & Pricing has 3 groups', () => pm.expect(cp.children.map(c => c.name)).to.eql(['Store Discounts','Products & Rules','Pricing']));",
+                  "pm.test('leaves nested 3 levels deep', () => pm.expect(cp.children[2].children.length).to.eql(7));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Subtree under {{module_id}}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions?full_tree=true&parent_id={{module_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ],
+              "query": [
+                {
+                  "key": "full_tree",
+                  "value": "true"
+                },
+                {
+                  "key": "parent_id",
+                  "value": "{{module_id}}"
+                }
+              ]
+            },
+            "description": "Everything beneath one module. Run 'Get by key' first (it sets module_id)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('results is an array', () => pm.expect(pm.response.json().results).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Negative checks",
+      "item": [
+        {
+          "name": "Get - not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions/does_not_exist",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions",
+                "does_not_exist"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List - bad parent_id (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions?parent_id=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ],
+              "query": [
+                {
+                  "key": "parent_id",
+                  "value": "abc"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create is not exposed (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete is not exposed (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-definitions/catalog_pricing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-definitions",
+                "catalog_pricing"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package msapi.v1;
+
+import "google/protobuf/descriptor.proto";
+
+option java_multiple_files = true;
+option java_package = "com.mobilesentrix.msapi.v1";
+option java_outer_classname = "AnnotationsProto";
+option go_package = "github.com/Mobilesentrix/ms-protos/gen/msapi/v1;msapiv1";
+
+// ResourceField maps a request field carrying an AEP resource name to the
+// pattern the gateway uses to populate resource_context for permission checks.
+message ResourceField {
+  // Request field path holding an AEP resource name, e.g. "path" or "parent".
+  // Dotted for a field nested in a submessage, e.g. "stream.path".
+  string field = 1;
+  // AEP resource name pattern, e.g. "integrations/*/streams/*". Collection
+  // literal and "*" alternate; each literal becomes a resource_context key.
+  string pattern = 2;
+}
+
+// SSOPermission declares the gateway permission requirement for an RPC.
+// The connect route manifest generator reads it to emit connect_routes.json.
+message SSOPermission {
+  // When true the gateway authenticates but skips the permission check.
+  bool skip = 1;
+  // Permission node path, e.g. "queuemanagement.integrations.streams".
+  // Node path only; the action is carried separately in action.
+  string permission = 2;
+  // Alternative permission node paths accepted as any-of. Reserved for
+  // migration aliasing only; keep to two or fewer.
+  repeated string extra_permissions = 3;
+  // Action level: "reader", "writer", or "admin". When empty the gateway
+  // derives it from the HTTP method or idempotency level.
+  string action = 4;
+  // Request fields whose values are AEP resource names, used to build
+  // resource_context for instance-scoped checks.
+  repeated ResourceField resource_fields = 5;
+  // No instance scope: the permission is checked at collection level and
+  // resource_fields is intentionally empty. Required on collection RPCs so the
+  // manifest generator can tell "root-scoped" from "forgot to annotate".
+  bool collection_scope = 6;
+}
+
+extend google.protobuf.MethodOptions {
+  // Org-internal method option. Extension numbers 50000-99999 are reserved by
+  // protobuf for internal use without global registration.
+  SSOPermission sso_permission = 50001;
+}

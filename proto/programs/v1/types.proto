@@ -1,0 +1,102 @@
+syntax = "proto3";
+package programs.v1;
+
+import "aep/api/field_info.proto";
+import "aep/api/resource.proto";
+
+// ---------------------------------------------------------------------------
+// Module definitions (the program module tree; read-only)
+// ---------------------------------------------------------------------------
+
+message ModuleDefinition {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/module-definition"
+    singular: "module-definition"
+    plural: "module-definitions"
+    pattern: "module-definitions/{module_definition}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Stable identifier, e.g. `catalog_pricing`. Accepted by Get in place of the id.
+  string key = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "group" or "leaf".
+  string kind = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string parent_id = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // ltree path of the node, e.g. `catalog_pricing.products_rules`.
+  string ancestry = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 position = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // How a leaf renders: rule_playground, field_form or custom:<name>.
+  optional string ui_component = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string rule_family = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool universal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool requires_publish = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string permission_key = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// A module with its descendants nested under `children` (`full_tree = true`).
+// Carries every ModuleDefinition field, so a tree node reads exactly like a
+// list item plus its subtree.
+message ModuleDefinitionTreeNode {
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string key = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string kind = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string parent_id = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string ancestry = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 position = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string ui_component = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string rule_family = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool universal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool requires_publish = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string permission_key = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated ModuleDefinitionTreeNode children = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListModuleDefinitionsRequest {
+  // List the direct children of this module (ID). Omitted returns the
+  // root-level (main) modules.
+  optional string parent_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional int64 max_page_size = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string page_token = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // When true, ignores `max_page_size` / `page_token` and returns the whole
+  // tree (or, with `parent_id`, everything beneath that module) nested under
+  // `children`, in `tree_results`.
+  optional bool full_tree = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+message ListModuleDefinitionsResponse {
+  repeated ModuleDefinition results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 total_size = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Populated instead of `results` when the request had `full_tree = true`.
+  repeated ModuleDefinitionTreeNode tree_results = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool full_tree = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetModuleDefinitionRequest {
+  // The module definition's ID, or its key (`catalog_pricing`).
+  string module_definition = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetModuleDefinitionResponse {
+  ModuleDefinition module_definition = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// ---------------------------------------------------------------------------
+// Health
+// ---------------------------------------------------------------------------
+
+message ListHealthCheckRequest {}
+
+message ListHealthCheckResponse {
+  string status = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string service = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string check_time = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
