@@ -46,3 +46,6 @@ connectrpc = { version = "0.9", features = ["server", "client"] }
 connectrpc-reflection = "0.9"
 buffa = { version = "0.9", features = ["json"] }
 buffa-types = { version = "0.9", features = ["json"] }
+actix-cors = "0.7.2"
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "native-tls"] }
+futures = "0.3.34"

@@ -15,6 +15,9 @@ info:
     url: https://mobilesentrix.com/terms
   termsOfService: https://mobilesentrix.com/terms
 servers:
+- url: http://localhost:8090
+  description: Local (Swagger UI on :8082 needs APP__CORS_ALLOWED_ORIGIN=http://localhost:8082)
+  x-name: local
 - url: https://api.dev.mobilesentrix.com/programs
   description: Development environment
   x-name: development
@@ -34,7 +37,7 @@ tags:
   description: Health check endpoint
 - name: programs
   x-summary: Programs
-  description: A program (e.g. KBB, CPO, Credit Line) and its configuration root.
+  description: 'Programs: create, read, update, soft delete and undelete.'
 - name: blueprints
   x-summary: Blueprints
   description: Starting point for the create-program wizard. Its modules and default config are copied
@@ -50,8 +53,7 @@ tags:
   description: A module a blueprint includes, with its default config.
 - name: program-modules
   x-summary: Program Modules
-  description: A module enabled on a program. GET returns the form (fields, values, options); PATCH saves
-    changed `field_values`.
+  description: A program's module manifest.
 - name: module-records
   x-summary: Module Records
   description: A row in a small list owned by a module (3PL fees, grade mapping, upsell products).
@@ -125,6 +127,9 @@ tags:
 - name: operations
   x-summary: Operations
   description: Long-running operations (publish, imports, report runs)
+- name: webhooks
+  x-summary: Webhooks
+  description: Events other services send to this one.
 paths:
   /health:
     x-info:
@@ -148,12 +153,10 @@ paths:
       summary: List programs
       tags:
       - programs
-      description: Returns programs.
+      description: Returns programs in creation order.
       parameters:
       - $ref: '#/components/parameters/maxPageSize'
       - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
       - $ref: '#/components/parameters/showDeleted'
       responses:
         '200':
@@ -167,26 +170,73 @@ paths:
       summary: Create a program
       tags:
       - programs
-      description: Creates a program.
+      description: 'Creates a program, its module manifest AND whatever the admin made of each leaf (rule
+        or settings) in ONE transaction: the program, the picked modules with their ancestors, the default
+        Overview module and its counters row, each leaf''s mode and settings, the audit entry and the
+        outbox event. Global-settings libraries are checked before the transaction opens. The response
+        carries the manifest.'
       parameters:
       - $ref: '#/components/parameters/clientId'
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Program'
+              type: object
+              required:
+              - name
+              - slug
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                slug:
+                  type: string
+                  pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+                  maxLength: 64
+                description:
+                  type: string
+                level:
+                  type: string
+                  enum:
+                  - user
+                  - organization
+                  - location
+                  default: location
+                modules:
+                  type: array
+                  maxItems: 200
+                  items:
+                    oneOf:
+                    - type: string
+                    - $ref: '#/components/schemas/ModuleConfig'
+                  description: 'The modules the admin picked: a plain key, or an object with the key plus
+                    what they made of the leaf (`mode`, `settings`). Ancestors, the descendants of a picked
+                    group and the default Overview are added automatically. Unknown or non-selectable
+                    keys, an invalid setting, or a library that does not exist return 422; nothing is
+                    saved in that case.'
+              x-aep-resource:
+                singular: program
+                plural: programs
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Program'
+                $ref: '#/components/schemas/ProgramWithModules'
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
-          description: A resource with the same unique key already exists.
+          description: A live program with this slug already exists.
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
@@ -198,14 +248,13 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the program.
+      description: The program's ID (UUID) or its slug.
     get:
       operationId: GetProgram
       summary: Get a program
       tags:
       - programs
-      description: Returns a single program.
+      description: Returns a single program by ID or slug.
       responses:
         '200':
           description: Successful response
@@ -222,7 +271,20 @@ paths:
       summary: Update a program
       tags:
       - programs
-      description: Partially updates a program. Fields not sent are left unchanged.
+      description: 'Partially updates a program. `slug` is immutable: it is ignored if sent. Changing
+        `level`, `active` or any module, mode or setting bumps `config_version`; changing only `name`
+        or `description` does not. `modules` applies module changes in ONE transaction: a new key adds
+        the module (with its ancestors), `mode` sets what a leaf is, `settings` replaces that module''s
+        settings, `enabled: false` switches a module off. The response includes the module manifest when
+        `modules` was sent. Send `description: null` to clear it.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       requestBody:
         required: true
         content:
@@ -235,24 +297,42 @@ paths:
               properties:
                 name:
                   type: string
+                  minLength: 1
+                  maxLength: 120
                 description:
                   type: string
                   nullable: true
+                level:
+                  type: string
+                  enum:
+                  - user
+                  - organization
+                  - location
                 active:
                   type: boolean
+                modules:
+                  type: array
+                  maxItems: 200
+                  items:
+                    oneOf:
+                    - type: string
+                    - $ref: '#/components/schemas/ModuleConfig'
+                  description: 'Module changes. A new key adds the module; `mode` sets what a leaf is;
+                    `settings` REPLACES that module''s settings; `enabled: false` switches it off. Absent
+                    touches no module.'
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Program'
+                $ref: '#/components/schemas/ProgramWithModules'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: 'The body is malformed (the message names the field), or the change is not allowed
+            in the current state: a leaf that still has settings or a rule with versions cannot change
+            mode, and a setting with saved values cannot change type.'
         '404':
           $ref: '#/components/responses/NotFound'
-        '409':
-          description: Version conflict or unique-key collision.
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
@@ -262,44 +342,19 @@ paths:
       summary: Delete a program
       tags:
       - programs
-      description: Soft-deletes (AEP-135); reversible with `:undelete`.
+      description: Soft-deletes the program (state DELETED); reversible with `:undelete`. Its slug becomes
+        free to reuse.
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       responses:
         '204':
           $ref: '#/components/responses/EmptyResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}:clone:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    post:
-      operationId: :CloneProgram
-      summary: Create a program like this one
-      tags:
-      - programs
-      description: Create a program like this one (AEP-136 custom method).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CloneProgramRequest'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Program'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -311,14 +366,22 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the program.
+      description: The program's ID (UUID) or its slug.
     post:
       operationId: :UndeleteProgram
       summary: Undelete a program
       tags:
       - programs
-      description: Undelete a program (AEP-136 custom method).
+      description: Reverses a soft delete (AEP-164). Fails with 400 if the program is not deleted, and
+        409 if another live program now uses its slug.
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       requestBody:
         required: false
         content:
@@ -338,6 +401,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          description: Another live program already uses this program's slug.
         '500':
           $ref: '#/components/responses/InternalServerError'
   /blueprints:
@@ -867,116 +932,46 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the program.
+      description: The program's ID (UUID) or its slug.
     get:
       operationId: ListProgramModules
-      summary: List modules
+      summary: List a program's modules (the manifest)
       tags:
       - program-modules
-      description: Returns modules.
+      description: 'Every module the program has chosen, ordered parents-first (shallowest first, then
+        by `position`) so a client can build the tree in one pass, with what the frontend needs to draw
+        it: `source` (how to render it), `api_base` (which API to call), `mode`, and, for a `settings`
+        leaf, its `settings` (each with a `render` hint and its options) or, for a `rule` leaf, its `rule`
+        summary.'
       parameters:
-      - $ref: '#/components/parameters/maxPageSize'
-      - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
-      responses:
-        '200':
-          $ref: '#/components/responses/ProgramModulesResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/modules/{module}:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    - name: module
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the module.
-    get:
-      operationId: GetProgramModule
-      summary: Get a program module
-      tags:
-      - program-modules
-      description: Returns a single program module.
-      parameters:
+      - name: enabled_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: Only modules the program has switched on.
       - name: include_options
         in: query
         required: false
         schema:
           type: boolean
-          default: false
-        description: When true, each select/multi_select field carries its library's active options, read
-          through the programs service's cache of the global-settings API.
+          default: true
+        description: Fill library-backed settings with their library's options. They come from memory
+          in most cases; pass `false` to skip them entirely.
       responses:
         '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramModule'
+          $ref: '#/components/responses/ProgramModulesResponse'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    patch:
-      operationId: UpdateProgramModule
-      summary: Update a program module
-      tags:
-      - program-modules
-      description: Partially updates a program module. Fields not sent are left unchanged.
-      requestBody:
-        required: true
-        content:
-          application/merge-patch+json:
-            schema:
-              type: object
-              x-aep-resource:
-                singular: program-module
-                plural: modules
-              properties:
-                enabled:
-                  type: boolean
-                config:
-                  type: object
-                  additionalProperties: true
-                field_values:
-                  type: object
-                  writeOnly: true
-                  additionalProperties:
-                    $ref: '#/components/schemas/FieldValue'
-                  description: Changed field values keyed by field key. Only changed fields are sent.
-                version:
-                  type: integer
-                  format: int32
-                  description: Optimistic-concurrency version; send it back on PATCH.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgramModule'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          description: Version conflict or unique-key collision.
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-158-max-page-size-parameter
+        reason: The manifest is one program's modules (about 70 rows at most) and is always returned whole;
+          the frontend needs the complete tree to draw the page.
+      - rule: aep-158-page-token-parameter
+        reason: 'Same: never paginated.'
   /programs/{program}/modules/{module}/records:
     parameters:
     - name: program
@@ -3746,6 +3741,55 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /webhooks/global-settings:
+    post:
+      operationId: ReceiveGlobalSettingsEvent
+      summary: Receive a global-settings change event
+      tags:
+      - webhooks
+      description: Called by global-settings when a library, one of its attributes, or one of its options
+        changes (`lib.*` events). What is cached of the libraries is dropped and re-read, so a new or
+        renamed option shows up on the very next read. Events global-settings does not send for libraries
+        without `event_enabled`. Any other event type is accepted and ignored. When a webhook secret is
+        configured, the `X-Webhook-Secret` header must carry it.
+      x-ignore-rules:
+      - rule: aep-133-id-parameter
+        reason: An internal event receiver, not an AEP resource.
+      parameters:
+      - name: X-Webhook-Secret
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Required only when a webhook secret is configured.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - event_type
+              properties:
+                event_id:
+                  type: string
+                event_type:
+                  type: string
+                  example: lib.option.created
+                event_payload:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Missing or wrong `X-Webhook-Secret`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     cookieAuth:
@@ -3970,19 +4014,13 @@ components:
               patterns:
               - programs/{program}/modules/{module}
               singular: program-module
-              plural: modules
+              plural: program-modules
               type: msrestapi.com/programs/program-module
             properties:
               results:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProgramModule'
-              next_page_token:
-                type: string
-                nullable: true
-              total_size:
-                type: integer
-                format: int64
     ModuleRecordsResponse:
       description: Successful response
       content:
@@ -4545,6 +4583,9 @@ components:
         singular: program
         plural: programs
         type: msrestapi.com/programs/program
+      required:
+      - name
+      - slug
       properties:
         path:
           type: string
@@ -4555,32 +4596,37 @@ components:
           readOnly: true
         name:
           type: string
+          minLength: 1
+          maxLength: 120
         slug:
           type: string
-          description: Unique among non-deleted programs. Immutable after create.
+          pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+          maxLength: 64
+          description: Lowercase letters, digits and single hyphens. Unique among non-deleted programs
+            (case-insensitive). IMMUTABLE after create. `GET /programs/{program}` accepts it in place
+            of the id.
         description:
           type: string
           nullable: true
+        level:
+          type: string
+          enum:
+          - user
+          - organization
+          - location
+          default: location
+          description: The customer-hierarchy grain the program is anchored at.
         active:
           type: boolean
-        blueprint_id:
-          type: string
-          format: uuid
-          nullable: true
-          description: Blueprint the program was created from; copied at creation, NOT live-linked. Null
-            means from scratch.
-        cloned_from_id:
-          type: string
-          format: uuid
-          nullable: true
         config_version:
           type: integer
           format: int32
-          description: Bumped on every configuration change.
+          readOnly: true
+          description: Bumped on every configuration change (level, active, and later settings); compared
+            with the latest publication to detect drift.
         config_hash:
           type: string
-          description: Hash of the current configuration; compared with the latest Publication to detect
-            drift.
+          readOnly: true
         create_time:
           type: string
           format: date-time
@@ -4591,9 +4637,6 @@ components:
           readOnly: true
         state:
           $ref: '#/components/schemas/ResourceState'
-      required:
-      - name
-      - slug
     Blueprint:
       type: object
       description: Starting point for the create-program wizard. Its modules and default config are copied
@@ -4697,6 +4740,28 @@ components:
           type: string
           format: date-time
           readOnly: true
+        source:
+          type: string
+          enum:
+          - premade
+          - container
+          - default
+          description: '`premade`: code-backed, selected by the admin. `container`: the admin adds components.
+            `default`: Overview, on every program.'
+        handler_key:
+          type: string
+          nullable: true
+          description: The code that handles a premade or default module.
+        api_base:
+          type: string
+          nullable: true
+          description: The API the frontend calls for it.
+        selectable:
+          type: boolean
+          description: False for Overview, which is always on.
+        allow_components:
+          type: boolean
+          description: The admin may add settings or rules here.
     ModuleField:
       type: object
       description: A field rendered on a field_form leaf.
@@ -4803,54 +4868,84 @@ components:
       - module_id
     ProgramModule:
       type: object
-      description: A module enabled on a program. GET returns the form (fields, values, options); PATCH
-        saves changed `field_values`.
+      description: 'One entry of a program''s module manifest. `source` tells the frontend how to draw
+        it: `premade` calls `api_base`, `container` renders its components, `default` is the Overview.'
       x-aep-resource:
         patterns:
         - programs/{program}/modules/{module}
         singular: program-module
-        plural: modules
+        plural: program-modules
         type: msrestapi.com/programs/program-module
       properties:
         path:
           type: string
           readOnly: true
-        id:
-          type: string
-          format: uuid
-          readOnly: true
         module_id:
           type: string
           format: uuid
+          readOnly: true
+        key:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+          - group
+          - leaf
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        ancestry:
+          type: string
+        source:
+          type: string
+          enum:
+          - premade
+          - container
+          - default
+        handler_key:
+          type: string
+          nullable: true
+        api_base:
+          type: string
+          nullable: true
+          description: The API the frontend calls for a premade module, e.g. `applications`.
+        ui_component:
+          type: string
+          nullable: true
+        allow_components:
+          type: boolean
+          description: True when the admin chooses what this leaf is (Rule or Settings).
+        requires_publish:
+          type: boolean
         enabled:
           type: boolean
-        config:
-          type: object
-          additionalProperties: true
-        fields:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProgramModuleField'
-          description: Present when the module is field-driven. Each field carries its current value and,
-            with `include_options=true`, the library options.
-        version:
+        position:
           type: integer
           format: int32
-          description: Optimistic-concurrency version; send it back on PATCH.
-        create_time:
-          type: string
-          format: date-time
-          readOnly: true
         update_time:
           type: string
           format: date-time
           readOnly: true
-        field_values:
-          type: object
-          writeOnly: true
-          additionalProperties:
-            $ref: '#/components/schemas/FieldValue'
-          description: Changed field values keyed by field key. Only changed fields are sent.
+        mode:
+          type: string
+          enum:
+          - rule
+          - settings
+          nullable: true
+          description: 'What the admin made this leaf: `rule` (the leaf IS a rule-engine rule set) or
+            `settings` (the admin adds settings to it). Null until chosen, and always null on a module
+            that is not configurable (`allow_components` false). The leaf''s name is fixed by the module,
+            so there is nothing to name. Premade modules can only be `settings`.'
+        settings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramSetting'
+          description: Present when `mode` is `settings`.
+        rule:
+          $ref: '#/components/schemas/ProgramRule'
     ModuleRecord:
       type: object
       description: A row in a small list owned by a module (3PL fees, grade mapping, upsell products).
@@ -5791,16 +5886,6 @@ components:
           items:
             type: string
             format: uuid
-    CloneProgramRequest:
-      type: object
-      required:
-      - name
-      - slug
-      properties:
-        name:
-          type: string
-        slug:
-          type: string
     SimulateRuleSetRequest:
       type: object
       required:
@@ -5908,3 +5993,264 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ModuleDefinitionTreeNode'
+    ProgramWithModules:
+      type: object
+      description: 'Create''s response: the program plus the module manifest it was created with.'
+      x-aep-resource:
+        patterns:
+        - programs/{program}
+        singular: program
+        plural: programs
+        type: msrestapi.com/programs/program
+      required:
+      - name
+      - slug
+      properties:
+        path:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+          maxLength: 64
+          description: Lowercase letters, digits and single hyphens. Unique among non-deleted programs
+            (case-insensitive). IMMUTABLE after create. `GET /programs/{program}` accepts it in place
+            of the id.
+        description:
+          type: string
+          nullable: true
+        level:
+          type: string
+          enum:
+          - user
+          - organization
+          - location
+          default: location
+          description: The customer-hierarchy grain the program is anchored at.
+        active:
+          type: boolean
+        config_version:
+          type: integer
+          format: int32
+          readOnly: true
+          description: Bumped on every configuration change (level, active, and later settings); compared
+            with the latest publication to detect drift.
+        config_hash:
+          type: string
+          readOnly: true
+        create_time:
+          type: string
+          format: date-time
+          readOnly: true
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
+        state:
+          $ref: '#/components/schemas/ResourceState'
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramModule'
+    OptionConfig:
+      type: object
+      required:
+      - label
+      description: One of the admin's own options for a radio, checkbox or dropdown setting.
+      properties:
+        code:
+          type: string
+          maxLength: 64
+          pattern: ^[A-Za-z0-9._-]+$
+          description: 'The option''s identity. Omitted means it is derived from the label. Options are
+            matched by code on update: a code that is no longer listed is deactivated (not deleted), so
+            saved values never lose their option.'
+        label:
+          type: string
+          minLength: 1
+          maxLength: 120
+    SettingConfig:
+      type: object
+      required:
+      - name
+      - type
+      description: One setting on a leaf whose mode is `settings`. The read-only fields a manifest returns
+        (`key`, `render`, `position`, `options_source`, ...) are accepted and ignored, so a setting can
+        be sent straight back after editing.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Present for an existing setting (kept and updated); absent for a new one.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Shown to the admin. The setting's `key` is generated from it and never changes.
+        type:
+          type: string
+          enum:
+          - boolean
+          - number
+          - text
+          - radio
+          - checkbox
+          - dropdown
+          description: 'Decides the control: boolean = Yes/No, number, text, radio, checkbox, dropdown.
+            A type cannot change once the setting has saved values.'
+        required:
+          type: boolean
+          default: false
+        default:
+          description: 'The starting value: a boolean, number, text, an option code (radio / dropdown),
+            or a list of option codes (checkbox). Must match the type; for manual options it must be one
+            of their codes.'
+          nullable: true
+        library_id:
+          type: string
+          format: uuid
+          description: A global-settings library. For radio / checkbox / dropdown only. The library is
+            then the ONLY source of the options (nothing is copied), and it must exist.
+        options:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/OptionConfig'
+          description: 'The admin''s own options: the ONLY source when there is no `library_id`. Giving
+            both a library and options is rejected. Radio, checkbox and dropdown need one of the two;
+            boolean, number and text take neither.'
+    ModuleConfig:
+      type: object
+      required:
+      - key
+      additionalProperties: false
+      description: A module the admin picked, with what they made of it. An unknown property (for example
+        `setting` instead of `settings`) is rejected by name.
+      properties:
+        key:
+          type: string
+          example: catalog_pricing.products_rules.warranty
+        enabled:
+          type: boolean
+          description: '`false` switches the module off; its data is kept.'
+        mode:
+          type: string
+          enum:
+          - rule
+          - settings
+          description: 'What the admin makes this leaf: `rule` (the leaf IS the rule engine, which the
+            frontend renders) or `settings`. Only on a configurable module (`allow_components`); a premade
+            module can only be `settings`. Cannot change while the leaf still has settings or a rule with
+            versions.'
+        settings:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/SettingConfig'
+          description: 'Needs `mode: settings`. REPLACES the module''s settings: items with an `id` are
+            kept and updated, items without one are created, and the rest are removed (their saved values
+            survive). Omit to leave the settings alone; send `[]` to remove them all.'
+    SettingOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Ours for a manual option, the library's for a library option.
+        code:
+          type: string
+        label:
+          type: string
+        source:
+          type: string
+          enum:
+          - manual
+          - library
+        active:
+          type: boolean
+    ProgramSetting:
+      type: object
+      description: One setting of a `settings` leaf, with what the frontend needs to draw it.
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - boolean
+          - number
+          - text
+          - radio
+          - checkbox
+          - dropdown
+        render:
+          type: string
+          enum:
+          - yes_no
+          - number_input
+          - text_input
+          - radio_group
+          - checkbox_group
+          - dropdown
+          description: The control to draw.
+        required:
+          type: boolean
+        default:
+          nullable: true
+        position:
+          type: integer
+          format: int32
+        options_source:
+          type: string
+          enum:
+          - manual
+          - library
+          nullable: true
+          description: For radio / checkbox / dropdown; null for the other types.
+        library_id:
+          type: string
+          format: uuid
+          nullable: true
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettingOption'
+          description: Manual options from our database, or the library's active options read live from
+            global-settings (served from memory, refreshed in the background and cleared the moment global-settings
+            reports a change). Empty for boolean / number / text.
+        library_error:
+          type: string
+          enum:
+          - not_found
+          - unavailable
+          nullable: true
+          description: Set when the library's options could not be read; the rest of the page still loads.
+    ProgramRule:
+      type: object
+      description: 'A rule leaf''s rule-set summary. The rule engine itself is a front-end component;
+        `mode: rule` is what tells the frontend to render it.'
+      properties:
+        rule_type:
+          type: string
+          nullable: true
+        draft_version:
+          type: integer
+          format: int32
+          nullable: true
+        published_version:
+          type: integer
+          format: int32
+          nullable: true

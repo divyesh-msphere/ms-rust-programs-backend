@@ -50,3 +50,20 @@ overrides:
       - "openapi.yaml#/paths/~1number-formats/post"
     rules:
       aep-133-id-parameter: "off"
+  # A program's module manifest is always returned whole (about 70 rows at most):
+  # it is not a paginated list, so it has no next_page_token.
+  - files:
+      - "openapi.yaml#/components/responses/ProgramModulesResponse"
+    rules:
+      aep-158-response-next-page-token-property: "off"
+  # The global-settings webhook is an internal event receiver, not an AEP resource: the linter's
+  # path-shape heuristic reads a POST to it as a Create and expects a resource body, an id
+  # parameter and an AEP-133 operation id, none of which apply to an event delivery.
+  - files:
+      - "openapi.yaml#/paths/~1webhooks~1global-settings/post"
+      - "openapi.yaml#/paths/~1webhooks~1global-settings"
+    rules:
+      aep-133-operation-id: "off"
+      aep-133-id-parameter: "off"
+      aep-133-request-body: "off"
+      aep-133-response-body: "off"

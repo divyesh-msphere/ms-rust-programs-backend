@@ -8,6 +8,9 @@ pub enum ApplicationErrorKind {
     PermissionDenied,
     Unauthenticated,
     FailedPrecondition,
+    /// The change lost a race: the data moved on since the caller read it (for example a stale
+    /// `version`). Reload and retry. HTTP 409, gRPC `Aborted`.
+    Conflict,
     ResourceExhausted,
     /// A well-formed request whose content violates a resource-format rule
     /// (e.g. AEP-122 `code` pattern) — distinct from `InvalidArgument`
@@ -98,6 +101,15 @@ impl ApplicationError {
         Self::into::<std::io::Error>(
             None,
             ApplicationErrorKind::AlreadyExists,
+            Some(msg.to_string()),
+            None,
+        )
+    }
+
+    pub fn conflict(msg: &str) -> Self {
+        Self::into::<std::io::Error>(
+            None,
+            ApplicationErrorKind::Conflict,
             Some(msg.to_string()),
             None,
         )

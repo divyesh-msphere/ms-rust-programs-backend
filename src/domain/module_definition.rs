@@ -29,6 +29,11 @@ pub struct ModuleDefinition {
     pub universal: bool,                 // every program gets it
     pub requires_publish: bool,          // changes only take effect after a publication
     pub permission_key: Option<String>,
+    pub source: String,                  // "premade" | "container" | "default"
+    pub handler_key: Option<String>,     // code that handles a premade / default module
+    pub api_base: Option<String>,        // the API the frontend calls for it
+    pub selectable: bool,                // false for Overview (always on)
+    pub allow_components: bool,          // the admin may add settings / rules here
     pub create_time: DateTime<Utc>,      // OUTPUT_ONLY
     pub update_time: DateTime<Utc>,      // OUTPUT_ONLY
 }
@@ -108,6 +113,11 @@ mod tests {
             universal: false,
             requires_publish: false,
             permission_key: None,
+            source: "container".to_string(),
+            handler_key: None,
+            api_base: None,
+            selectable: true,
+            allow_components: false,
             create_time: chrono::Utc::now(),
             update_time: chrono::Utc::now(),
         }

@@ -15,6 +15,11 @@ pub struct ModuleDefinitionPresenter {
     pub universal: bool,
     pub requires_publish: bool,
     pub permission_key: Option<String>,
+    pub source: String,
+    pub handler_key: Option<String>,
+    pub api_base: Option<String>,
+    pub selectable: bool,
+    pub allow_components: bool,
     pub create_time: String,
     pub update_time: String,
 }

@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS program_overrides;
 DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS signoffs;
 DROP TABLE IF EXISTS applications;

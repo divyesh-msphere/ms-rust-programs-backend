@@ -9,7 +9,9 @@ pub fn json_error_handler(err: JsonPayloadError, _req: &HttpRequest) -> actix_we
         "type": "INVALID_ARGUMENT",
         "status": 400,
         "title": "Bad Request",
-        "detail": "Invalid JSON input",
+        // The parser's message names the field or position that is wrong (for example
+        // "unknown field `setting`"), which a payload this rich needs to be usable.
+        "detail": format!("Invalid JSON input: {error_message}"),
         "instance": uuid::Uuid::new_v4().to_string(),
     });
     error::InternalError::from_response(

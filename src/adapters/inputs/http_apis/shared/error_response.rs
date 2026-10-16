@@ -66,6 +66,7 @@ impl ErrorResponse {
             ApplicationErrorKind::Unauthenticated => {
                 (StatusCode::UNAUTHORIZED, "UNAUTHENTICATED", "Unauthorized")
             }
+            ApplicationErrorKind::Conflict => (StatusCode::CONFLICT, "CONFLICT", "Conflict"),
             ApplicationErrorKind::FailedPrecondition => (
                 StatusCode::BAD_REQUEST,
                 "FAILED_PRECONDITION",

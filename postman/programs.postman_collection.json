@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Programs API (local)",
+    "name": "Programs resource (local)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Module definitions: read-only. Create/update/delete are intentionally not exposed."
+    "description": "Tests the Programs resource: create, list, get, update, delete, undelete, the module manifest, what the admin builds on a leaf (a rule or typed settings, including library-backed ones), and the error cases. Needs the HTTP server on {{base_url}} (default http://localhost:8090) and, for the library settings, global-settings running with a library whose id is in {{library_id}}. Run top to bottom; each folder deletes its own test program."
   },
   "variable": [
     {
@@ -10,20 +10,37 @@
       "value": "http://localhost:8090"
     },
     {
-      "key": "module_id",
+      "key": "slug",
       "value": ""
     },
     {
-      "key": "page_token",
+      "key": "program_id",
       "value": ""
+    },
+    {
+      "key": "bslug",
+      "value": ""
+    },
+    {
+      "key": "grade_id",
+      "value": ""
+    },
+    {
+      "key": "enabled_id",
+      "value": ""
+    },
+    {
+      "key": "library_id",
+      "value": "1f1f38a6-ee3f-4966-9911-0ff622612d90"
     }
   ],
   "item": [
     {
-      "name": "Health",
+      "name": "Programs",
+      "description": "Run top to bottom. A fresh slug is generated on the first run; 'Reset' clears it.",
       "item": [
         {
-          "name": "Health check",
+          "name": "Reset test slug",
           "request": {
             "method": "GET",
             "header": [
@@ -49,58 +66,74 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.test('status ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Module Definitions",
-      "item": [
-        {
-          "name": "List main modules (roots)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-definitions",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-definitions"
-              ]
-            },
-            "description": "Root-level modules in display order. Omit parent_id to get the main modules."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('has the 5 main modules', () => pm.expect(body.total_size).to.eql(5));",
-                  "pm.test('in display order', () => pm.expect(body.results.map(r => r.key)).to.eql(['catalog_pricing','enrollment','document_agreement','order_transaction','configuration_oversight']));",
-                  "// keep ids for the other requests",
-                  "if (body.results.length) { pm.collectionVariables.set('module_id', body.results[0].id); }"
+                  "pm.collectionVariables.unset('slug'); pm.collectionVariables.unset('program_id'); pm.test('slug cleared', () => pm.expect(pm.collectionVariables.get('slug')).to.be.undefined);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "List - page 1 (max_page_size=2)",
+          "name": "Create program (with premade modules)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Program\",\n  \"slug\": \"{{slug}}\",\n  \"description\": \"Created from Postman\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"enrollment.applications_approvals.application_panel\",\n    \"document_agreement.documents.documents_panel\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('slug')) { pm.collectionVariables.set('slug', 'pm-' + Date.now()); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('program_id', b.id);",
+                  "pm.test('program fields', () => { pm.expect(b.slug).to.eql(pm.collectionVariables.get('slug')); pm.expect(b.level).to.eql('location'); pm.expect(b.config_version).to.eql(1); pm.expect(b.state).to.eql('ACTIVE'); });",
+                  "pm.test('Overview added automatically', () => pm.expect(b.modules.map(m => m.key)).to.include('overview'));",
+                  "pm.test('premade modules carry handler and api_base', () => { const a = b.modules.find(m => m.key === 'enrollment.applications_approvals.application_panel'); pm.expect(a.source).to.eql('premade'); pm.expect(a.handler_key).to.eql('applications'); pm.expect(a.api_base).to.eql('applications'); });",
+                  "pm.test('ancestors included', () => pm.expect(b.modules.map(m => m.key)).to.include.members(['enrollment','document_agreement']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List programs",
           "request": {
             "method": "GET",
             "header": [
@@ -110,17 +143,17 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=2",
+              "raw": "{{base_url}}/programs?max_page_size=50",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "programs"
               ],
               "query": [
                 {
                   "key": "max_page_size",
-                  "value": "2"
+                  "value": "50"
                 }
               ]
             },
@@ -134,15 +167,15 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
-                  "pm.test('2 results + next token', () => { pm.expect(b.results.length).to.eql(2); pm.expect(b.next_page_token).to.be.a('string'); });",
-                  "pm.collectionVariables.set('page_token', b.next_page_token);"
+                  "pm.test('contains the new program', () => pm.expect(b.results.map(r => r.slug)).to.include(pm.collectionVariables.get('slug')));",
+                  "pm.test('total_size is a number', () => pm.expect(b.total_size).to.be.a('number'));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "List - page 2 (uses page_token from page 1)",
+          "name": "Get by slug",
           "request": {
             "method": "GET",
             "header": [
@@ -152,25 +185,16 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=2&page_token={{page_token}}",
+              "raw": "{{base_url}}/programs/{{slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
-              ],
-              "query": [
-                {
-                  "key": "max_page_size",
-                  "value": "2"
-                },
-                {
-                  "key": "page_token",
-                  "value": "{{page_token}}"
-                }
+                "programs",
+                "{{slug}}"
               ]
             },
-            "description": "Run 'List - page 1' first; it stores page_token."
+            "description": ""
           },
           "event": [
             {
@@ -179,83 +203,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.test('next page', () => pm.expect(pm.response.json().results[0].key).to.eql('document_agreement'));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "List children of a module",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-definitions?parent_id={{module_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-definitions"
-              ],
-              "query": [
-                {
-                  "key": "parent_id",
-                  "value": "{{module_id}}"
-                }
-              ]
-            },
-            "description": "Direct children of the module in {{module_id}} (set by 'List main modules'). Empty until sub-modules are seeded."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get by key",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-definitions/catalog_pricing",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-definitions",
-                "catalog_pricing"
-              ]
-            },
-            "description": "The path segment accepts an id or a key: catalog_pricing, enrollment, document_agreement, order_transaction, configuration_oversight."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "const b = pm.response.json();",
-                  "pm.test('catalog_pricing', () => pm.expect(b.name).to.eql('Catalog & Pricing'));",
-                  "pm.collectionVariables.set('module_id', b.id);"
+                  "pm.test('same program', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('program_id')));"
                 ]
               }
             }
@@ -272,13 +220,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/{{module_id}}",
+              "raw": "{{base_url}}/programs/{{program_id}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
-                "{{module_id}}"
+                "programs",
+                "{{program_id}}"
               ]
             },
             "description": ""
@@ -289,14 +237,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.eql(pm.collectionVariables.get('slug')));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Full tree (everything, nested)",
+          "name": "Module manifest (enabled)",
           "request": {
             "method": "GET",
             "header": [
@@ -306,21 +255,67 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true",
+              "raw": "{{base_url}}/programs/{{slug}}/modules",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
-              ],
-              "query": [
-                {
-                  "key": "full_tree",
-                  "value": "true"
-                }
+                "programs",
+                "{{slug}}",
+                "modules"
               ]
             },
-            "description": "The whole module tree in one call, nested under `children`."
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().results;",
+                  "pm.test('has modules', () => pm.expect(r.length).to.be.above(0));",
+                  "pm.test('every module has source and api_base for premade', () => r.filter(m => m.source === 'premade').forEach(m => pm.expect(m.api_base).to.be.a('string')));",
+                  "pm.test('mode is null until the admin chooses Rule or Settings', () => r.forEach(m => pm.expect(m.mode).to.eql(null)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update name (version unchanged)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{slug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{slug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Program (renamed)\"\n}"
+            }
           },
           "event": [
             {
@@ -330,45 +325,46 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const b = pm.response.json();",
-                  "pm.test('5 roots', () => pm.expect(b.results.length).to.eql(5));",
-                  "const cp = b.results.find(r => r.key === 'catalog_pricing');",
-                  "pm.test('Catalog & Pricing has 3 groups', () => pm.expect(cp.children.map(c => c.name)).to.eql(['Store Discounts','Products & Rules','Pricing']));",
-                  "pm.test('leaves nested 3 levels deep', () => pm.expect(cp.children[2].children.length).to.eql(7));"
+                  "pm.test('renamed', () => pm.expect(b.name).to.eql('Postman Program (renamed)'));",
+                  "pm.test('config_version unchanged', () => pm.expect(b.config_version).to.eql(1));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Subtree under {{module_id}}",
+          "name": "Update level + clear description (version bumps)",
           "request": {
-            "method": "GET",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true&parent_id={{module_id}}",
+              "raw": "{{base_url}}/programs/{{slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
-              ],
-              "query": [
-                {
-                  "key": "full_tree",
-                  "value": "true"
-                },
-                {
-                  "key": "parent_id",
-                  "value": "{{module_id}}"
-                }
+                "programs",
+                "{{slug}}"
               ]
             },
-            "description": "Everything beneath one module. Run 'Get by key' first (it sets module_id)."
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"level\": \"organization\",\n  \"description\": null\n}"
+            }
           },
           "event": [
             {
@@ -377,19 +373,55 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.test('results is an array', () => pm.expect(pm.response.json().results).to.be.an('array'));"
+                  "const b = pm.response.json();",
+                  "pm.test('level changed', () => pm.expect(b.level).to.eql('organization'));",
+                  "pm.test('description cleared', () => pm.expect(b.description).to.eql(null));",
+                  "pm.test('config_version bumped', () => pm.expect(b.config_version).to.eql(2));"
                 ]
               }
             }
           ]
-        }
-      ]
-    },
-    {
-      "name": "Negative checks",
-      "item": [
+        },
         {
-          "name": "Get - not found (404)",
+          "name": "Delete program (soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{slug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{slug}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get after delete (404)",
           "request": {
             "method": "GET",
             "header": [
@@ -399,13 +431,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/does_not_exist",
+              "raw": "{{base_url}}/programs/{{slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
-                "does_not_exist"
+                "programs",
+                "{{slug}}"
               ]
             },
             "description": ""
@@ -423,7 +455,7 @@
           ]
         },
         {
-          "name": "List - bad parent_id (400)",
+          "name": "List deleted",
           "request": {
             "method": "GET",
             "header": [
@@ -433,18 +465,1126 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?parent_id=abc",
+              "raw": "{{base_url}}/programs?show_deleted=true",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "programs"
               ],
               "query": [
                 {
-                  "key": "parent_id",
-                  "value": "abc"
+                  "key": "show_deleted",
+                  "value": "true"
                 }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('deleted program listed with state DELETED', () => { const m = pm.response.json().results.find(r => r.id === pm.collectionVariables.get('program_id')); pm.expect(m.state).to.eql('DELETED'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Undelete program",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{program_id}}:undelete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{program_id}}:undelete"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('ACTIVE again', () => pm.expect(pm.response.json().state).to.eql('ACTIVE'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settings and rules",
+      "description": "What the admin builds on a leaf: a RULE (the frontend renders the rule engine) or SETTINGS (a name and a type each: boolean = Yes/No, number, text, radio, checkbox, dropdown). Library-backed settings read their options from global-settings, so {{library_id}} must be a library that exists there. Run top to bottom; the last request deletes the test program.",
+      "item": [
+        {
+          "name": "Reset test program",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset('bslug'); pm.collectionVariables.unset('grade_id'); pm.collectionVariables.unset('enabled_id'); pm.test('cleared', () => pm.expect(pm.collectionVariables.get('bslug')).to.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1. Create: a rule leaf + a settings leaf with every type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "Pre Enrollment becomes a RULE leaf. Warranty becomes a SETTINGS leaf: boolean (Yes/No), number, text, radio with its own options, a dropdown fed ONLY by a global-settings library, and a dropdown with the admin's own values.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Builder\",\n  \"slug\": \"{{bslug}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"enrollment.stores.enrolled_stores_control_panel\",\n    {\n      \"key\": \"catalog_pricing.products_rules.pre_enrollment\",\n      \"mode\": \"rule\"\n    },\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Warranty enabled\",\n          \"type\": \"boolean\",\n          \"default\": true\n        },\n        {\n          \"name\": \"Max days\",\n          \"type\": \"number\",\n          \"required\": true,\n          \"default\": 90\n        },\n        {\n          \"name\": \"Notes\",\n          \"type\": \"text\"\n        },\n        {\n          \"name\": \"Grade\",\n          \"type\": \"radio\",\n          \"default\": \"a\",\n          \"options\": [\n            {\n              \"label\": \"A\"\n            },\n            {\n              \"label\": \"B\"\n            },\n            {\n              \"label\": \"C\"\n            }\n          ]\n        },\n        {\n          \"name\": \"Coverage\",\n          \"type\": \"dropdown\",\n          \"library_id\": \"{{library_id}}\"\n        },\n        {\n          \"name\": \"Region\",\n          \"type\": \"dropdown\",\n          \"options\": [\n            {\n              \"label\": \"North America\"\n            },\n            {\n              \"label\": \"Europe\",\n              \"code\": \"eu\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('bslug')) { pm.collectionVariables.set('bslug', 'pmb-' + Date.now()); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Overview + the picked modules', () => pm.expect(b.modules.map(m => m.key)).to.include.members(['overview','catalog_pricing.products_rules.pre_enrollment','catalog_pricing.products_rules.warranty']));",
+                  "const pre = b.modules.find(m => m.key === 'catalog_pricing.products_rules.pre_enrollment');",
+                  "pm.test('Pre Enrollment is a rule leaf (frontend renders the rule engine)', () => { pm.expect(pre.mode).to.eql('rule'); pm.expect(pre.rule).to.be.an('object'); pm.expect(pre).to.not.have.property('settings'); });",
+                  "const w = b.modules.find(m => m.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('Warranty is a settings leaf with 6 settings, in order', () => pm.expect(w.settings.map(s => s.name)).to.eql(['Warranty enabled','Max days','Notes','Grade','Coverage','Region']));",
+                  "const by = Object.fromEntries(w.settings.map(s => [s.name, s]));",
+                  "pm.test('each type says which control to draw', () => pm.expect([by['Warranty enabled'].render, by['Max days'].render, by['Notes'].render, by['Grade'].render, by['Coverage'].render]).to.eql(['yes_no','number_input','text_input','radio_group','dropdown']));",
+                  "pm.test('defaults and required are kept', () => { pm.expect(by['Warranty enabled'].default).to.eql(true); pm.expect(by['Max days'].default).to.eql(90); pm.expect(by['Max days'].required).to.eql(true); pm.expect(by['Grade'].default).to.eql('a'); });",
+                  "pm.test('manual radio: own options, source manual', () => { pm.expect(by['Grade'].options_source).to.eql('manual'); pm.expect(by['Grade'].options.map(o => o.code)).to.eql(['a','b','c']); });",
+                  "pm.test('manual dropdown: explicit code kept, the other derived from the label', () => pm.expect(by['Region'].options.map(o => o.code)).to.eql(['north_america','eu']));",
+                  "pm.test('library dropdown: the LIBRARY is the source of the options', () => { pm.expect(by['Coverage'].options_source).to.eql('library'); pm.expect(by['Coverage'].library_id).to.eql(pm.environment.get('library_id') || pm.collectionVariables.get('library_id')); pm.expect(by['Coverage'].library_error).to.eql(null); pm.expect(by['Coverage'].options.length).to.be.above(0); pm.expect(by['Coverage'].options.every(o => o.source === 'library')).to.eql(true); });",
+                  "pm.test('boolean / number / text have no options and no source', () => ['Warranty enabled','Max days','Notes'].forEach(n => { pm.expect(by[n].options).to.eql([]); pm.expect(by[n].options_source).to.eql(null); }));",
+                  "pm.collectionVariables.set('grade_id', by['Grade'].id); pm.collectionVariables.set('enabled_id', by['Warranty enabled'].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Manifest: the same, read back (library options from memory)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "modules"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().results;",
+                  "const w = r.find(m => m.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('settings come back with their options', () => { pm.expect(w.settings.length).to.eql(6); pm.expect(w.settings.find(s => s.name === 'Coverage').options.length).to.be.above(0); });",
+                  "pm.test('only configurable leaves carry a mode', () => r.filter(m => m.mode).forEach(m => pm.expect(m.allow_components).to.eql(true)));",
+                  "pm.test('under a few seconds even with a library', () => pm.expect(pm.response.responseTime).to.be.below(1000));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2b. Manifest without library options",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/modules?include_options=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "modules"
+              ],
+              "query": [
+                {
+                  "key": "include_options",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const w = pm.response.json().results.find(m => m.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('library options skipped', () => pm.expect(w.settings.find(s => s.name === 'Coverage').options).to.eql([]));",
+                  "pm.test('manual options still there', () => pm.expect(w.settings.find(s => s.name === 'Grade').options.length).to.eql(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. PATCH: replace the settings (keep by id, add one, drop the rest)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "An item with an id is kept and updated (same key, same saved values); one without is created; the ones not listed are removed. Options match by code: c is deactivated, d is added.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"settings\": [\n        {\n          \"id\": \"{{enabled_id}}\",\n          \"name\": \"Warranty enabled (renamed)\",\n          \"type\": \"boolean\",\n          \"default\": false\n        },\n        {\n          \"id\": \"{{grade_id}}\",\n          \"name\": \"Grade\",\n          \"type\": \"radio\",\n          \"options\": [\n            {\n              \"code\": \"a\",\n              \"label\": \"A\"\n            },\n            {\n              \"code\": \"b\",\n              \"label\": \"B\"\n            },\n            {\n              \"code\": \"d\",\n              \"label\": \"D (new)\"\n            }\n          ]\n        },\n        {\n          \"name\": \"Deductible\",\n          \"type\": \"number\",\n          \"default\": 50\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('config_version bumped', () => pm.expect(b.config_version).to.be.above(1));",
+                  "const m = pm.response.json().modules.find(x => x.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('only the listed settings remain, in order', () => pm.expect(m.settings.map(s => s.name)).to.eql(['Warranty enabled (renamed)','Grade','Deductible']));",
+                  "pm.test('the renamed one kept its id and key', () => { const s = m.settings[0]; pm.expect(s.id).to.eql(pm.collectionVariables.get('enabled_id')); pm.expect(s.key).to.eql('warranty_enabled'); pm.expect(s.default).to.eql(false); });",
+                  "pm.test('options diffed by code: a, b kept, c gone, d added', () => pm.expect(m.settings[1].options.map(o => o.code)).to.eql(['a','b','d']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3b. PATCH without modules returns no manifest",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Builder (renamed)\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('renamed, no manifest, version unchanged by a rename', () => { pm.expect(b.name).to.eql('Postman Builder (renamed)'); pm.expect(b).to.not.have.property('modules'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. PATCH: settings -> rule while settings exist (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "A leaf that holds something cannot silently become something else.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"rule\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));",
+                  "pm.test('says to remove the settings first', () => pm.expect(pm.response.json().detail).to.include('still has settings'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. PATCH: remove all settings (settings: [])",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"settings\": []\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().modules.find(x => x.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('no settings left', () => pm.expect(m.settings).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. PATCH: now switch it to a rule",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"rule\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().modules.find(x => x.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('now a rule leaf', () => { pm.expect(m.mode).to.eql('rule'); pm.expect(m.rule).to.be.an('object'); pm.expect(m).to.not.have.property('settings'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. PATCH: back to settings, with a setting, in one request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "A rule with no versions can be switched to settings.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Back again\",\n          \"type\": \"text\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().modules.find(x => x.key === 'catalog_pricing.products_rules.warranty');",
+                  "pm.test('settings leaf again', () => { pm.expect(m.mode).to.eql('settings'); pm.expect(m.settings.map(s => s.name)).to.eql(['Back again']); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. PATCH: switch a module off",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"enrollment.stores.enrolled_stores_control_panel\",\n      \"enabled\": false\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().modules.find(x => x.key === 'enrollment.stores.enrolled_stores_control_panel');",
+                  "pm.test('disabled', () => pm.expect(m.enabled).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8b. Manifest hides it by default",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "modules"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('not listed', () => pm.expect(pm.response.json().results.map(m => m.key)).to.not.include('enrollment.stores.enrolled_stores_control_panel'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8c. ...and shows it with enabled_only=false",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/modules?enabled_only=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "modules"
+              ],
+              "query": [
+                {
+                  "key": "enabled_only",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('listed again, disabled', () => { const m = pm.response.json().results.find(x => x.key === 'enrollment.stores.enrolled_stores_control_panel'); pm.expect(m.enabled).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. PATCH: add a new (premade) module, with a setting on it",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"document_agreement.documents.documents_panel\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Retention days\",\n          \"type\": \"number\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const keys = pm.response.json().modules.map(m => m.key);",
+                  "pm.test('the module and its ancestors were added', () => pm.expect(keys).to.include.members(['document_agreement','document_agreement.documents','document_agreement.documents.documents_panel']));",
+                  "const m = pm.response.json().modules.find(x => x.key === 'document_agreement.documents.documents_panel');",
+                  "pm.test('a premade module can hold settings', () => pm.expect(m.settings[0].name).to.eql('Retention days'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhook (global-settings -> programs)",
+      "item": [
+        {
+          "name": "A library option changed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/webhooks/global-settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhooks",
+                "global-settings"
+              ]
+            },
+            "description": "What global-settings sends when a library, attribute or option changes: our cached copy of the libraries is dropped and re-read, so the new option shows up on the next read. If a webhook secret is configured, add the header X-Webhook-Secret.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"e1\",\n  \"event_type\": \"lib.option.created\",\n  \"event_payload\": {\n    \"code\": \"x\",\n    \"name\": \"X\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "An event we ignore",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/webhooks/global-settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhooks",
+                "global-settings"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"business_unit.create\",\n  \"event_payload\": {}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A malformed event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/webhooks/global-settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhooks",
+                "global-settings"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nope\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Programs - negative checks",
+      "item": [
+        {
+          "name": "Duplicate slug (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dup\",\n  \"slug\": \"{{slug}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad slug (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"slug\": \"Bad Slug\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad level (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"slug\": \"x-level\",\n  \"level\": \"galaxy\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unknown module (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"slug\": \"x-module\",\n  \"modules\": [\n    \"nope.module\",\n    \"overview\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('names the bad keys', () => pm.expect(pm.response.json().detail).to.include('nope.module'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Empty name (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"  \",\n  \"slug\": \"x-name\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get unknown program (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/does-not-exist",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "does-not-exist"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Undelete a live program (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{program_id}}:undelete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{program_id}}:undelete"
               ]
             },
             "description": ""
@@ -462,9 +1602,1029 @@
           ]
         },
         {
-          "name": "Create is not exposed (404)",
+          "name": "Cleanup - delete the test program",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{slug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{slug}}"
+              ]
+            },
+            "description": "Soft-deletes the program this run created, so repeated runs leave nothing live behind."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settings and rules - negative checks",
+      "description": "Every one of these is rejected and saves nothing.",
+      "item": [
+        {
+          "name": "Unknown type",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"slider\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions slider', () => pm.expect(pm.response.json().detail).to.include(\"slider\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Radio with nothing to pick from",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"radio\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions library_id or at least one option', () => pm.expect(pm.response.json().detail).to.include(\"library_id or at least one option\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Library AND own options (the library is the only source)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"dropdown\",\n          \"library_id\": \"{{library_id}}\",\n          \"options\": [\n            {\n              \"label\": \"a\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions not both', () => pm.expect(pm.response.json().detail).to.include(\"not both\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Options on a boolean",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"boolean\",\n          \"options\": [\n            {\n              \"label\": \"a\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions takes no options', () => pm.expect(pm.response.json().detail).to.include(\"takes no options\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Library that does not exist in global-settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"dropdown\",\n          \"library_id\": \"00000000-0000-0000-0000-0000000000aa\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions does not exist in global-settings', () => pm.expect(pm.response.json().detail).to.include(\"does not exist in global-settings\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "library_id is not a UUID",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"dropdown\",\n          \"library_id\": \"abc\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Two settings named alike",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Same\",\n          \"type\": \"text\"\n        },\n        {\n          \"name\": \"same\",\n          \"type\": \"text\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions named alike', () => pm.expect(pm.response.json().detail).to.include(\"named alike\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Default of the wrong type",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"boolean\",\n          \"default\": \"yes\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions true or false', () => pm.expect(pm.response.json().detail).to.include(\"true or false\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Default is not one of the options",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"radio\",\n          \"options\": [\n            {\n              \"label\": \"A\"\n            }\n          ],\n          \"default\": \"z\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions not one of its options', () => pm.expect(pm.response.json().detail).to.include(\"not one of its options\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Setting id that does not exist here",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"id\": \"00000000-0000-0000-0000-0000000000bb\",\n          \"name\": \"X\",\n          \"type\": \"text\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions does not exist here', () => pm.expect(pm.response.json().detail).to.include(\"does not exist here\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Settings without a settings mode",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.pre_enrollment\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"text\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions need mode', () => pm.expect(pm.response.json().detail).to.include(\"need mode\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A rule leaf carrying settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.pre_enrollment\",\n      \"mode\": \"rule\",\n      \"settings\": []\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions no settings', () => pm.expect(pm.response.json().detail).to.include(\"no settings\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A group is not configurable",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing\",\n      \"mode\": \"settings\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions not configurable', () => pm.expect(pm.response.json().detail).to.include(\"not configurable\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A premade module cannot be a rule",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"document_agreement.documents.documents_panel\",\n      \"mode\": \"rule\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions premade', () => pm.expect(pm.response.json().detail).to.include(\"premade\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unknown module",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    \"nope.module\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions nope.module', () => pm.expect(pm.response.json().detail).to.include(\"nope.module\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unknown mode",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"magic\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions mode', () => pm.expect(pm.response.json().detail).to.include(\"mode\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A typo in a field name is named (setting, not settings)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"setting\": []\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));",
+                  "pm.test('message mentions unknown field `setting`', () => pm.expect(pm.response.json().detail).to.include(\"unknown field `setting`\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The same module listed twice",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    \"catalog_pricing.products_rules.warranty\",\n    \"catalog_pricing.products_rules.warranty\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions twice', () => pm.expect(pm.response.json().detail).to.include(\"twice\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A module that is neither a key nor an object",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    42\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));",
+                  "pm.test('message mentions a module must be a key', () => pm.expect(pm.response.json().detail).to.include(\"a module must be a key\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Setting name too long",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\",\n          \"type\": \"text\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('message mentions 1-80', () => pm.expect(pm.response.json().detail).to.include(\"1-80\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create is all-or-nothing: a bad setting saves no program",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nope\",\n  \"slug\": \"pmb-nope\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.warranty\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"slider\"\n        }\n      ]\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "...and the program was not created",
+          "request": {
+            "method": "GET",
             "header": [
               {
                 "key": "Accept",
@@ -472,12 +2632,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions",
+              "raw": "{{base_url}}/programs/pmb-nope",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "programs",
+                "pmb-nope"
               ]
             },
             "description": ""
@@ -495,26 +2656,30 @@
           ]
         },
         {
-          "name": "Delete is not exposed (404)",
+          "name": "Cleanup - delete the test program",
           "request": {
             "method": "DELETE",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/catalog_pricing",
+              "raw": "{{base_url}}/programs/{{bslug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
-                "catalog_pricing"
+                "programs",
+                "{{bslug}}"
               ]
             },
-            "description": ""
+            "description": "Soft-deletes the program this run created."
           },
           "event": [
             {
@@ -522,7 +2687,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('404', () => pm.response.to.have.status(404));"
+                  "pm.test('204', () => pm.response.to.have.status(204));"
                 ]
               }
             }

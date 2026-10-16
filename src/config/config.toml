@@ -1,6 +1,9 @@
 app_name = "programs"
 http_port = 8080
 grpc_port = 50051
+# Browser origin allowed to call the HTTP API cross-origin (e.g. Swagger UI on http://localhost:8082).
+# Empty = CORS off. Override with APP__CORS_ALLOWED_ORIGIN.
+cors_allowed_origin = ""
 
 [postgres]
 host = "localhost"
@@ -9,3 +12,14 @@ database = "programs"
 username = "postgres"
 password = "12341234"
 max_connections = 10
+
+# Library-backed settings read their options from global-settings. Override any value with
+# APP__GLOBAL_SETTINGS__BASE_URL, APP__GLOBAL_SETTINGS__ENABLED, ...
+[global_settings]
+base_url = "http://localhost:8000"
+enabled = true
+timeout_ms = 1500
+cache_seconds = 30
+client_id = ""
+client_secret = ""
+webhook_secret = ""

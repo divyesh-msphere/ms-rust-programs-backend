@@ -1,6 +1,7 @@
 syntax = "proto3";
 package programs.v1;
 
+import "google/protobuf/empty.proto";
 import "msapi/v1/annotations.proto";
 import "programs/v1/types.proto";
 
@@ -14,6 +15,67 @@ service ProgramsService {
       permission: "programs.module_definitions"
       action: "reader"
       resource_fields: [{field: "path" pattern: "module-definitions/*"}]
+    };
+  }
+
+  // ---- Programs ----
+  rpc ListPrograms(ListProgramsRequest) returns (ListProgramsResponse) {
+    option (msapi.v1.sso_permission) = {permission: "programs.programs" action: "reader" collection_scope: true};
+  }
+  rpc CreateProgram(CreateProgramRequest) returns (CreateProgramResponse) {
+    option (msapi.v1.sso_permission) = {permission: "programs.programs" action: "writer" collection_scope: true};
+  }
+  rpc GetProgram(GetProgramRequest) returns (GetProgramResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UpdateProgram(UpdateProgramRequest) returns (UpdateProgramResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc DeleteProgram(DeleteProgramRequest) returns (google.protobuf.Empty) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UndeleteProgram(UndeleteProgramRequest) returns (UndeleteProgramResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
+  // ---- Program modules (the manifest) ----
+  rpc ListProgramModules(ListProgramModulesRequest) returns (ListProgramModulesResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
+  // ---- Setting values ----
+  rpc ListFieldValues(ListFieldValuesRequest) returns (ListFieldValuesResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc BatchUpdateFieldValues(BatchUpdateFieldValuesRequest) returns (BatchUpdateFieldValuesResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
     };
   }
 

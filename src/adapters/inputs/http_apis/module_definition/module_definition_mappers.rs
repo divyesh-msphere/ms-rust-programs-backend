@@ -35,6 +35,11 @@ pub fn to_presenter(module_definition: ModuleDefinition) -> ModuleDefinitionPres
         universal: module_definition.universal,
         requires_publish: module_definition.requires_publish,
         permission_key: module_definition.permission_key,
+        source: module_definition.source,
+        handler_key: module_definition.handler_key,
+        api_base: module_definition.api_base,
+        selectable: module_definition.selectable,
+        allow_components: module_definition.allow_components,
         create_time: format_datetime(module_definition.create_time),
         update_time: format_datetime(module_definition.update_time),
     }

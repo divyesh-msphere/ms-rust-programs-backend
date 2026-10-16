@@ -17,6 +17,7 @@ impl GrpcErrorResponse {
             ApplicationErrorKind::PermissionDenied => ErrorCode::PermissionDenied,
             ApplicationErrorKind::Unauthenticated => ErrorCode::Unauthenticated,
             ApplicationErrorKind::FailedPrecondition => ErrorCode::FailedPrecondition,
+            ApplicationErrorKind::Conflict => ErrorCode::Aborted,
             ApplicationErrorKind::ResourceExhausted => ErrorCode::ResourceExhausted,
             // gRPC's status space has no HTTP-422 equivalent; this kind means
             // "well-formed request, malformed resource-format value" (e.g.

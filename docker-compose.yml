@@ -1,0 +1,29 @@
+# Swagger UI for openapi.yaml.
+#
+#   docker compose up -d swagger       →  http://localhost:8082
+#
+# The spec is mounted read-only from the repo, so edits to openapi.yaml show up on a page
+# refresh. If you replace the file with a tool that writes a NEW file (rather than editing
+# it in place), restart so the bind mount follows it:  docker compose restart swagger
+#
+# "Try it out" calls the HTTP API from the browser, a different origin, so start the service
+# with CORS allowed for this page:
+#
+#   APP__CORS_ALLOWED_ORIGIN=http://localhost:8082 APP__HTTP_PORT=8090 cargo run --bin programs_http
+#
+# 8081 is the currency project's Swagger, so this one uses 8082.
+services:
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: ms-rust-programs-swagger
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      SWAGGER_JSON: /spec/openapi.yaml
+      BASE_URL: /
+      DISPLAY_REQUEST_DURATION: "true"
+      DEEP_LINKING: "true"
+      TRY_IT_OUT_ENABLED: "true"
+    volumes:
+      - ./openapi.yaml:/spec/openapi.yaml:ro

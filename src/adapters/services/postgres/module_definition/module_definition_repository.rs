@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 const COLUMNS: &str = "id, key, name, kind, parent_id, ancestry::text AS ancestry, position, \
                        ui_component, rule_family, universal, requires_publish, permission_key, \
+                       source, handler_key, api_base, selectable, allow_components, \
                        create_time, update_time";
 
 pub struct ModuleDefinitionRepositoryPostgresImpl {

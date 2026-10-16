@@ -21,8 +21,28 @@ Eight parts, all **for review**:
 
 Every change ships on HTTP, gRPC, `openapi.yaml` and Postman together.
 
-Status: nothing in sections 3–5 or 7–13 is built yet unless marked *done*. The module registry is **seeded and live**
-(70 modules, all five main modules, HTTP + gRPC).
+**Done and tested live on HTTP + gRPC (Postman: 61 / 61 checks, run twice):**
+- Module registry (70 modules + the default **Overview**) with `source`, `handler_key`, `api_base`, `selectable`,
+  `allow_components` (migration `20261016100000_program_builder_foundation`).
+- **Program** — create / get / list / update / delete / undelete, addressed by id or slug.
+- **ProgramModule manifest** — `GET /programs/{program}/modules`. Program create is one transaction: program + picked
+  modules (with their ancestors) + Overview + counters row + audit + outbox.
+
+**Builder model (latest, supersedes "components" wherever the sections below mention them).** A *container* leaf has a
+fixed name (the module's own, e.g. "Pre Enrollment"). The admin only chooses what it **is**: a **Rule**
+(`program_modules.mode = 'rule'`, backed by one `rule_sets` row per leaf) or **Custom settings**
+(`mode = 'settings'`; they then add settings: a name and a type — boolean, number, text, radio, checkbox, dropdown, or a
+dropdown fed by a global-settings library). Tables: `program_fields` (the settings), `field_options` (manual dropdown /
+radio / checkbox values), `program_field_values` (saved values); there is no separate "component" with its own name.
+Premade modules can only use `settings`. A leaf's mode cannot change once it has settings or a rule set. The manifest
+(`GET /programs/{program}/modules`) returns `mode` (null until chosen), a `settings` list (each with a `render` hint and
+its options) for a settings leaf, and a `rule` summary for a rule leaf. **Built:** create and `PATCH /programs/{program}` accept
+`modules: [{key, mode, enabled, settings}]` (replace semantics, options matched by `code`); library-backed settings read their
+options from global-settings through an in-memory cache (stale-while-revalidate, cleared by the `lib.*` webhook at
+`POST /webhooks/global-settings`). Saving the VALUES admins enter into these settings is not built yet.
+
+Status: nothing else in sections 3–5 or 7–13 is built yet unless marked *done*: not started are the Overview endpoint,
+components, requirements, applications, enrollments, store discounts, documents and rules.
 
 ---
 

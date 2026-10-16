@@ -19,6 +19,11 @@ impl DbMapper<ModuleDefinition, ModuleDefinitionDbModel> for ModuleDefinitionDbM
             universal: model.universal,
             requires_publish: model.requires_publish,
             permission_key: model.permission_key,
+            source: model.source,
+            handler_key: model.handler_key,
+            api_base: model.api_base,
+            selectable: model.selectable,
+            allow_components: model.allow_components,
             create_time: model.create_time,
             update_time: model.update_time,
         }
@@ -38,6 +43,11 @@ impl DbMapper<ModuleDefinition, ModuleDefinitionDbModel> for ModuleDefinitionDbM
             universal: entity.universal,
             requires_publish: entity.requires_publish,
             permission_key: entity.permission_key,
+            source: entity.source,
+            handler_key: entity.handler_key,
+            api_base: entity.api_base,
+            selectable: entity.selectable,
+            allow_components: entity.allow_components,
             create_time: entity.create_time,
             update_time: entity.update_time,
         }

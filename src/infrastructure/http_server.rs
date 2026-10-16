@@ -4,7 +4,9 @@ use crate::adapters::inputs::http_apis::shared::json_input_error_handler::json_e
 use crate::adapters::inputs::http_apis::shared::query_input_error_handler::query_error_handler;
 use crate::adapters::inputs::http_apis::shared::route_not_found::not_found_handler;
 use crate::adapters::inputs::http_apis::shared::routes::routes;
+use actix_cors::Cors;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::middleware::Condition;
 use actix_web::{App, Error, HttpServer, middleware, web};
 use tracing::{info, Span};
 use std::net::TcpListener;
@@ -45,7 +47,17 @@ pub async fn http_server(
             application_config: deps.application_config.clone(),
             repositories: deps.repositories.clone(),
             use_cases: deps.use_cases.clone(),
+            library_catalog: deps.library_catalog.clone(),
         });
+
+        // Opt-in CORS for browser tools such as Swagger UI's "Try it out". Off unless an
+        // origin is configured (`cors_allowed_origin`), so nothing changes in a deployment.
+        let cors_origin = deps.application_config.cors_allowed_origin.trim().to_string();
+        let cors = Cors::default()
+            .allowed_origin(&cors_origin)
+            .allow_any_method()
+            .allow_any_header()
+            .max_age(3600);
 
         App::new()
             .app_data(data.clone())
@@ -57,6 +69,8 @@ pub async fn http_server(
             .wrap(middleware::NormalizePath::new(
                 middleware::TrailingSlash::Trim,
             ))
+            // Outermost, so a preflight (OPTIONS) is answered before routing.
+            .wrap(Condition::new(!cors_origin.is_empty(), cors))
     })
     .listen(listner)?
     .disable_signals()

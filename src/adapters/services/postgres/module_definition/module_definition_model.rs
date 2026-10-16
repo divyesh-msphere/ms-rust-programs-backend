@@ -17,6 +17,11 @@ pub struct ModuleDefinitionDbModel {
     pub universal: bool,
     pub requires_publish: bool,
     pub permission_key: Option<String>,
+    pub source: String,
+    pub handler_key: Option<String>,
+    pub api_base: Option<String>,
+    pub selectable: bool,
+    pub allow_components: bool,
     pub create_time: DateTime<Utc>,
     pub update_time: DateTime<Utc>,
 }
