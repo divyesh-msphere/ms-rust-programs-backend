@@ -34,6 +34,7 @@ overrides:
   - files:
       - "openapi.yaml#/components/schemas/UnitSettings"
       - "openapi.yaml#/components/schemas/UserSettings"
+      - "openapi.yaml#/components/schemas/Overview"
     rules:
       aep-158-response-array-property: "off"
       aep-158-response-next-page-token-property: "off"
@@ -67,3 +68,11 @@ overrides:
       aep-133-id-parameter: "off"
       aep-133-request-body: "off"
       aep-133-response-body: "off"
+  # A program's saved setting values are always returned whole (at most a few dozen), so the
+  # response is not a paginated list and has no next_page_token.
+  - files:
+      - "openapi.yaml#/components/schemas/ListFieldValuesResponse"
+      - "openapi.yaml#/components/schemas/ListRequirementsResponse"
+      - "openapi.yaml#/components/schemas/ListApprovalStepsResponse"
+    rules:
+      aep-158-response-next-page-token-property: "off"

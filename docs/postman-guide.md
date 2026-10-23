@@ -31,15 +31,17 @@ Check: `curl localhost:8090/health` → `{"status":"ok","service":"programs",...
 
 The collection generates a fresh slug (`pm-<time>`) on the first run, keeps it in the `slug` and `program_id`
 variables, and **deletes its test program at the end**, so you can run it again and again. Expected result:
-**60 requests, 126 checks, 0 failed.**
+**91 requests, 186 checks, 0 failed.**
 
 | Folder | What it shows |
 |---|---|
 | **Programs** | create → list → get by slug / by id → module manifest → update → delete → list deleted → undelete |
 | **Settings and rules** | build a program with a **rule** leaf and a **settings** leaf (every type), read it back, replace its settings, change modes, switch modules off, add a new module |
+| **Setting values** | save the values admins enter (every type, in one request), read them back, the version check, clearing, and options that disappear |
 | **Webhook (global-settings -> programs)** | the event global-settings sends when a library changes |
 | **Programs - negative checks** | duplicate slug 409, bad slug / level / module / name 422, unknown program 404, undelete of a live program 400 |
 | **Settings and rules - negative checks** | 21 rejected payloads (bad type, library + own options, unknown library, duplicate names, wrong default, ...) |
+| **Setting values - negative checks** | 14 rejected saves (wrong type, wrong option, required cleared, unknown setting, ...) |
 
 The collection covers the **Programs resource only**. (The module registry, `/module-definitions`, is not part of it.)
 
@@ -190,6 +192,98 @@ background every 30 seconds. If global-settings is down, the page still loads an
 `"library_error": "unavailable"`. To make it work locally set `[global_settings] base_url` (default `http://localhost:8000`) and
 give global-settings `APP__ENABLE_EVENT=true` and a webhook URL of `http://localhost:8090/webhooks/global-settings` (a library must also
 have `event_enabled`). The Postman variable `library_id` must be a library that exists there.
+
+### Saving the values
+
+The settings above only DEFINE the fields. The values admins enter are saved separately, in one request per page:
+
+```jsonc
+POST /programs/kbb/field-values:batchUpdate
+{
+  "version": 3,                                     // the config_version you last read (optional)
+  "values": {
+    "<setting id>": { "value": true },              // boolean / number / text
+    "<setting id>": { "value": 90 },
+    "<setting id>": { "option_ids": ["<option id>"] },   // radio / dropdown (one) / checkbox (a list)
+    "<setting id>": null                            // clear
+  }
+}
+```
+→ `{ "version": 4, "changed": 3, "results": [ ... every saved value ... ] }`
+
+- **One request, one transaction.** Every value is checked first and ALL the problems are reported together; if any value is wrong,
+  nothing is saved.
+- **Checks:** a boolean is true/false, a number a number, text text; a radio or dropdown takes ONE option and a checkbox a list; every
+  chosen option must be one of the setting's own active options, or (library-backed) one of the library's active options; a required
+  setting cannot be cleared; at most 200 values.
+- **`version` stops two admins overwriting each other.** It is the program's `config_version`, returned by every read and every save.
+  A stale one gives **409** and saves nothing; omit it to skip the check (last write wins).
+- **Only what differs is written.** Saving a page nobody edited reports `"changed": 0`, does not bump the version and shows no
+  "unpublished changes". A real change bumps `config_version` and writes an audit entry (with before and after) and an outbox event.
+- **Reading:** the manifest shows each setting's `value` / `option_ids`; `GET /programs/{program}/field-values[?module=<key>]` lists
+  them with the version. A saved choice whose option was since deactivated or removed from its library is kept and listed in
+  `missing_option_ids`, so the page can warn; it can no longer be chosen.
+
+### Overview and audit log
+
+- `GET /programs/{program}/overview` is the default page every program has. One call returns the program, `stats`, the `funnel`
+  (all six statuses, `0` when empty), `published_rules` (`state` per rule leaf: `never`, `drifted`, `in_sync`, plus
+  `drift_detected`), `unpublished_changes` and the latest 10 changes in `recent_activity`.
+- `GET /programs/{program}/audit-logs` is the full history, newest first: `max_page_size`, `page_token`, and
+  `action=created,updated` to filter. Each entry has `actor`, `action`, `summary` and the `before` / `after` of the change.
+- Folder **Overview and audit log** in the collection covers both, including paging, the filter, 404 and a bad token.
+- gRPC: `programs.v1.ProgramsService/GetOverview` and `/ListAuditLogs` (same fields).
+
+### Requirements
+
+What a store must satisfy before it can be approved. Types: `signup`, `card_on_file`, `credit_application`, `contract` (one of each
+per program; a second gives **409**) and `custom_field` (as many as you like).
+
+- `GET /programs/{program}/requirements` lists them in display order (never paged: a program has only a handful).
+- `POST /programs/{program}/requirements` adds one: `{type, name, config?, position?}`; no `position` puts it last.
+- `GET` / `PATCH` / `DELETE /programs/{program}/requirements/{requirement}`: `type` cannot change; `config` replaces the object;
+  delete is for good (add it again instead). Saving the same values again changes nothing.
+- `POST /programs/{program}/requirements:batchUpdate` with `{requirements:[{id, position}]}` reorders in one go and returns the new order.
+- Every real change bumps the program's `config_version` (the Overview then shows unpublished changes) and writes an audit entry
+  (`requirement_created`, `requirement_updated`, `requirements_reordered`, `requirement_deleted`) with before and after.
+- gRPC: `ListRequirements`, `GetRequirement`, `CreateRequirement`, `UpdateRequirement`, `DeleteRequirement`, `BatchUpdateRequirements`.
+- Collection folders: **Requirements** and **Requirements - negative checks**.
+
+### Approval steps
+
+The sign-offs an application goes through, in order; each step is decided by one role (`approver_role`).
+
+- `GET /programs/{program}/approval-steps` lists them in order (never paged).
+- `POST /programs/{program}/approval-steps` adds one: `{name, approver_role, position?}`; no `position` puts it last.
+- `GET` / `PATCH` / `DELETE /programs/{program}/approval-steps/{approval_step}`. Saving the same values again changes nothing.
+- A step that already has signoffs **cannot be removed** (409): the approval history needs it. Rename or reorder it instead.
+- `POST /programs/{program}/approval-steps:batchUpdate` with `{approval_steps:[{id, position}]}` reorders in one go.
+- Every real change bumps `config_version` and writes an audit entry (`approval_step_created`, `_updated`, `approval_steps_reordered`, `_deleted`).
+- gRPC: `ListApprovalSteps`, `GetApprovalStep`, `CreateApprovalStep`, `UpdateApprovalStep`, `DeleteApprovalStep`, `BatchUpdateApprovalSteps`.
+- Collection folders: **Approval steps** and **Approval steps - negative checks**. The 409 for a step with signoffs is not in
+  the collection (signoffs cannot be created yet); it was checked by hand against the database.
+- The library-backed folders need global-settings running on port 8000.
+
+### Applications
+
+A store's request to join a program (the Application Panel under Enrollment). Statuses: `draft`, `submitted`, `in_review`,
+`approved`, `rejected`, `withdrawn`.
+
+- `GET /programs/{program}/applications` is the page: newest first, `status=submitted` is a chip (several are comma-separated, omit it for
+  All), `max_page_size` / `page_token` page it. Each row has the store, website, status, `current_step_name` and `actions`
+  (what can still be done). Rows carry no answers; read one application for those.
+- `POST /programs/{program}/applications` starts a draft: `{store_id, website_id, store_name?, website_name?, answers?}`. A store can
+  have only one open (draft / submitted / in review) application per program and website (**409**); after a withdrawal it can apply again.
+- `GET /programs/{program}/applications/{application}` returns it with `answers` and `requirements_snapshot`.
+- `POST .../applications/{application}:submit` (draft -> submitted): freezes the program's requirements into
+  `requirements_snapshot`, puts it at the first approval step and counts it as a pending approval.
+- `POST .../applications/{application}:withdraw` (draft / submitted / in review -> withdrawn).
+- Any move the status does not allow gives **400** (`cannot submit an application that is already submitted`).
+- Each change updates the Overview counters and the funnel in the same transaction and shows up in the history as
+  `Application created` / `submitted` / `withdrawn`. Applications are data, not configuration: they do **not** bump `config_version`.
+- Approve / reject (signoffs) and answers checking are not built yet.
+- gRPC: `ListApplications`, `GetApplication`, `CreateApplication`, `SubmitApplication`, `WithdrawApplication`.
+- Collection folders: **Applications** and **Applications - negative checks**.
 
 ## 6. gRPC in Postman
 

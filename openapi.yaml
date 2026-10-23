@@ -130,6 +130,12 @@ tags:
 - name: webhooks
   x-summary: Webhooks
   description: Events other services send to this one.
+- name: field-values
+  x-summary: Setting values
+  description: What admins enter into the settings they defined.
+- name: overview
+  x-summary: Overview
+  description: A program's default Overview page.
 paths:
   /health:
     x-info:
@@ -1705,34 +1711,49 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the program.
+      description: The program's ID (UUID) or its slug.
     get:
       operationId: ListRequirements
-      summary: List requirements
+      summary: List a program's requirements
       tags:
       - requirements
-      description: Returns requirements.
-      parameters:
-      - $ref: '#/components/parameters/maxPageSize'
-      - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
+      description: The requirements in display order. A program has only a handful, so the list is never
+        paged.
       responses:
         '200':
-          $ref: '#/components/responses/RequirementsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRequirementsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-158-max-page-size-parameter
+        reason: A program has only a handful of requirements; they are returned whole.
+      - rule: aep-158-page-token-parameter
+        reason: 'Same: never paginated.'
     post:
       operationId: CreateRequirement
-      summary: Create a requirement
+      summary: Add a requirement
       tags:
       - requirements
-      description: Creates a requirement.
+      description: 'Adds a requirement. A second `signup`, `card_on_file`, `credit_application` or `contract`
+        is rejected with 409 (the database enforces it); `custom_field` can repeat. Without `position`
+        it goes after the last one. Changing requirements is a program configuration change: it bumps
+        `config_version` (the Overview then shows unpublished changes) and writes an audit entry with
+        before and after, in the same transaction.'
       parameters:
       - $ref: '#/components/parameters/clientId'
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       requestBody:
         required: true
         content:
@@ -1748,8 +1769,10 @@ paths:
                 $ref: '#/components/schemas/Requirement'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '409':
-          description: A resource with the same unique key already exists.
+          $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
@@ -1761,8 +1784,7 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the program.
+      description: The program's ID (UUID) or its slug.
     - name: requirement
       in: path
       required: true
@@ -1775,7 +1797,7 @@ paths:
       summary: Get a requirement
       tags:
       - requirements
-      description: Returns a single requirement.
+      description: Returns one requirement.
       responses:
         '200':
           description: Successful response
@@ -1783,6 +1805,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Requirement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1792,25 +1816,24 @@ paths:
       summary: Update a requirement
       tags:
       - requirements
-      description: Partially updates a requirement. Fields not sent are left unchanged.
+      description: 'Changes `name`, `config` and / or `position`. `type` cannot change. `config` replaces
+        the whole object. A request that changes nothing writes nothing. Changing requirements is a program
+        configuration change: it bumps `config_version` (the Overview then shows unpublished changes)
+        and writes an audit entry with before and after, in the same transaction.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       requestBody:
         required: true
         content:
-          application/merge-patch+json:
+          application/json:
             schema:
-              type: object
-              x-aep-resource:
-                singular: requirement
-                plural: requirements
-              properties:
-                name:
-                  type: string
-                config:
-                  type: object
-                  additionalProperties: true
-                position:
-                  type: integer
-                  format: int32
+              $ref: '#/components/schemas/Requirement'
       responses:
         '200':
           description: Successful response
@@ -1822,293 +1845,29 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
-        '409':
-          description: Version conflict or unique-key collision.
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
       operationId: DeleteRequirement
-      summary: Delete a requirement
+      summary: Remove a requirement
       tags:
       - requirements
-      description: Deletes a requirement.
-      responses:
-        '204':
-          $ref: '#/components/responses/EmptyResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/approval-steps:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    get:
-      operationId: ListApprovalSteps
-      summary: List approval steps
-      tags:
-      - approval-steps
-      description: Returns approval steps.
+      description: 'Removes the requirement for good (there is no undelete; add it again instead). Changing
+        requirements is a program configuration change: it bumps `config_version` (the Overview then shows
+        unpublished changes) and writes an audit entry with before and after, in the same transaction.'
       parameters:
-      - $ref: '#/components/parameters/maxPageSize'
-      - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
-      responses:
-        '200':
-          $ref: '#/components/responses/ApprovalStepsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    post:
-      operationId: CreateApprovalStep
-      summary: Create a approval step
-      tags:
-      - approval-steps
-      description: Creates a approval step.
-      parameters:
-      - $ref: '#/components/parameters/clientId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApprovalStep'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApprovalStep'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          description: A resource with the same unique key already exists.
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/approval-steps/{approval_step}:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    - name: approval_step
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the approval step.
-    get:
-      operationId: GetApprovalStep
-      summary: Get a approval step
-      tags:
-      - approval-steps
-      description: Returns a single approval step.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApprovalStep'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    patch:
-      operationId: UpdateApprovalStep
-      summary: Update a approval step
-      tags:
-      - approval-steps
-      description: Partially updates a approval step. Fields not sent are left unchanged.
-      requestBody:
-        required: true
-        content:
-          application/merge-patch+json:
-            schema:
-              type: object
-              x-aep-resource:
-                singular: approval-step
-                plural: approval-steps
-              properties:
-                name:
-                  type: string
-                position:
-                  type: integer
-                  format: int32
-                approver_role:
-                  type: string
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApprovalStep'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          description: Version conflict or unique-key collision.
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    delete:
-      operationId: DeleteApprovalStep
-      summary: Delete a approval step
-      tags:
-      - approval-steps
-      description: Deletes a approval step.
-      responses:
-        '204':
-          $ref: '#/components/responses/EmptyResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/applications:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    get:
-      operationId: ListApplications
-      summary: List applications
-      tags:
-      - applications
-      description: Returns applications.
-      parameters:
-      - $ref: '#/components/parameters/maxPageSize'
-      - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
-      responses:
-        '200':
-          $ref: '#/components/responses/ApplicationsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    post:
-      operationId: CreateApplication
-      summary: Create a application
-      tags:
-      - applications
-      description: Creates a application.
-      parameters:
-      - $ref: '#/components/parameters/clientId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Application'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Application'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          description: A resource with the same unique key already exists.
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/applications/{application}:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    - name: application
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the application.
-    get:
-      operationId: GetApplication
-      summary: Get a application
-      tags:
-      - applications
-      description: Returns a single application.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Application'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/applications/{application}:submit:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    - name: application
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the application.
-    post:
-      operationId: :SubmitApplication
-      summary: Submit an application
-      tags:
-      - applications
-      description: Submit an application (AEP-136 custom method).
-      requestBody:
+      - name: X-User-Id
+        in: header
         required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              description: No fields required; this custom method takes no input.
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
       responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Application'
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -3644,55 +3403,30 @@ paths:
       required: true
       schema:
         type: string
-        format: uuid
-      description: ID of the program.
+      description: The program's ID (UUID) or its slug.
     get:
       operationId: ListAuditLogs
-      summary: List audit logs
+      summary: List a program's audit log
       tags:
       - audit-logs
-      description: Returns audit logs.
+      description: 'The program''s history, newest first: who changed what and when, with the before and
+        after of each change (the History and View changes buttons). Paged by time, so a deep page costs
+        the same as the first.'
       parameters:
       - $ref: '#/components/parameters/maxPageSize'
       - $ref: '#/components/parameters/pageToken'
-      - $ref: '#/components/parameters/filter'
-      - $ref: '#/components/parameters/orderBy'
+      - name: action
+        in: query
+        required: false
+        schema:
+          type: string
+        example: values_updated,updated
+        description: Only these actions, comma-separated. Omit for all.
       responses:
         '200':
           $ref: '#/components/responses/AuditLogsResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/audit-logs/{audit_log}:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the program.
-    - name: audit_log
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the audit log.
-    get:
-      operationId: GetAuditLog
-      summary: Get a audit log
-      tags:
-      - audit-logs
-      description: Returns a single audit log.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuditLog'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -3790,6 +3524,654 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /programs/{program}/field-values:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    get:
+      operationId: ListFieldValues
+      summary: List a program's saved setting values
+      tags:
+      - field-values
+      description: The saved values of the program's settings, with the `config_version` to send back
+        on a save. Settings that have no value yet are not listed (the manifest shows every setting, each
+        with its value).
+      parameters:
+      - name: module
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Only one module's values (its key).
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFieldValuesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-158-max-page-size-parameter
+        reason: One program's saved values (at most a few dozen settings) are always returned whole; they
+          are not a paginated collection.
+      - rule: aep-158-page-token-parameter
+        reason: 'Same: never paginated.'
+  /programs/{program}/field-values:batchUpdate:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    post:
+      operationId: :BatchUpdateFieldValues
+      summary: Save setting values
+      tags:
+      - field-values
+      description: |-
+        Saves everything changed on a page ("N unsaved changes" -> Save) in ONE request and ONE transaction. Each value is checked against its setting: a boolean must be true or false, a number a number, text text; a radio or dropdown takes one option, a checkbox a list; every chosen option must be one of the setting's own active options or, for a library-backed setting, one of its library's active options (read through the cache); a required setting cannot be cleared. ALL the problems are reported together and nothing is saved if any value is wrong.
+
+        Only values that differ are written. Saving nothing new changes nothing, bumps nothing and shows no "unpublished changes". A change bumps the program's `config_version` and writes an audit entry (with before and after) and an outbox event.
+
+        `version` is the `config_version` you last read: if the program changed since, the save is rejected with 409 and nothing is written. Omit it to skip the check (last write wins).
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - values
+              properties:
+                version:
+                  type: integer
+                  format: int32
+                values:
+                  type: object
+                  maxProperties: 200
+                  additionalProperties:
+                    $ref: '#/components/schemas/FieldValuePatch'
+                  description: The changed values, keyed by setting id. A value of `null` clears that
+                    setting.
+                  example:
+                    01a143f1-c42e-73c8-8046-a168ed0886ff:
+                      value: true
+                    01a143f1-c42e-73c8-8046-a168ed0886aa:
+                      option_ids:
+                      - d600279b-b182-4012-ac5a-e4b1063a7cd4
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUpdateFieldValuesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/overview:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    get:
+      operationId: GetOverview
+      summary: Get a program's Overview
+      tags:
+      - overview
+      description: 'The default page every program has: the program summary, the counters, the enrollment
+        funnel, the published-rules sync state (and whether there are unpublished changes), and the latest
+        activity. Read in one database round trip.'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Overview'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-132-operation-id
+        reason: A singleton page, not a list.
+      - rule: aep-158-max-page-size-parameter
+        reason: A singleton, not paginated.
+      - rule: aep-158-page-token-parameter
+        reason: A singleton, not paginated.
+  /programs/{program}/requirements:batchUpdate:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    post:
+      operationId: :BatchUpdateRequirements
+      summary: Reorder requirements
+      tags:
+      - requirements
+      description: 'Sets the position of many requirements in one request and one statement, and returns
+        the list in its new order. Only requirements whose position really changes are written; moving
+        nothing changes nothing. Changing requirements is a program configuration change: it bumps `config_version`
+        (the Overview then shows unpublished changes) and writes an audit entry with before and after,
+        in the same transaction.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - requirements
+              properties:
+                requirements:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                    - id
+                    - position
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      position:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        maximum: 10000
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRequirementsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/approval-steps:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    get:
+      operationId: ListApprovalSteps
+      summary: List a program's approval steps
+      tags:
+      - approval-steps
+      description: The steps in order. A program has only a handful, so the list is never paged.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListApprovalStepsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-158-max-page-size-parameter
+        reason: A program has only a handful of steps; they are returned whole.
+      - rule: aep-158-page-token-parameter
+        reason: 'Same: never paginated.'
+    post:
+      operationId: CreateApprovalStep
+      summary: Add an approval step
+      tags:
+      - approval-steps
+      description: 'Adds a step. Without `position` it goes after the last one. Changing the steps is
+        a program configuration change: it bumps `config_version` and writes an audit entry with before
+        and after, in the same transaction.'
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalStep'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalStep'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/approval-steps:batchUpdate:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    post:
+      operationId: :BatchUpdateApprovalSteps
+      summary: Reorder approval steps
+      tags:
+      - approval-steps
+      description: 'Sets the position of many steps in one request and one statement, and returns the
+        list in its new order. Only steps whose position really changes are written. Changing the steps
+        is a program configuration change: it bumps `config_version` and writes an audit entry with before
+        and after, in the same transaction.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - approval_steps
+              properties:
+                approval_steps:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                    - id
+                    - position
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      position:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        maximum: 10000
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListApprovalStepsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/approval-steps/{approval_step}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: approval_step
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the approval step.
+    get:
+      operationId: GetApprovalStep
+      summary: Get an approval step
+      tags:
+      - approval-steps
+      description: Returns one step.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalStep'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: UpdateApprovalStep
+      summary: Update an approval step
+      tags:
+      - approval-steps
+      description: 'Changes `name`, `approver_role` and / or `position`. A request that changes nothing
+        writes nothing. Changing the steps is a program configuration change: it bumps `config_version`
+        and writes an audit entry with before and after, in the same transaction.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalStep'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalStep'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: DeleteApprovalStep
+      summary: Remove an approval step
+      tags:
+      - approval-steps
+      description: 'Removes the step for good. A step that has recorded signoffs cannot be removed (409):
+        the approval history needs it; rename or reorder it instead. Changing the steps is a program configuration
+        change: it bumps `config_version` and writes an audit entry with before and after, in the same
+        transaction.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    get:
+      operationId: ListApplications
+      summary: List a program's applications
+      tags:
+      - applications
+      description: 'The Applications page: newest first. `status` is the chip (All = omit it); several
+        can be given, comma-separated. Paged by id, so a deep page costs the same as the first. Rows carry
+        no answers; read one application for those.'
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+        example: submitted,in_review
+        description: 'Only these statuses, comma-separated: draft, submitted, in_review, approved, rejected,
+          withdrawn. Omit for all.'
+      responses:
+        '200':
+          $ref: '#/components/responses/ApplicationsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: CreateApplication
+      summary: Start an application
+      tags:
+      - applications
+      description: A store starts an application; it begins as a `draft`. A store with an open application
+        for the same website gets 409 (the database enforces it, so two requests at once cannot both win);
+        after a decision or a withdrawal it can apply again. `answers` is not yet checked against the
+        requirements. It changes the Overview counters and the funnel in the same transaction, and writes
+        an audit entry and an outbox event.
+      parameters:
+      - $ref: '#/components/parameters/clientId'
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    get:
+      operationId: GetApplication
+      summary: Get an application
+      tags:
+      - applications
+      description: One application with its `answers` and `requirements_snapshot`.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}:submit:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    post:
+      operationId: :SubmitApplication
+      summary: Submit an application
+      tags:
+      - applications
+      description: draft -> submitted. Freezes the program's current requirements into `requirements_snapshot`,
+        puts the application at the first approval step (none if the program has no steps) and counts
+        it as a pending approval. 400 if it is not in a status that allows it (see `actions`). It changes
+        the Overview counters and the funnel in the same transaction, and writes an audit entry and an
+        outbox event.
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/applications/{application}:withdraw:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: application
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the application.
+    post:
+      operationId: :WithdrawApplication
+      summary: Withdraw an application
+      tags:
+      - applications
+      description: A draft, submitted or in-review application becomes `withdrawn` and leaves its approval
+        step. A decided or already withdrawn one gives 400 if it is not in a status that allows it (see
+        `actions`). It changes the Overview counters and the funnel in the same transaction, and writes
+        an audit entry and an outbox event.
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     cookieAuth:
@@ -4159,75 +4541,6 @@ components:
               total_size:
                 type: integer
                 format: int64
-    RequirementsResponse:
-      description: Successful response
-      content:
-        application/json:
-          schema:
-            type: object
-            x-aep-resource:
-              patterns:
-              - programs/{program}/requirements/{requirement}
-              singular: requirement
-              plural: requirements
-              type: msrestapi.com/programs/requirement
-            properties:
-              results:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Requirement'
-              next_page_token:
-                type: string
-                nullable: true
-              total_size:
-                type: integer
-                format: int64
-    ApprovalStepsResponse:
-      description: Successful response
-      content:
-        application/json:
-          schema:
-            type: object
-            x-aep-resource:
-              patterns:
-              - programs/{program}/approval-steps/{approval_step}
-              singular: approval-step
-              plural: approval-steps
-              type: msrestapi.com/programs/approval-step
-            properties:
-              results:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ApprovalStep'
-              next_page_token:
-                type: string
-                nullable: true
-              total_size:
-                type: integer
-                format: int64
-    ApplicationsResponse:
-      description: Successful response
-      content:
-        application/json:
-          schema:
-            type: object
-            x-aep-resource:
-              patterns:
-              - programs/{program}/applications/{application}
-              singular: application
-              plural: applications
-              type: msrestapi.com/programs/application
-            properties:
-              results:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Application'
-              next_page_token:
-                type: string
-                nullable: true
-              total_size:
-                type: integer
-                format: int64
     SignoffsResponse:
       description: Successful response
       content:
@@ -4573,6 +4886,33 @@ components:
               total_size:
                 type: integer
                 format: int64
+    Conflict:
+      description: 'The change lost a race: the data moved on since it was read (for example a stale `version`).
+        Reload and try again.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ApplicationsResponse:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: object
+            x-aep-resource:
+              patterns:
+              - programs/{program}/applications/{application}
+              singular: application
+              plural: applications
+              type: msrestapi.com/programs/application
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+              next_page_token:
+                type: string
+                nullable: true
   schemas:
     Program:
       type: object
@@ -5172,7 +5512,9 @@ components:
           readOnly: true
     Requirement:
       type: object
-      description: An enrollment requirement.
+      description: What a store must satisfy before it can be approved (the Requirements step of the program).
+        A program has at most one each of `signup`, `card_on_file`, `credit_application` and `contract`;
+        `custom_field` can repeat.
       x-aep-resource:
         patterns:
         - programs/{program}/requirements/{requirement}
@@ -5189,14 +5531,30 @@ components:
           readOnly: true
         type:
           type: string
+          enum:
+          - signup
+          - card_on_file
+          - credit_application
+          - contract
+          - custom_field
+          description: IMMUTABLE after create.
         name:
           type: string
+          minLength: 1
+          maxLength: 120
+          example: Sign up
         config:
           type: object
           additionalProperties: true
+          description: This requirement's own settings (up to 16 KB).
+          example:
+            label: Tax ID
         position:
           type: integer
           format: int32
+          minimum: 0
+          maximum: 10000
+          description: Display order, lowest first.
         create_time:
           type: string
           format: date-time
@@ -5210,7 +5568,8 @@ components:
       - name
     ApprovalStep:
       type: object
-      description: A step of the application approval chain.
+      description: One sign-off an application goes through. Steps run in `position` order; each is decided
+        by one role.
       x-aep-resource:
         patterns:
         - programs/{program}/approval-steps/{approval_step}
@@ -5227,11 +5586,21 @@ components:
           readOnly: true
         name:
           type: string
+          minLength: 1
+          maxLength: 120
+          example: Credit review
+        approver_role:
+          type: string
+          minLength: 1
+          maxLength: 64
+          example: credit_manager
+          description: The role allowed to decide this step.
         position:
           type: integer
           format: int32
-        approver_role:
-          type: string
+          minimum: 0
+          maximum: 10000
+          description: Display and processing order, lowest first.
         create_time:
           type: string
           format: date-time
@@ -5245,7 +5614,8 @@ components:
       - approver_role
     Application:
       type: object
-      description: A store's application to enroll in a program.
+      description: A store's application to join a program. The Applications page reads only these fields.
+        A store can have one open (draft, submitted or in review) application per program and website.
       x-aep-resource:
         patterns:
         - programs/{program}/applications/{application}
@@ -5262,19 +5632,71 @@ components:
           readOnly: true
         store_id:
           type: string
+          minLength: 1
+          maxLength: 64
+        store_name:
+          type: string
+          nullable: true
+          maxLength: 200
         website_id:
           type: string
+          minLength: 1
+          maxLength: 64
+        website_name:
+          type: string
+          nullable: true
+          maxLength: 200
         status:
           type: string
           enum:
           - draft
           - submitted
+          - in_review
           - approved
           - rejected
+          - withdrawn
+          readOnly: true
+          description: Moved by `:submit`, `:withdraw` and (later) signoffs.
+        current_step_id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+          description: The approval step it is waiting at.
+        current_step_name:
+          type: string
+          nullable: true
+          readOnly: true
+        actions:
+          type: array
+          readOnly: true
+          items:
+            type: string
+            enum:
+            - submit
+            - withdraw
+          description: What can still be done in this status (the Actions column).
+        answers:
+          type: object
+          additionalProperties: true
+          description: The store's answers, keyed by requirement id (up to 64 KB). On a single read and
+            on create only.
         requirements_snapshot:
           type: object
           additionalProperties: true
-          description: Requirements frozen at submission.
+          readOnly: true
+          description: 'What the program required when this was submitted: `{requirements: [...]}`. `{}`
+            until then. On a single read only.'
+        submitted_time:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        decided_time:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
         create_time:
           type: string
           format: date-time
@@ -5834,6 +6256,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        summary:
+          type: string
+          example: Settings updated
+          description: The line a history list shows.
     ProgramModuleField:
       type: object
       description: A field of a field-driven module with its current value.
@@ -5875,17 +6301,38 @@ components:
           nullable: true
     FieldValue:
       type: object
-      description: A new value for one field. Use `option_ids` for library picks, `value` otherwise.
+      description: The saved value of one setting.
       properties:
+        setting_id:
+          type: string
+          format: uuid
+        module_key:
+          type: string
+        key:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - boolean
+          - number
+          - text
+          - radio
+          - checkbox
+          - dropdown
         value:
-          type: object
-          additionalProperties: true
-          nullable: true
+          description: A boolean, number or text.
         option_ids:
           type: array
           items:
             type: string
             format: uuid
+          description: The chosen options of a radio / checkbox / dropdown.
+        update_time:
+          type: string
+          format: date-time
+          readOnly: true
     SimulateRuleSetRequest:
       type: object
       required:
@@ -6238,6 +6685,21 @@ components:
           - unavailable
           nullable: true
           description: Set when the library's options could not be read; the rest of the page still loads.
+        value:
+          description: The saved value of a boolean / number / text setting; null until one is saved.
+        option_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: The saved choice of a radio / checkbox / dropdown setting.
+        missing_option_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Saved options that are no longer on offer (deactivated, or gone from their library).
+            Warn the admin and let them choose again; they can no longer be chosen.
     ProgramRule:
       type: object
       description: 'A rule leaf''s rule-set summary. The rule engine itself is a front-end component;
@@ -6254,3 +6716,163 @@ components:
           type: integer
           format: int32
           nullable: true
+    FieldValuePatch:
+      type: object
+      description: 'One setting''s new value: `value` for a boolean / number / text setting, `option_ids`
+        for a radio / checkbox / dropdown. A `null` entry, or an entry with neither field, clears the
+        value.'
+      properties:
+        value:
+          description: A boolean, number or text (any JSON value; `null` clears).
+        option_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ListFieldValuesResponse:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int32
+          description: 'The program''s `config_version`: send it back with a save to detect a concurrent
+            change.'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldValue'
+    BatchUpdateFieldValuesResponse:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int32
+          description: The `config_version` after the save (unchanged when nothing changed).
+        changed:
+          type: integer
+          format: int32
+          description: How many values actually changed. A value sent unchanged is not a change.
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldValue'
+    OverviewStats:
+      type: object
+      properties:
+        total_applications:
+          type: integer
+          format: int32
+        pending_approvals:
+          type: integer
+          format: int32
+        active_enrollments:
+          type: integer
+          format: int32
+        enrollments_total:
+          type: integer
+          format: int32
+      description: The Overview counters. One row per program, kept up to date by the changes that move
+        them, so the page never counts anything.
+    FunnelEntry:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - in_review
+          - approved
+          - rejected
+          - withdrawn
+        count:
+          type: integer
+          format: int64
+    RuleFamilyStatus:
+      type: object
+      properties:
+        module_key:
+          type: string
+        name:
+          type: string
+        rule_type:
+          type: string
+          nullable: true
+        state:
+          type: string
+          enum:
+          - never
+          - drifted
+          - in_sync
+          description: '`never`: never published. `drifted`: a newer draft exists than what is live. `in_sync`.'
+        draft_version:
+          type: integer
+          format: int32
+          nullable: true
+        published_version:
+          type: integer
+          format: int32
+          nullable: true
+    PublishedRules:
+      type: object
+      properties:
+        total:
+          type: integer
+        in_sync:
+          type: integer
+        drift_detected:
+          type: boolean
+          description: At least one rule is not in sync with what is live.
+        families:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleFamilyStatus'
+          description: The program's enabled rule leaves.
+    Overview:
+      type: object
+      description: 'The default page every program has (a singleton: one per program, no id). Read in
+        ONE database round trip.'
+      properties:
+        program:
+          $ref: '#/components/schemas/Program'
+        config_version:
+          type: integer
+          format: int32
+        published_config_version:
+          type: integer
+          format: int32
+          nullable: true
+          description: The `config_version` of the latest publication; null when never published.
+        unpublished_changes:
+          type: boolean
+          description: The program changed after it was last published, or changed since it was created
+            and was never published.
+        stats:
+          $ref: '#/components/schemas/OverviewStats'
+        funnel:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunnelEntry'
+          description: Applications by workflow status. Every status is listed, with 0 when there are
+            none, so the page always draws the same funnel.
+        published_rules:
+          $ref: '#/components/schemas/PublishedRules'
+        recent_activity:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLog'
+          description: The latest 10 changes, newest first.
+    ListRequirementsResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Requirement'
+    ListApprovalStepsResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalStep'

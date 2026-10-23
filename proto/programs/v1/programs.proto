@@ -79,6 +79,147 @@ service ProgramsService {
     };
   }
 
+  // ---- Requirements ----
+  rpc ListRequirements(ListRequirementsRequest) returns (ListRequirementsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetRequirement(GetRequirementRequest) returns (GetRequirementResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/requirements/*"}]
+    };
+  }
+  rpc CreateRequirement(CreateRequirementRequest) returns (CreateRequirementResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UpdateRequirement(UpdateRequirementRequest) returns (UpdateRequirementResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/requirements/*"}]
+    };
+  }
+  rpc DeleteRequirement(DeleteRequirementRequest) returns (google.protobuf.Empty) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/requirements/*"}]
+    };
+  }
+  rpc BatchUpdateRequirements(BatchUpdateRequirementsRequest) returns (BatchUpdateRequirementsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
+  // ---- Approval steps ----
+  rpc ListApprovalSteps(ListApprovalStepsRequest) returns (ListApprovalStepsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetApprovalStep(GetApprovalStepRequest) returns (GetApprovalStepResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/approval-steps/*"}]
+    };
+  }
+  rpc CreateApprovalStep(CreateApprovalStepRequest) returns (CreateApprovalStepResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UpdateApprovalStep(UpdateApprovalStepRequest) returns (UpdateApprovalStepResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/approval-steps/*"}]
+    };
+  }
+  rpc DeleteApprovalStep(DeleteApprovalStepRequest) returns (google.protobuf.Empty) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/approval-steps/*"}]
+    };
+  }
+  rpc BatchUpdateApprovalSteps(BatchUpdateApprovalStepsRequest) returns (BatchUpdateApprovalStepsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
+  // ---- Applications ----
+  rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/applications/*"}]
+    };
+  }
+  rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc SubmitApplication(SubmitApplicationRequest) returns (SubmitApplicationResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/applications/*"}]
+    };
+  }
+  rpc WithdrawApplication(WithdrawApplicationRequest) returns (WithdrawApplicationResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/applications/*"}]
+    };
+  }
+
+  // ---- Overview and history ----
+  rpc GetOverview(GetOverviewRequest) returns (GetOverviewResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc ListAuditLogs(ListAuditLogsRequest) returns (ListAuditLogsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
   // ---- Health ----
   rpc ListHealthCheck(ListHealthCheckRequest) returns (ListHealthCheckResponse) {
     // Open to everyone (load balancer / monitoring probes) — no permission check.

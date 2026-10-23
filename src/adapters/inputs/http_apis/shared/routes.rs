@@ -1,8 +1,12 @@
+use crate::adapters::inputs::http_apis::application::application_controllers;
+use crate::adapters::inputs::http_apis::approval_step::approval_step_controllers;
 use crate::adapters::inputs::http_apis::health::health_controllers;
 use crate::adapters::inputs::http_apis::module_definition::module_definition_controllers;
 use crate::adapters::inputs::http_apis::program::program_controllers;
 use crate::adapters::inputs::http_apis::program_field_value::program_field_value_controllers;
 use crate::adapters::inputs::http_apis::program_module::program_module_controllers;
+use crate::adapters::inputs::http_apis::program_overview::program_overview_controllers;
+use crate::adapters::inputs::http_apis::requirement::requirement_controllers;
 use crate::adapters::inputs::http_apis::webhook::webhook_controllers;
 use actix_web::web;
 
@@ -16,6 +20,10 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         web::scope("/programs")
             .configure(program_controllers::routes)
             .configure(program_module_controllers::routes)
-            .configure(program_field_value_controllers::routes),
+            .configure(program_field_value_controllers::routes)
+            .configure(program_overview_controllers::routes)
+            .configure(requirement_controllers::routes)
+            .configure(approval_step_controllers::routes)
+            .configure(application_controllers::routes),
     );
 }

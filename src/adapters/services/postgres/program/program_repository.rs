@@ -71,15 +71,31 @@ pub(crate) async fn record_change(
     before: Option<Value>,
     after: Option<Value>,
 ) -> Result<(), sqlx::Error> {
+    record_event(conn, program_id, actor, action, "program", &program_id.to_string(), before, after).await
+}
+
+/// The same record for a change to something that belongs to the program (an application, ...).
+/// The outbox topic is `<target_type>.<action>` and the event is keyed by the program.
+pub(crate) async fn record_event(
+    conn: &mut PgConnection,
+    program_id: Uuid,
+    actor: &str,
+    action: &str,
+    target_type: &str,
+    target_id: &str,
+    before: Option<Value>,
+    after: Option<Value>,
+) -> Result<(), sqlx::Error> {
     sqlx::query(
         "INSERT INTO audit_log (id, program_id, actor, action, target_type, target_id, before, after) \
-         VALUES ($1, $2, $3, $4, 'program', $5, $6, $7)",
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
     )
     .bind(Uuid::now_v7())
     .bind(program_id)
     .bind(actor)
     .bind(action)
-    .bind(program_id.to_string())
+    .bind(target_type)
+    .bind(target_id)
     .bind(before)
     .bind(after.clone())
     .execute(&mut *conn)
@@ -87,9 +103,9 @@ pub(crate) async fn record_change(
 
     sqlx::query("INSERT INTO outbox (id, topic, event_key, payload) VALUES ($1, $2, $3, $4)")
         .bind(Uuid::now_v7())
-        .bind(format!("program.{action}"))
+        .bind(format!("{target_type}.{action}"))
         .bind(program_id.to_string())
-        .bind(json!({ "program_id": program_id, "actor": actor, "after": after }))
+        .bind(json!({ "program_id": program_id, "target_id": target_id, "actor": actor, "after": after }))
         .execute(&mut *conn)
         .await?;
 

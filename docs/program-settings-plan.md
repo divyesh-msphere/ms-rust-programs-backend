@@ -39,10 +39,28 @@ Premade modules can only use `settings`. A leaf's mode cannot change once it has
 its options) for a settings leaf, and a `rule` summary for a rule leaf. **Built:** create and `PATCH /programs/{program}` accept
 `modules: [{key, mode, enabled, settings}]` (replace semantics, options matched by `code`); library-backed settings read their
 options from global-settings through an in-memory cache (stale-while-revalidate, cleared by the `lib.*` webhook at
-`POST /webhooks/global-settings`). Saving the VALUES admins enter into these settings is not built yet.
+`POST /webhooks/global-settings`). **Setting values are built:** `POST /programs/{program}/field-values:batchUpdate` (one transaction, per-type and per-option
+validation, optimistic `version`, only differing values written, audit + outbox) and `GET /programs/{program}/field-values`; the
+manifest carries each setting's saved `value` / `option_ids` and `missing_option_ids`. **The Overview and the audit log are built:**
+`GET /programs/{program}/overview` (counters, a funnel with all six statuses, rules sync state `never`/`drifted`/`in_sync`,
+`unpublished_changes`, latest 10 changes; ONE database query, about 2 ms) and `GET /programs/{program}/audit-logs[?action=a,b]`
+(newest first, paged by time, with `before` / `after`); both on gRPC as `GetOverview` and `ListAuditLogs`.
+**Requirements are built:** `/programs/{program}/requirements` (list in display order, add, get, update, remove) and
+`requirements:batchUpdate` (reorder); the fixed types are one-per-program (the database enforces it), `custom_field` repeats; each
+change is one transaction with the version bump, audit entry and outbox event; on gRPC as `List/Get/Create/Update/DeleteRequirement`
+and `BatchUpdateRequirements`.
+**Approval steps are built:** `/programs/{program}/approval-steps` (list in order, add, get, update, remove) and
+`approval-steps:batchUpdate` (reorder), same transaction shape as Requirements; a step with signoffs cannot be removed (409);
+on gRPC as `List/Get/Create/Update/DeleteApprovalStep` and `BatchUpdateApprovalSteps`.
+**Applications are built (create / submit / withdraw / list / get):** `GET|POST /programs/{program}/applications`,
+`GET .../applications/{application}`, `POST .../{application}:submit` and `:withdraw`; list is newest-first keyset with a `status` chip
+filter; one open application per store, program and website is enforced by a partial unique index (migration
+`20261022100000_applications_open_unique`); submit freezes the requirements into `requirements_snapshot` and enters the first approval
+step; the Overview counters and funnel move in the same transaction; applications do not bump `config_version`; on gRPC as
+`List/Get/Create/Submit/WithdrawApplication`. Not yet: approve / reject (signoffs), checking `answers` against requirements.
 
-Status: nothing else in sections 3–5 or 7–13 is built yet unless marked *done*: not started are the Overview endpoint,
-components, requirements, applications, enrollments, store discounts, documents and rules.
+Status: nothing else in sections 3–5 or 7–13 is built yet unless marked *done*: not started are
+components, signoffs (approve / reject), enrollments, store discounts, documents and rules.
 
 ---
 
