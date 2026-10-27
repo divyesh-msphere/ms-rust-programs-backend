@@ -31,7 +31,6 @@ pub async fn grpc_server(mut shutdown: watch::Receiver<bool>) -> Result<(), Box<
         application_config: deps.application_config,
         repositories: deps.repositories,
         use_cases: deps.use_cases,
-        library_catalog: deps.library_catalog,
     });
 
     let router = Router::new().add_service(Arc::new(ProgramsServiceImpl::new(app_state)));

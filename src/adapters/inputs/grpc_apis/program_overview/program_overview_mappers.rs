@@ -51,7 +51,8 @@ impl GrpcApiMapper<GetOverviewOutput, GetOverviewInput, GetOverviewResponse, Get
                 ..Default::default()
             })
             .collect();
-        let in_sync = families.iter().filter(|f| f.state == "in_sync").count();
+        // Nothing to publish (in sync, or no rules saved yet) is not drift.
+        let in_sync = families.iter().filter(|f| f.state == "in_sync" || f.state == "empty").count();
         let total = families.len();
 
         GetOverviewResponse {
@@ -71,7 +72,7 @@ impl GrpcApiMapper<GetOverviewOutput, GetOverviewInput, GetOverviewResponse, Get
             published_rules: Some(PublishedRules {
                 total: total as i32,
                 in_sync: in_sync as i32,
-                drift_detected: in_sync != total,
+                drift_detected: families.iter().any(|f| f.state == "never" || f.state == "drifted"),
                 families,
                 ..Default::default()
             })

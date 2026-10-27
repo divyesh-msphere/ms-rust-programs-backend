@@ -1,5 +1,7 @@
 # Programs service — implementation plan
 
+> **Status.** Requirements, Approval steps, Applications and Signoffs (Part B and the Requirements card) are built but **parked**: switched off by default, nothing deleted. See [parked-enrollment-review.md](parked-enrollment-review.md).
+
 Eight parts, all **for review**:
 - **Part A (sections 1–6): Program Settings** — the first settings modules, **Configuration & Oversight →
   Settings → Universal** (Program Settings, Shopping Cart, Vault Payment Methods, Program Level, About this
@@ -38,8 +40,8 @@ Premade modules can only use `settings`. A leaf's mode cannot change once it has
 (`GET /programs/{program}/modules`) returns `mode` (null until chosen), a `settings` list (each with a `render` hint and
 its options) for a settings leaf, and a `rule` summary for a rule leaf. **Built:** create and `PATCH /programs/{program}` accept
 `modules: [{key, mode, enabled, settings}]` (replace semantics, options matched by `code`); library-backed settings read their
-options from global-settings through an in-memory cache (stale-while-revalidate, cleared by the `lib.*` webhook at
-`POST /webhooks/global-settings`). **Setting values are built:** `POST /programs/{program}/field-values:batchUpdate` (one transaction, per-type and per-option
+options from global-settings through an in-memory cache (stale-while-revalidate, refreshed in the background; the `lib.*` webhook at
+`POST /webhooks/global-settings` was **removed**, so a change shows up within about 30 seconds). **Setting values are built:** `POST /programs/{program}/field-values:batchUpdate` (one transaction, per-type and per-option
 validation, optimistic `version`, only differing values written, audit + outbox) and `GET /programs/{program}/field-values`; the
 manifest carries each setting's saved `value` / `option_ids` and `missing_option_ids`. **The Overview and the audit log are built:**
 `GET /programs/{program}/overview` (counters, a funnel with all six statuses, rules sync state `never`/`drifted`/`in_sync`,
@@ -57,10 +59,23 @@ on gRPC as `List/Get/Create/Update/DeleteApprovalStep` and `BatchUpdateApprovalS
 filter; one open application per store, program and website is enforced by a partial unique index (migration
 `20261022100000_applications_open_unique`); submit freezes the requirements into `requirements_snapshot` and enters the first approval
 step; the Overview counters and funnel move in the same transaction; applications do not bump `config_version`; on gRPC as
-`List/Get/Create/Submit/WithdrawApplication`. Not yet: approve / reject (signoffs), checking `answers` against requirements.
+`List/Get/Create/Submit/WithdrawApplication`. Not yet: checking `answers` against requirements.
+**Signoffs are built:** `GET|POST /programs/{program}/applications/{application}/signoffs` and `GET .../signoffs/{signoff}`; approving moves the application to the next approval step (`in_review`) or approves it at the last step, rejecting rejects it; a final decision takes it out of `pending_approvals`; an optional `approval_step_id` makes a double click safe (409); the approver's role is not enforced until authentication exists; on gRPC as `List/Get/CreateSignoff`.
+**Enrollments are built (list / get / enroll / bulk enroll / status change):** `GET|POST /programs/{program}/enrollments`,
+`POST .../enrollments:batchCreate`, `GET|PATCH .../enrollments/{enrollment}`; list is newest-first keyset with `website_id`,
+`status` and store-name-prefix filters and the "N STORES" `total_size`; a store is enrolled by an admin, in bulk, or automatically when
+its application's last step is approved (same transaction as the signoff); one live enrollment per store, program and website
+(unique index); statuses `pending`, `active`, `suspended`, `ended` (final) with `pending -> active`, `active <-> suspended`,
+anything `-> ended`; the Overview `active_enrollments` / `enrollments_total` move in the same transaction; enrollments do not bump
+`config_version`; on gRPC as `List/Get/Create/BatchCreate/UpdateEnrollment`. Decisions taken for section 8.5: customer group and
+store / website names are supplied by the caller (no storefront lookup yet), an admin enroll skips the application flow, the status
+set is pending / active / suspended / ended. Not yet: contracts and the contract counters.
+**Store Discounts are built (list / get / edit one / mass edit / program and domain levels):** `GET /programs/{program}/store-discounts[/{enrollment}]`, `PATCH .../store-discounts/{enrollment}`, `POST .../store-discounts:batchUpdate`, `GET .../store-discount-levels`, `PATCH .../store-discount-levels/program` and `.../domains/{website_id}`. Following the screen, **every field inherits on its own** through Program → Domain → Store (`enabled`, `type`, `amount`, `currency_code`), with a per-field source badge, a per-field revert (`null`) and "revert all" (`discount: null`); the store and domain levels live in `program_overrides` (`scope_id` = the enrollment id / the website id), the program level in the module's `program_modules.config.discount`; the page resolves only its own rows with three indexed lookups; a mass edit is one statement with one version bump; every edit bumps `config_version` and writes audit + outbox. Decisions taken for section 9.5: percent **or** fixed (with a currency code), `Disabled` = `enabled: false` or nothing set, store override per enrollment (one store on one website), only enrolled stores are listed (not `ended`), mass edit can also reset to inherited, the program must have the module switched on, the program and domain levels have their own endpoints (these replace the `program-overrides` placeholders). Not yet: the load test.
+**Documents are built (Part H):** the three-step presigned upload (`POST .../documents` -> `PUT` to the storage -> `POST .../documents/{d}:complete`), `GET .../documents:summary`, list with `location` / `folder_id` / `q`, get / rename / move / delete, `:download`, `:review`, folders (list / create / rename / delete) with four system folders per program, and `POST /webhooks/document-scan`; the bytes never pass through the service (a hand-written AWS Signature V4 presigner, tested against AWS's documented example, with the declared type, size and SHA-256 signed into the URL so the storage itself refuses a mismatch); the service asks the storage what arrived at `:complete`; counters on `program_storage` and `document_folders` move in the same transaction as every change; 413 / 415 are real HTTP codes (two new error kinds); the program must have the Documents Panel module on; files do not bump `config_version`; storage is S3-compatible (MinIO in `docker-compose.yml` for development; config in `[storage]`); on gRPC as 13 methods (`GetDocumentSummary` ... `ReviewDocument`). Decisions taken for section 13: 25 MB and pdf / png / jpeg / docx / xlsx / csv / plain text, 10,000 files per program, an upload URL lives 10 minutes. Not yet: the job that removes stuck uploads, removing the object of a deleted file, the scanner itself, an authorization story for who may review.
+**Rule sets, versions and publishing are built:** `GET /programs/{program}/rule-sets`, `GET .../rule-sets/{module_key}`, `POST|GET .../rule-sets/{module_key}/versions`, `GET .../versions/{version}`, `POST|GET /programs/{program}/publications`, `GET .../publications/{publication}`. Following the migration, the rule engine is a frontend component: a rule leaf's saves are immutable versions (`definition` and optional `compiled` kept as JSON, an unchanged save creates nothing, an incomplete draft can be saved with `valid: false` but blocks publishing), each save bumps `config_version`; **publishing** is one transaction under the program lock that promotes every rule leaf's newest draft, builds the bundle (program, enabled modules with settings and values, requirements, approval steps, the store -> discount map of active stores, published rules) into an append-only `publications` row, and records the covered `config_version` without changing it; refused when nothing is new or a draft is invalid. The Overview's rule state gained `empty` (nothing saved, not drift). On gRPC as `List/GetRuleSet`, `Create/List/GetRuleVersion`, `Create/List/GetPublication`. Not yet: custom CSV, manual products and test cases (parked), simulating a rule set (the old `:simulate` placeholder is removed), anything that reads the bundle (pricing).
 
 Status: nothing else in sections 3–5 or 7–13 is built yet unless marked *done*: not started are
-components, signoffs (approve / reject), enrollments, store discounts, documents and rules.
+components. **Imports (Part E, section 10) is dropped: it will not be built** (decided by the product owner), and so is anything that depended on it (Price Import, the `import_jobs` API).
 
 ---
 
@@ -85,7 +100,7 @@ The frontend never talks to `global-settings`.
 | 4 | Admin edits several cards; "N unsaved changes" bar fills | Frontend | no call |
 | 5 | Admin clicks **Save changes** | Frontend → Programs API | `PATCH /programs/{program}/settings` (changed fields only) |
 | 5a | Validate, then one transaction: values + version bump + snapshot + audit + outbox | Programs API | — |
-| 6 | Option added / changed in `global-settings` | `global-settings` → Programs API | `POST /webhooks/global-settings` (clears that library's cache) |
+| 6 | Option added / changed in `global-settings` | `global-settings` → Programs API | ~~`POST /webhooks/global-settings`~~ **removed**: the cache refreshes itself every 30 seconds |
 | 7 | Unpublished changes badge; someone publishes | Frontend | later phase (Publish) |
 
 Access: calls carry the admin's session through the gateway; `permission_key` on each module decides
@@ -112,7 +127,7 @@ who may edit it. Service-to-service calls to `global-settings` use `X-Client-ID`
 | Settings read | assemble cards, values, options in one response |
 | Settings save | validate + one transaction (below) |
 | `program_settings_snapshot` | one JSON row per program, written in the same transaction; the page read is one primary-key lookup |
-| Webhook endpoint | receives `lib.*` events, clears cache, flags programs using a removed option |
+| Webhook endpoint | **removed** (it only cleared the cache) |
 
 **Save transaction (one commit)**
 1. Upsert changed rows in `program_field_values`.
@@ -202,7 +217,7 @@ Response: the same body as `GET` (fresh `version`, so the page can re-render).
 | Method | Path | Request | Response |
 |---|---|---|---|
 | `GET` | `/programs/{program}/audit-logs` | paging | `{results:[{actor, action, target, before, after, create_time}]}` (History / View changes) |
-| `POST` | `/webhooks/global-settings` | `{event, library_id, revision?}` | `204` (internal) |
+| ~~`POST`~~ | ~~`/webhooks/global-settings`~~ | removed | – |
 | `GET` | `/health` | – | *done* |
 
 ### 4.5 gRPC (same names, `programs.v1.ProgramsService`)
@@ -505,6 +520,8 @@ under 50 ms.
 ---
 
 # Part E — Imports (Upload Consignment Orders + Import History)
+
+> **Dropped.** Decided by the product owner: this module will not be built. The design below is kept only for reference.
 
 ## 10. Imports
 

@@ -43,6 +43,9 @@ message ModuleDefinition {
   optional string api_base = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool selectable = 19 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool allow_components = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "rule" or "settings": the mode a program gets when it selects this page, without the admin choosing it.
+  // Absent for a page the admin configures freely.
+  optional string default_mode = 21 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // A module with its descendants nested under `children` (`full_tree = true`).
@@ -69,6 +72,7 @@ message ModuleDefinitionTreeNode {
   optional string api_base = 19 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool selectable = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool allow_components = 21 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string default_mode = 22 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message ListModuleDefinitionsRequest {
@@ -403,7 +407,7 @@ message RuleFamilyStatus {
   string module_key = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string rule_type = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  // "never", "drifted" or "in_sync".
+  // "empty" (no rules saved yet), "never" (saved, never published), "drifted" or "in_sync".
   string state = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional int32 draft_version = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional int32 published_version = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -694,7 +698,7 @@ message Application {
   string status = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string current_step_id = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string current_step_name = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  // What can still be done in this status (the Actions column): "submit", "withdraw".
+  // What can still be done in this status (the Actions column): "submit", "approve", "reject", "withdraw".
   repeated string actions = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // The store's answers, keyed by requirement id. Only on a single read.
   optional google.protobuf.Value answers = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
@@ -764,4 +768,733 @@ message WithdrawApplicationRequest {
 }
 message WithdrawApplicationResponse {
   Application application = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// ---------------------------------------------------------------------------
+// Signoffs (an approver's decision on one approval step of an application)
+// ---------------------------------------------------------------------------
+
+message Signoff {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/signoff"
+    singular: "signoff"
+    plural: "signoffs"
+    pattern: "programs/{program}/applications/{application}/signoffs/{signoff}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string application_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The step this decision was made on (always the step the application was waiting at).
+  string approval_step_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string approval_step_name = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "approved" or "rejected".
+  string decision = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string comment = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string actor = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListSignoffsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string application = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListSignoffsResponse {
+  repeated Signoff results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetSignoffRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string application = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string signoff = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetSignoffResponse {
+  Signoff signoff = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CreateSignoffRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string application = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // "approved" or "rejected".
+  string decision = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string comment = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The approval step the caller was looking at. If the application has moved on, the decision is
+  // refused with ABORTED. Unset decides whatever step is current.
+  optional string approval_step_id = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+message CreateSignoffResponse {
+  Signoff signoff = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// ---------------------------------------------------------------------------
+// Enrollments (a store enrolled in a program on one website)
+// ---------------------------------------------------------------------------
+
+message Enrollment {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/enrollment"
+    singular: "enrollment"
+    plural: "enrollments"
+    pattern: "programs/{program}/enrollments/{enrollment}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The application that produced it, when there was one.
+  optional string application_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string store_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Unset = "Unresolved store".
+  optional string store_name = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  bool store_resolved = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string website_id = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string website_name = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string customer_group = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // pending, active, suspended or ended. Changes: pending -> active, active <-> suspended, anything -> ended.
+  string status = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The status changes allowed from here (the Actions dropdown).
+  repeated string actions = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string enrolled_time = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 contracts_count = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string last_contract_time = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListEnrollmentsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The "All websites" filter.
+  optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Only these statuses, comma-separated. Unset for all.
+  optional string status = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // A prefix of the store name (case-insensitive).
+  optional string store = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional int64 max_page_size = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string page_token = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListEnrollmentsResponse {
+  repeated Enrollment results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // How many enrollments match the filter (the "N STORES" count).
+  int64 total_size = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetEnrollmentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string enrollment = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetEnrollmentResponse {
+  Enrollment enrollment = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CreateEnrollmentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Optional client-specified ID (AEP-133); server generates one if omitted.
+  optional string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string store_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string store_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string website_id = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string website_name = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string customer_group = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // "pending" or "active" (default).
+  optional string status = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message CreateEnrollmentResponse {
+  Enrollment enrollment = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message UpdateEnrollmentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string enrollment = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string status = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // An empty string clears the group.
+  optional string customer_group = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message UpdateEnrollmentResponse {
+  Enrollment enrollment = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message EnrollmentItem {
+  string store_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string store_name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string website_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string website_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string customer_group = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string status = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+message BatchCreateEnrollmentsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Up to 500 stores.
+  repeated EnrollmentItem items = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message EnrollmentItemResult {
+  string store_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "created", "already_enrolled" or "failed".
+  string outcome = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string enrollment_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string error = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message BatchCreateEnrollmentsResponse {
+  int32 created = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated EnrollmentItemResult results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// ---------------------------------------------------------------------------
+// Store discounts (each enrolled store's effective discount: Program -> Domain -> Store)
+// ---------------------------------------------------------------------------
+
+// What ONE level sets. A field that is unset is inherited from the level above.
+message DiscountConfig {
+  optional bool enabled = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // "percentage" or "fixed".
+  optional string type = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional double amount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Three uppercase letters, for example "USD".
+  optional string currency_code = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// The discount a store actually gets.
+message ResolvedDiscount {
+  bool enabled = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string type = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  double amount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string currency_code = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// Which level each resolved field came from: "program", "domain" or "store".
+message DiscountSources {
+  string enabled = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string type = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string amount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string currency_code = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// A change to one level. A field you set is set; a field named in `revert_fields` goes back to the
+// inherited value; `revert_all` reverts everything (and must not be combined with the rest).
+message DiscountChange {
+  optional bool enabled = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string type = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional double amount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string currency_code = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Any of "enabled", "type", "amount", "currency_code".
+  repeated string revert_fields = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  bool revert_all = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+message StoreDiscount {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/store-discount"
+    singular: "store-discount"
+    plural: "store-discounts"
+    pattern: "programs/{program}/store-discounts/{enrollment}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The enrollment id.
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string store_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string store_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string website_id = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string website_name = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string enrollment_status = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The Resolved Discount column.
+  ResolvedDiscount resolved = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The badge next to each field in the edit panel.
+  DiscountSources sources = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The Set At column: the highest level that set anything.
+  string set_at = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // What this store sets itself; nothing set means it inherits everything.
+  DiscountConfig store_override = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // What the store would get if its own override were reverted.
+  ResolvedDiscount inherited = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListStoreDiscountsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // A prefix of the store name (case-insensitive).
+  optional string store = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional int64 max_page_size = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string page_token = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListStoreDiscountsResponse {
+  repeated StoreDiscount results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 total_size = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetStoreDiscountRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string enrollment = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetStoreDiscountResponse {
+  StoreDiscount store_discount = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message UpdateStoreDiscountRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string enrollment = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  DiscountChange discount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message UpdateStoreDiscountResponse {
+  StoreDiscount store_discount = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message BatchUpdateStoreDiscountsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The enrollment ids of the ticked stores (1 to 500).
+  repeated string ids = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  DiscountChange discount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message BatchUpdateStoreDiscountsResponse {
+  // How many stores really changed.
+  int32 updated = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated StoreDiscount results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message DomainDiscountLevel {
+  string website_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  DiscountConfig discount = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListDiscountLevelsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListDiscountLevelsResponse {
+  DiscountConfig program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated DomainDiscountLevel domains = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message UpdateDiscountLevelRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The website to change; unset changes the program level.
+  optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  DiscountChange discount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message UpdateDiscountLevelResponse {
+  // "program" or "domain".
+  string level = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // What that level sets afterwards.
+  DiscountConfig discount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// ---------------------------------------------------------------------------
+// Rule sets, versions and publications
+// ---------------------------------------------------------------------------
+
+message RuleVersion {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/rule-version"
+    singular: "rule-version"
+    plural: "rule-versions"
+    pattern: "programs/{program}/rule-sets/{rule_set}/versions/{version}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 version = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "draft" (the newest save), "published" (live) or "superseded".
+  string status = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The rule model the builder draws. Only on a single read.
+  optional google.protobuf.Value definition = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The generated decision graph. Only on a single read.
+  optional google.protobuf.Value compiled = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Whether the rule engine found the definition complete. An invalid draft blocks publishing.
+  bool valid = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  google.protobuf.Value validation_errors = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string content_hash = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 size_bytes = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string created_by = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message RuleSet {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/rule-set"
+    singular: "rule-set"
+    plural: "rule-sets"
+    pattern: "programs/{program}/rule-sets/{rule_set}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The rule set row, created when the leaf is made a rule leaf; unset only if it does not exist yet.
+  optional string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The rule leaf's module key: how a rule set is addressed.
+  string module_key = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string module_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string rule_type = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional int32 draft_version = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional int32 published_version = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "empty" (no rules saved yet), "never" published, "drifted" (a newer draft than what is live) or "in_sync".
+  string state = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The newest version with its definition. Only on a single read.
+  optional RuleVersion draft = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string update_time = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListRuleSetsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListRuleSetsResponse {
+  repeated RuleSet results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetRuleSetRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The rule leaf's module key, or the id of its rule set.
+  string rule_set = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetRuleSetResponse {
+  RuleSet rule_set = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CreateRuleVersionRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string rule_set = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The rule model the builder draws (an object, up to 1 MB).
+  google.protobuf.Value definition = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional google.protobuf.Value compiled = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string rule_type = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Defaults to "no validation errors were sent".
+  optional bool valid = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // A list, up to 100. A version with errors cannot be valid.
+  optional google.protobuf.Value validation_errors = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message CreateRuleVersionResponse {
+  RuleVersion version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // False when the save changed nothing, so no new version was made (this is the newest one).
+  bool created = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListRuleVersionsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string rule_set = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional int64 max_page_size = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string page_token = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListRuleVersionsResponse {
+  repeated RuleVersion results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetRuleVersionRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string rule_set = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  int32 version = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetRuleVersionResponse {
+  RuleVersion version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message Publication {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/publication"
+    singular: "publication"
+    plural: "publications"
+    pattern: "programs/{program}/publications/{publication}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The program's config_version this publication covers.
+  int32 config_version = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string config_hash = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Counts of what the bundle holds, and the rule versions it carries.
+  google.protobuf.Value summary = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The whole bundle. Only on a single read.
+  optional google.protobuf.Value bundle = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string created_by = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListPublicationsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional int64 max_page_size = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string page_token = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListPublicationsResponse {
+  repeated Publication results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetPublicationRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string publication = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetPublicationResponse {
+  Publication publication = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CreatePublicationRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message CreatePublicationResponse {
+  // The counts and rule versions; read the bundle with GetPublication.
+  Publication publication = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// ---------------------------------------------------------------------------
+// Documents (a file manager per program; the bytes live in object storage)
+// ---------------------------------------------------------------------------
+
+message DocumentFolder {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/document-folder"
+    singular: "document-folder"
+    plural: "document-folders"
+    pattern: "programs/{program}/document-folders/{folder}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string parent_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // "general", "import_artifacts", "program_documents", "store_enrollment_documents"; unset for a custom folder.
+  optional string key = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // A system folder cannot be renamed or deleted.
+  bool system = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 document_count = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message Document {
+  option (aep.api.resource) = {
+    type: "programs.mobilesentrix.com/document"
+    singular: "document"
+    plural: "documents"
+    pattern: "programs/{program}/documents/{document}"
+  };
+
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string folder_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string content_type = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  int64 size_bytes = 6 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // "uploading", "pending_scan", "ok", "needs_review" or "quarantined".
+  string status = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string source_type = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string source_id = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string uploaded_by = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string checksum = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string scan_time = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string review_note = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string reviewed_by = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string reviewed_time = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message DocumentLocations {
+  int32 all = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 recent = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 needs_review = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 quarantined = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// A request the BROWSER makes straight to the object storage. Send the headers exactly as given: they are part
+// of the signature. The file bytes never travel over gRPC or through this service.
+message StorageRequest {
+  string url = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string method = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  map<string, string> headers = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string expires_time = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetDocumentSummaryRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetDocumentSummaryResponse {
+  int32 files = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 bytes = 2 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  DocumentLocations locations = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated DocumentFolder folders = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ListDocumentFoldersRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListDocumentFoldersResponse {
+  repeated DocumentFolder results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CreateDocumentFolderRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string parent_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message CreateDocumentFolderResponse {
+  DocumentFolder folder = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message UpdateDocumentFolderRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string folder = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message UpdateDocumentFolderResponse {
+  DocumentFolder folder = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message DeleteDocumentFolderRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string folder = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+
+message ListDocumentsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string folder_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // "recent", "needs_review" or "quarantined". Unset for All files.
+  optional string location = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // A prefix of the file name (case-insensitive).
+  optional string q = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional int64 max_page_size = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string page_token = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ListDocumentsResponse {
+  repeated Document results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CreateDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The file name shown in the list. Only a label: the storage key is generated by the server.
+  string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Defaults to the General folder.
+  optional string folder_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  string content_type = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  int64 size_bytes = 5 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // SHA-256 of the file in hex; when given, the storage itself refuses an upload that differs.
+  optional string checksum = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message CreateDocumentResponse {
+  // The new file, still "uploading" (hidden from every list until it is completed).
+  Document document = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Where and how to send the bytes.
+  StorageRequest upload = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message CompleteDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string document = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message CompleteDocumentResponse {
+  Document document = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message GetDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string document = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetDocumentResponse {
+  Document document = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message UpdateDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string document = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Move to this folder.
+  optional string folder_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message UpdateDocumentResponse {
+  Document document = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message DeleteDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string document = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+
+message DownloadDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string document = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message DownloadDocumentResponse {
+  Document document = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // A short-lived link the browser downloads from. Refused while the file is quarantined.
+  StorageRequest download = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ReviewDocumentRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string document = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // "approve" or "reject".
+  string decision = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string note = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ReviewDocumentResponse {
+  Document document = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }

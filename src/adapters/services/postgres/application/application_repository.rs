@@ -1,4 +1,5 @@
 use crate::adapters::services::postgres::db_connection::PostgresDbConnection;
+use crate::adapters::services::postgres::db_error::db_error;
 use crate::adapters::services::postgres::program::program_repository::record_event;
 use crate::application::errors::application_error::ApplicationError;
 use crate::domain::application::{
@@ -6,7 +7,6 @@ use crate::domain::application::{
 };
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use ms_telemetry_rs::tracing::error;
 use serde_json::{Value, json};
 use sqlx::{FromRow, PgConnection};
 use std::sync::Arc;
@@ -19,11 +19,6 @@ const LIST_COLUMNS: &str = "a.id, a.program_id, a.store_id, a.store_name, a.webs
 const DETAIL_COLUMNS: &str = "a.id, a.program_id, a.store_id, a.store_name, a.website_id, a.website_name, a.status, \
     a.current_step_id, s.name AS current_step_name, a.answers, a.requirements_snapshot, \
     a.submitted_time, a.decided_time, a.create_time, a.update_time";
-
-fn db_error(err: sqlx::Error) -> ApplicationError {
-    error!("DB error: {:?}", err);
-    ApplicationError::internal_error(Some(err))
-}
 
 #[derive(Debug, FromRow)]
 struct ApplicationDbModel {
@@ -105,7 +100,7 @@ async fn lock_status(conn: &mut PgConnection, program_id: Uuid, id: Uuid) -> Res
 
 /// The Overview counters, in the same transaction as the change. A program created before the
 /// counters row existed gets one.
-async fn bump_stats(conn: &mut PgConnection, program_id: Uuid, total: i32, pending: i32) -> Result<(), ApplicationError> {
+pub(crate) async fn bump_stats(conn: &mut PgConnection, program_id: Uuid, total: i32, pending: i32) -> Result<(), ApplicationError> {
     sqlx::query(
         "INSERT INTO program_stats (program_id, total_applications, pending_approvals) \
          VALUES ($1, GREATEST($2, 0), GREATEST($3, 0)) \

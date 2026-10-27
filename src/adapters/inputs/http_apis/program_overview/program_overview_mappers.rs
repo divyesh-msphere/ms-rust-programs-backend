@@ -50,7 +50,8 @@ impl GetOverviewMapper {
                 published_version: r.published_version,
             })
             .collect();
-        let in_sync = families.iter().filter(|f| f.state == "in_sync").count();
+        // Nothing to publish (in sync, or no rules saved yet) is not drift.
+        let in_sync = families.iter().filter(|f| f.state == "in_sync" || f.state == "empty").count();
 
         OverviewPresenter {
             config_version: output.program.config_version,
@@ -67,7 +68,7 @@ impl GetOverviewMapper {
             published_rules: PublishedRulesPresenter {
                 total: families.len(),
                 in_sync,
-                drift_detected: in_sync != families.len(),
+                drift_detected: families.iter().any(|f| f.state == "never" || f.state == "drifted"),
                 families,
             },
             recent_activity: overview.recent_activity.into_iter().map(|e| audit_to_presenter(e, false)).collect(),

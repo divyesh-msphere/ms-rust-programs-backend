@@ -1,7 +1,10 @@
 use crate::adapters::services::global_settings::global_settings_client::GlobalSettingsClient;
+use crate::adapters::services::object_storage::s3_client::S3Client;
 use crate::application::usecases::UseCases;
 use crate::config::ApplicationConfig;
+use crate::domain::document::DocumentPolicy;
 use crate::domain::library_catalog::LibraryCatalog;
+use crate::domain::object_storage::ObjectStorage;
 use crate::infrastructure::repositories::Repositories;
 use std::sync::Arc;
 
@@ -27,7 +30,14 @@ impl Dependencies {
         let repositories = Arc::new(Repositories::new(app_cfg.clone()).await);
         let library_catalog: Arc<dyn LibraryCatalog> =
             Arc::new(GlobalSettingsClient::new(&app_cfg.global_settings));
-        let use_cases = Arc::new(UseCases::new(repositories.clone(), library_catalog.clone()));
+        // Document bytes live in object storage; this service only signs the URLs and checks what arrived.
+        let object_storage: Arc<dyn ObjectStorage> = Arc::new(S3Client::new(&app_cfg.storage));
+        let document_policy = DocumentPolicy {
+            max_file_bytes: app_cfg.storage.max_file_bytes,
+            allowed_content_types: app_cfg.storage.allowed_content_types.clone(),
+            max_files_per_program: app_cfg.storage.max_files_per_program,
+        };
+        let use_cases = Arc::new(UseCases::new(repositories.clone(), library_catalog.clone(), object_storage, document_policy));
 
         // Warm the library cache in the background, so even the first page load after a start
         // reads library options from memory. A failure only means a first read costs one call.

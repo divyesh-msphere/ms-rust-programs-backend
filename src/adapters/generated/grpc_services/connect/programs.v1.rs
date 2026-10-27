@@ -322,6 +322,414 @@ pub type OwnedWithdrawApplicationResponseView = ::buffa::view::OwnedView<
         'static,
     >,
 >;
+///Shorthand for `OwnedView<ListSignoffsRequestView<'static>>`.
+pub type OwnedListSignoffsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListSignoffsResponseView<'static>>`.
+pub type OwnedListSignoffsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetSignoffRequestView<'static>>`.
+pub type OwnedGetSignoffRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetSignoffResponseView<'static>>`.
+pub type OwnedGetSignoffResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateSignoffRequestView<'static>>`.
+pub type OwnedCreateSignoffRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateSignoffResponseView<'static>>`.
+pub type OwnedCreateSignoffResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListEnrollmentsRequestView<'static>>`.
+pub type OwnedListEnrollmentsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListEnrollmentsResponseView<'static>>`.
+pub type OwnedListEnrollmentsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetEnrollmentRequestView<'static>>`.
+pub type OwnedGetEnrollmentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetEnrollmentResponseView<'static>>`.
+pub type OwnedGetEnrollmentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateEnrollmentRequestView<'static>>`.
+pub type OwnedCreateEnrollmentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateEnrollmentResponseView<'static>>`.
+pub type OwnedCreateEnrollmentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<BatchCreateEnrollmentsRequestView<'static>>`.
+pub type OwnedBatchCreateEnrollmentsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<BatchCreateEnrollmentsResponseView<'static>>`.
+pub type OwnedBatchCreateEnrollmentsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateEnrollmentRequestView<'static>>`.
+pub type OwnedUpdateEnrollmentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateEnrollmentResponseView<'static>>`.
+pub type OwnedUpdateEnrollmentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListStoreDiscountsRequestView<'static>>`.
+pub type OwnedListStoreDiscountsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListStoreDiscountsResponseView<'static>>`.
+pub type OwnedListStoreDiscountsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetStoreDiscountRequestView<'static>>`.
+pub type OwnedGetStoreDiscountRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetStoreDiscountResponseView<'static>>`.
+pub type OwnedGetStoreDiscountResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateStoreDiscountRequestView<'static>>`.
+pub type OwnedUpdateStoreDiscountRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateStoreDiscountResponseView<'static>>`.
+pub type OwnedUpdateStoreDiscountResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<BatchUpdateStoreDiscountsRequestView<'static>>`.
+pub type OwnedBatchUpdateStoreDiscountsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<BatchUpdateStoreDiscountsResponseView<'static>>`.
+pub type OwnedBatchUpdateStoreDiscountsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListDiscountLevelsRequestView<'static>>`.
+pub type OwnedListDiscountLevelsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListDiscountLevelsResponseView<'static>>`.
+pub type OwnedListDiscountLevelsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateDiscountLevelRequestView<'static>>`.
+pub type OwnedUpdateDiscountLevelRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateDiscountLevelResponseView<'static>>`.
+pub type OwnedUpdateDiscountLevelResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListRuleSetsRequestView<'static>>`.
+pub type OwnedListRuleSetsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListRuleSetsResponseView<'static>>`.
+pub type OwnedListRuleSetsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetRuleSetRequestView<'static>>`.
+pub type OwnedGetRuleSetRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetRuleSetResponseView<'static>>`.
+pub type OwnedGetRuleSetResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateRuleVersionRequestView<'static>>`.
+pub type OwnedCreateRuleVersionRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateRuleVersionResponseView<'static>>`.
+pub type OwnedCreateRuleVersionResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListRuleVersionsRequestView<'static>>`.
+pub type OwnedListRuleVersionsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListRuleVersionsResponseView<'static>>`.
+pub type OwnedListRuleVersionsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetRuleVersionRequestView<'static>>`.
+pub type OwnedGetRuleVersionRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetRuleVersionResponseView<'static>>`.
+pub type OwnedGetRuleVersionResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListPublicationsRequestView<'static>>`.
+pub type OwnedListPublicationsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListPublicationsResponseView<'static>>`.
+pub type OwnedListPublicationsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreatePublicationRequestView<'static>>`.
+pub type OwnedCreatePublicationRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreatePublicationResponseView<'static>>`.
+pub type OwnedCreatePublicationResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetPublicationRequestView<'static>>`.
+pub type OwnedGetPublicationRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetPublicationResponseView<'static>>`.
+pub type OwnedGetPublicationResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetDocumentSummaryRequestView<'static>>`.
+pub type OwnedGetDocumentSummaryRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetDocumentSummaryResponseView<'static>>`.
+pub type OwnedGetDocumentSummaryResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListDocumentFoldersRequestView<'static>>`.
+pub type OwnedListDocumentFoldersRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListDocumentFoldersResponseView<'static>>`.
+pub type OwnedListDocumentFoldersResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateDocumentFolderRequestView<'static>>`.
+pub type OwnedCreateDocumentFolderRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateDocumentFolderResponseView<'static>>`.
+pub type OwnedCreateDocumentFolderResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateDocumentFolderRequestView<'static>>`.
+pub type OwnedUpdateDocumentFolderRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateDocumentFolderResponseView<'static>>`.
+pub type OwnedUpdateDocumentFolderResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<DeleteDocumentFolderRequestView<'static>>`.
+pub type OwnedDeleteDocumentFolderRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DeleteDocumentFolderRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListDocumentsRequestView<'static>>`.
+pub type OwnedListDocumentsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ListDocumentsResponseView<'static>>`.
+pub type OwnedListDocumentsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateDocumentRequestView<'static>>`.
+pub type OwnedCreateDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CreateDocumentResponseView<'static>>`.
+pub type OwnedCreateDocumentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CompleteDocumentRequestView<'static>>`.
+pub type OwnedCompleteDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<CompleteDocumentResponseView<'static>>`.
+pub type OwnedCompleteDocumentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetDocumentRequestView<'static>>`.
+pub type OwnedGetDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<GetDocumentResponseView<'static>>`.
+pub type OwnedGetDocumentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateDocumentRequestView<'static>>`.
+pub type OwnedUpdateDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<UpdateDocumentResponseView<'static>>`.
+pub type OwnedUpdateDocumentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<DeleteDocumentRequestView<'static>>`.
+pub type OwnedDeleteDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DeleteDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<DownloadDocumentRequestView<'static>>`.
+pub type OwnedDownloadDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<DownloadDocumentResponseView<'static>>`.
+pub type OwnedDownloadDocumentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentResponseView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ReviewDocumentRequestView<'static>>`.
+pub type OwnedReviewDocumentRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ReviewDocumentResponseView<'static>>`.
+pub type OwnedReviewDocumentResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentResponseView<
+        'static,
+    >,
+>;
 ///Shorthand for `OwnedView<GetOverviewRequestView<'static>>`.
 pub type OwnedGetOverviewRequestView = ::buffa::view::OwnedView<
     crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetOverviewRequestView<
@@ -1409,6 +1817,1392 @@ for ::buffa::view::OwnedView<
     }
 }
 impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
     crate::adapters::generated::grpc_services::buffa::programs::v1::GetOverviewResponse,
 >
 for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetOverviewResponseView<
@@ -1701,6 +3495,216 @@ pub const PROGRAMS_SERVICE_SUBMIT_APPLICATION_SPEC: ::connectrpc::Spec = ::conne
 /// Static [`Spec`](::connectrpc::Spec) for the `WithdrawApplication` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
 pub const PROGRAMS_SERVICE_WITHDRAW_APPLICATION_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
         "/programs.v1.ProgramsService/WithdrawApplication",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListSignoffs` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_SIGNOFFS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListSignoffs",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetSignoff` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_SIGNOFF_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetSignoff",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CreateSignoff` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_CREATE_SIGNOFF_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CreateSignoff",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListEnrollments` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_ENROLLMENTS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListEnrollments",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetEnrollment` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_ENROLLMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetEnrollment",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CreateEnrollment` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_CREATE_ENROLLMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CreateEnrollment",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `BatchCreateEnrollments` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_BATCH_CREATE_ENROLLMENTS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/BatchCreateEnrollments",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `UpdateEnrollment` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_UPDATE_ENROLLMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/UpdateEnrollment",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListStoreDiscounts` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_STORE_DISCOUNTS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListStoreDiscounts",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetStoreDiscount` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_STORE_DISCOUNT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetStoreDiscount",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `UpdateStoreDiscount` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_UPDATE_STORE_DISCOUNT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/UpdateStoreDiscount",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `BatchUpdateStoreDiscounts` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_BATCH_UPDATE_STORE_DISCOUNTS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/BatchUpdateStoreDiscounts",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListDiscountLevels` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_DISCOUNT_LEVELS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListDiscountLevels",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `UpdateDiscountLevel` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_UPDATE_DISCOUNT_LEVEL_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/UpdateDiscountLevel",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListRuleSets` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_RULE_SETS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListRuleSets",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetRuleSet` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_RULE_SET_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetRuleSet",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CreateRuleVersion` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CreateRuleVersion",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListRuleVersions` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_RULE_VERSIONS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListRuleVersions",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetRuleVersion` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_RULE_VERSION_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetRuleVersion",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListPublications` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_PUBLICATIONS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListPublications",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CreatePublication` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_CREATE_PUBLICATION_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CreatePublication",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetPublication` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_PUBLICATION_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetPublication",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetDocumentSummary` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_DOCUMENT_SUMMARY_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetDocumentSummary",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListDocumentFolders` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_DOCUMENT_FOLDERS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListDocumentFolders",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CreateDocumentFolder` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_CREATE_DOCUMENT_FOLDER_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CreateDocumentFolder",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `UpdateDocumentFolder` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_UPDATE_DOCUMENT_FOLDER_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/UpdateDocumentFolder",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `DeleteDocumentFolder` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_DELETE_DOCUMENT_FOLDER_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/DeleteDocumentFolder",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ListDocuments` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_LIST_DOCUMENTS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ListDocuments",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CreateDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_CREATE_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CreateDocument",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `CompleteDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_COMPLETE_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/CompleteDocument",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `GetDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_GET_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/GetDocument",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `UpdateDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_UPDATE_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/UpdateDocument",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `DeleteDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_DELETE_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/DeleteDocument",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `DownloadDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_DOWNLOAD_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/DownloadDocument",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ReviewDocument` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_REVIEW_DOCUMENT_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ReviewDocument",
         ::connectrpc::StreamType::Unary,
     )
     .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
@@ -2414,6 +4418,811 @@ pub trait ProgramsService: Send + Sync + 'static {
         Output = ::connectrpc::ServiceResult<
             impl ::connectrpc::Encodable<
                 crate::adapters::generated::grpc_services::buffa::programs::v1::WithdrawApplicationResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// ---- Signoffs ----
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_signoffs<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetSignoff RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_signoff<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CreateSignoff RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn create_signoff<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// ---- Enrollments ----
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_enrollments<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetEnrollment RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_enrollment<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CreateEnrollment RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn create_enrollment<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the BatchCreateEnrollments RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn batch_create_enrollments<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the UpdateEnrollment RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn update_enrollment<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// ---- Store discounts ----
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_store_discounts<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetStoreDiscount RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_store_discount<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the UpdateStoreDiscount RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn update_store_discount<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the BatchUpdateStoreDiscounts RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn batch_update_store_discounts<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the ListDiscountLevels RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_discount_levels<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the UpdateDiscountLevel RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn update_discount_level<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// ---- Rule sets and publishing ----
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_rule_sets<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetRuleSet RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_rule_set<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CreateRuleVersion RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn create_rule_version<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the ListRuleVersions RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_rule_versions<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetRuleVersion RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_rule_version<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the ListPublications RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_publications<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CreatePublication RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn create_publication<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetPublication RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_publication<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// ---- Documents ----
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_document_summary<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the ListDocumentFolders RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_document_folders<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CreateDocumentFolder RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn create_document_folder<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the UpdateDocumentFolder RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn update_document_folder<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the DeleteDocumentFolder RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn delete_document_folder<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentFolderRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                ::buffa_types::google::protobuf::Empty,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the ListDocuments RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn list_documents<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CreateDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn create_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the CompleteDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn complete_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the GetDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn get_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the UpdateDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn update_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the DeleteDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn delete_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                ::buffa_types::google::protobuf::Empty,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the DownloadDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn download_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the ReviewDocument RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn review_document<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentResponse,
             > + Send + use<'a, Self>,
         >,
     > + Send;
@@ -3326,6 +6135,1017 @@ impl<S: ProgramsService> ProgramsServiceExt for S {
             .with_spec(PROGRAMS_SERVICE_WITHDRAW_APPLICATION_SPEC)
             .route_view(
                 PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListSignoffs",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_signoffs(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_SIGNOFFS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetSignoff",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_signoff(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_SIGNOFF_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CreateSignoff",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.create_signoff(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_CREATE_SIGNOFF_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListEnrollments",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_enrollments(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_ENROLLMENTS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetEnrollment",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_enrollment(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_ENROLLMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CreateEnrollment",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.create_enrollment(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_CREATE_ENROLLMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "BatchCreateEnrollments",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.batch_create_enrollments(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_BATCH_CREATE_ENROLLMENTS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "UpdateEnrollment",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.update_enrollment(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_UPDATE_ENROLLMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListStoreDiscounts",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_store_discounts(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_STORE_DISCOUNTS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetStoreDiscount",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_store_discount(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_STORE_DISCOUNT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "UpdateStoreDiscount",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.update_store_discount(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_UPDATE_STORE_DISCOUNT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "BatchUpdateStoreDiscounts",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.batch_update_store_discounts(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_BATCH_UPDATE_STORE_DISCOUNTS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListDiscountLevels",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_discount_levels(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_DISCOUNT_LEVELS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "UpdateDiscountLevel",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.update_discount_level(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_UPDATE_DISCOUNT_LEVEL_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListRuleSets",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_rule_sets(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_RULE_SETS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetRuleSet",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_rule_set(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_RULE_SET_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CreateRuleVersion",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.create_rule_version(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListRuleVersions",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_rule_versions(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_RULE_VERSIONS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetRuleVersion",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_rule_version(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_RULE_VERSION_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListPublications",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_publications(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_PUBLICATIONS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CreatePublication",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.create_publication(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_CREATE_PUBLICATION_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetPublication",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_publication(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_PUBLICATION_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetDocumentSummary",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_document_summary(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_DOCUMENT_SUMMARY_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListDocumentFolders",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_document_folders(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_DOCUMENT_FOLDERS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CreateDocumentFolder",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.create_document_folder(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_CREATE_DOCUMENT_FOLDER_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "UpdateDocumentFolder",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.update_document_folder(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_UPDATE_DOCUMENT_FOLDER_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "DeleteDocumentFolder",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DeleteDocumentFolderRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentFolderRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.delete_document_folder(ctx, sreq)
+                                .await?
+                                .encode::<::buffa_types::google::protobuf::Empty>(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_DELETE_DOCUMENT_FOLDER_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ListDocuments",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.list_documents(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_LIST_DOCUMENTS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CreateDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.create_document(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_CREATE_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "CompleteDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.complete_document(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_COMPLETE_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "GetDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.get_document(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_GET_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "UpdateDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.update_document(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_UPDATE_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "DeleteDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DeleteDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.delete_document(ctx, sreq)
+                                .await?
+                                .encode::<::buffa_types::google::protobuf::Empty>(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_DELETE_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "DownloadDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.download_document(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_DOWNLOAD_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
+                "ReviewDocument",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.review_document(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_REVIEW_DOCUMENT_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
                 "GetOverview",
                 {
                     let svc = ::std::sync::Arc::clone(&self);
@@ -3631,6 +7451,216 @@ impl<T: ProgramsService> ::connectrpc::Dispatcher for ProgramsServiceServer<T> {
                 Some(
                     ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
                         .with_spec(PROGRAMS_SERVICE_WITHDRAW_APPLICATION_SPEC),
+                )
+            }
+            "ListSignoffs" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_SIGNOFFS_SPEC),
+                )
+            }
+            "GetSignoff" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_SIGNOFF_SPEC),
+                )
+            }
+            "CreateSignoff" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_CREATE_SIGNOFF_SPEC),
+                )
+            }
+            "ListEnrollments" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_ENROLLMENTS_SPEC),
+                )
+            }
+            "GetEnrollment" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_ENROLLMENT_SPEC),
+                )
+            }
+            "CreateEnrollment" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_CREATE_ENROLLMENT_SPEC),
+                )
+            }
+            "BatchCreateEnrollments" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_BATCH_CREATE_ENROLLMENTS_SPEC),
+                )
+            }
+            "UpdateEnrollment" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_UPDATE_ENROLLMENT_SPEC),
+                )
+            }
+            "ListStoreDiscounts" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_STORE_DISCOUNTS_SPEC),
+                )
+            }
+            "GetStoreDiscount" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_STORE_DISCOUNT_SPEC),
+                )
+            }
+            "UpdateStoreDiscount" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_UPDATE_STORE_DISCOUNT_SPEC),
+                )
+            }
+            "BatchUpdateStoreDiscounts" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_BATCH_UPDATE_STORE_DISCOUNTS_SPEC),
+                )
+            }
+            "ListDiscountLevels" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_DISCOUNT_LEVELS_SPEC),
+                )
+            }
+            "UpdateDiscountLevel" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_UPDATE_DISCOUNT_LEVEL_SPEC),
+                )
+            }
+            "ListRuleSets" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_RULE_SETS_SPEC),
+                )
+            }
+            "GetRuleSet" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_RULE_SET_SPEC),
+                )
+            }
+            "CreateRuleVersion" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC),
+                )
+            }
+            "ListRuleVersions" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_RULE_VERSIONS_SPEC),
+                )
+            }
+            "GetRuleVersion" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_RULE_VERSION_SPEC),
+                )
+            }
+            "ListPublications" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_PUBLICATIONS_SPEC),
+                )
+            }
+            "CreatePublication" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_CREATE_PUBLICATION_SPEC),
+                )
+            }
+            "GetPublication" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_PUBLICATION_SPEC),
+                )
+            }
+            "GetDocumentSummary" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_DOCUMENT_SUMMARY_SPEC),
+                )
+            }
+            "ListDocumentFolders" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_DOCUMENT_FOLDERS_SPEC),
+                )
+            }
+            "CreateDocumentFolder" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_CREATE_DOCUMENT_FOLDER_SPEC),
+                )
+            }
+            "UpdateDocumentFolder" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_UPDATE_DOCUMENT_FOLDER_SPEC),
+                )
+            }
+            "DeleteDocumentFolder" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_DELETE_DOCUMENT_FOLDER_SPEC),
+                )
+            }
+            "ListDocuments" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_LIST_DOCUMENTS_SPEC),
+                )
+            }
+            "CreateDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_CREATE_DOCUMENT_SPEC),
+                )
+            }
+            "CompleteDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_COMPLETE_DOCUMENT_SPEC),
+                )
+            }
+            "GetDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_GET_DOCUMENT_SPEC),
+                )
+            }
+            "UpdateDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_UPDATE_DOCUMENT_SPEC),
+                )
+            }
+            "DeleteDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_DELETE_DOCUMENT_SPEC),
+                )
+            }
+            "DownloadDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_DOWNLOAD_DOCUMENT_SPEC),
+                )
+            }
+            "ReviewDocument" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_REVIEW_DOCUMENT_SPEC),
                 )
             }
             "GetOverview" => {
@@ -4273,6 +8303,772 @@ impl<T: ProgramsService> ::connectrpc::Dispatcher for ProgramsServiceServer<T> {
                         .await?
                         .encode::<
                             crate::adapters::generated::grpc_services::buffa::programs::v1::WithdrawApplicationResponse,
+                        >(format)
+                })
+            }
+            "ListSignoffs" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_signoffs(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsResponse,
+                        >(format)
+                })
+            }
+            "GetSignoff" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_signoff(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffResponse,
+                        >(format)
+                })
+            }
+            "CreateSignoff" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffRequest,
+                    >::from_parts(&req, &body);
+                    svc.create_signoff(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffResponse,
+                        >(format)
+                })
+            }
+            "ListEnrollments" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_enrollments(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsResponse,
+                        >(format)
+                })
+            }
+            "GetEnrollment" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_enrollment(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentResponse,
+                        >(format)
+                })
+            }
+            "CreateEnrollment" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentRequest,
+                    >::from_parts(&req, &body);
+                    svc.create_enrollment(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentResponse,
+                        >(format)
+                })
+            }
+            "BatchCreateEnrollments" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsRequest,
+                    >::from_parts(&req, &body);
+                    svc.batch_create_enrollments(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsResponse,
+                        >(format)
+                })
+            }
+            "UpdateEnrollment" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentRequest,
+                    >::from_parts(&req, &body);
+                    svc.update_enrollment(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentResponse,
+                        >(format)
+                })
+            }
+            "ListStoreDiscounts" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_store_discounts(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsResponse,
+                        >(format)
+                })
+            }
+            "GetStoreDiscount" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_store_discount(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountResponse,
+                        >(format)
+                })
+            }
+            "UpdateStoreDiscount" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountRequest,
+                    >::from_parts(&req, &body);
+                    svc.update_store_discount(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountResponse,
+                        >(format)
+                })
+            }
+            "BatchUpdateStoreDiscounts" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsRequest,
+                    >::from_parts(&req, &body);
+                    svc.batch_update_store_discounts(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsResponse,
+                        >(format)
+                })
+            }
+            "ListDiscountLevels" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_discount_levels(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsResponse,
+                        >(format)
+                })
+            }
+            "UpdateDiscountLevel" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelRequest,
+                    >::from_parts(&req, &body);
+                    svc.update_discount_level(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelResponse,
+                        >(format)
+                })
+            }
+            "ListRuleSets" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_rule_sets(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsResponse,
+                        >(format)
+                })
+            }
+            "GetRuleSet" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_rule_set(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetResponse,
+                        >(format)
+                })
+            }
+            "CreateRuleVersion" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionRequest,
+                    >::from_parts(&req, &body);
+                    svc.create_rule_version(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+                        >(format)
+                })
+            }
+            "ListRuleVersions" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_rule_versions(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsResponse,
+                        >(format)
+                })
+            }
+            "GetRuleVersion" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_rule_version(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionResponse,
+                        >(format)
+                })
+            }
+            "ListPublications" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_publications(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsResponse,
+                        >(format)
+                })
+            }
+            "CreatePublication" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationRequest,
+                    >::from_parts(&req, &body);
+                    svc.create_publication(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationResponse,
+                        >(format)
+                })
+            }
+            "GetPublication" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_publication(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationResponse,
+                        >(format)
+                })
+            }
+            "GetDocumentSummary" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_document_summary(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryResponse,
+                        >(format)
+                })
+            }
+            "ListDocumentFolders" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_document_folders(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersResponse,
+                        >(format)
+                })
+            }
+            "CreateDocumentFolder" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderRequest,
+                    >::from_parts(&req, &body);
+                    svc.create_document_folder(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderResponse,
+                        >(format)
+                })
+            }
+            "UpdateDocumentFolder" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderRequest,
+                    >::from_parts(&req, &body);
+                    svc.update_document_folder(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderResponse,
+                        >(format)
+                })
+            }
+            "DeleteDocumentFolder" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentFolderRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DeleteDocumentFolderRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentFolderRequest,
+                    >::from_parts(&req, &body);
+                    svc.delete_document_folder(ctx, req)
+                        .await?
+                        .encode::<::buffa_types::google::protobuf::Empty>(format)
+                })
+            }
+            "ListDocuments" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsRequest,
+                    >::from_parts(&req, &body);
+                    svc.list_documents(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsResponse,
+                        >(format)
+                })
+            }
+            "CreateDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.create_document(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentResponse,
+                        >(format)
+                })
+            }
+            "CompleteDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.complete_document(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentResponse,
+                        >(format)
+                })
+            }
+            "GetDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.get_document(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentResponse,
+                        >(format)
+                })
+            }
+            "UpdateDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.update_document(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentResponse,
+                        >(format)
+                })
+            }
+            "DeleteDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DeleteDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.delete_document(ctx, req)
+                        .await?
+                        .encode::<::buffa_types::google::protobuf::Empty>(format)
+                })
+            }
+            "DownloadDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.download_document(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentResponse,
+                        >(format)
+                })
+            }
+            "ReviewDocument" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentRequest,
+                    >::from_parts(&req, &body);
+                    svc.review_document(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentResponse,
                         >(format)
                 })
             }
@@ -5712,6 +10508,1573 @@ where
                 &self.transport,
                 &self.config,
                 PROGRAMS_SERVICE_WITHDRAW_APPLICATION_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListSignoffs RPC. Sends a request to /programs.v1.ProgramsService/ListSignoffs.
+    pub async fn list_signoffs(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_signoffs_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListSignoffs RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_signoffs_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListSignoffsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSignoffsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_SIGNOFFS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetSignoff RPC. Sends a request to /programs.v1.ProgramsService/GetSignoff.
+    pub async fn get_signoff(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_signoff_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetSignoff RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_signoff_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetSignoffRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetSignoffResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_SIGNOFF_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CreateSignoff RPC. Sends a request to /programs.v1.ProgramsService/CreateSignoff.
+    pub async fn create_signoff(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.create_signoff_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CreateSignoff RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn create_signoff_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateSignoffRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateSignoffResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_CREATE_SIGNOFF_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListEnrollments RPC. Sends a request to /programs.v1.ProgramsService/ListEnrollments.
+    pub async fn list_enrollments(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_enrollments_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListEnrollments RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_enrollments_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListEnrollmentsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListEnrollmentsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_ENROLLMENTS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetEnrollment RPC. Sends a request to /programs.v1.ProgramsService/GetEnrollment.
+    pub async fn get_enrollment(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_enrollment_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetEnrollment RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_enrollment_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetEnrollmentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetEnrollmentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_ENROLLMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CreateEnrollment RPC. Sends a request to /programs.v1.ProgramsService/CreateEnrollment.
+    pub async fn create_enrollment(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.create_enrollment_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CreateEnrollment RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn create_enrollment_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateEnrollmentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateEnrollmentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_CREATE_ENROLLMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the BatchCreateEnrollments RPC. Sends a request to /programs.v1.ProgramsService/BatchCreateEnrollments.
+    pub async fn batch_create_enrollments(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.batch_create_enrollments_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the BatchCreateEnrollments RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn batch_create_enrollments_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::BatchCreateEnrollmentsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchCreateEnrollmentsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_BATCH_CREATE_ENROLLMENTS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the UpdateEnrollment RPC. Sends a request to /programs.v1.ProgramsService/UpdateEnrollment.
+    pub async fn update_enrollment(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.update_enrollment_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the UpdateEnrollment RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn update_enrollment_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateEnrollmentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateEnrollmentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_UPDATE_ENROLLMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListStoreDiscounts RPC. Sends a request to /programs.v1.ProgramsService/ListStoreDiscounts.
+    pub async fn list_store_discounts(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_store_discounts_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListStoreDiscounts RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_store_discounts_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListStoreDiscountsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListStoreDiscountsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_STORE_DISCOUNTS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetStoreDiscount RPC. Sends a request to /programs.v1.ProgramsService/GetStoreDiscount.
+    pub async fn get_store_discount(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_store_discount_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetStoreDiscount RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_store_discount_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetStoreDiscountRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetStoreDiscountResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_STORE_DISCOUNT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the UpdateStoreDiscount RPC. Sends a request to /programs.v1.ProgramsService/UpdateStoreDiscount.
+    pub async fn update_store_discount(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.update_store_discount_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the UpdateStoreDiscount RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn update_store_discount_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateStoreDiscountRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateStoreDiscountResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_UPDATE_STORE_DISCOUNT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the BatchUpdateStoreDiscounts RPC. Sends a request to /programs.v1.ProgramsService/BatchUpdateStoreDiscounts.
+    pub async fn batch_update_store_discounts(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.batch_update_store_discounts_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the BatchUpdateStoreDiscounts RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn batch_update_store_discounts_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateStoreDiscountsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateStoreDiscountsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_BATCH_UPDATE_STORE_DISCOUNTS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListDiscountLevels RPC. Sends a request to /programs.v1.ProgramsService/ListDiscountLevels.
+    pub async fn list_discount_levels(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_discount_levels_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListDiscountLevels RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_discount_levels_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListDiscountLevelsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDiscountLevelsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_DISCOUNT_LEVELS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the UpdateDiscountLevel RPC. Sends a request to /programs.v1.ProgramsService/UpdateDiscountLevel.
+    pub async fn update_discount_level(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.update_discount_level_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the UpdateDiscountLevel RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn update_discount_level_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDiscountLevelRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDiscountLevelResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_UPDATE_DISCOUNT_LEVEL_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListRuleSets RPC. Sends a request to /programs.v1.ProgramsService/ListRuleSets.
+    pub async fn list_rule_sets(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_rule_sets_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListRuleSets RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_rule_sets_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleSetsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleSetsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_RULE_SETS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetRuleSet RPC. Sends a request to /programs.v1.ProgramsService/GetRuleSet.
+    pub async fn get_rule_set(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_rule_set_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetRuleSet RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_rule_set_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleSetRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleSetResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_RULE_SET_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CreateRuleVersion RPC. Sends a request to /programs.v1.ProgramsService/CreateRuleVersion.
+    pub async fn create_rule_version(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.create_rule_version_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CreateRuleVersion RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn create_rule_version_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateRuleVersionResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListRuleVersions RPC. Sends a request to /programs.v1.ProgramsService/ListRuleVersions.
+    pub async fn list_rule_versions(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_rule_versions_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListRuleVersions RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_rule_versions_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_RULE_VERSIONS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetRuleVersion RPC. Sends a request to /programs.v1.ProgramsService/GetRuleVersion.
+    pub async fn get_rule_version(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_rule_version_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetRuleVersion RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_rule_version_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetRuleVersionRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetRuleVersionResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_RULE_VERSION_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListPublications RPC. Sends a request to /programs.v1.ProgramsService/ListPublications.
+    pub async fn list_publications(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_publications_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListPublications RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_publications_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListPublicationsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListPublicationsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_PUBLICATIONS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CreatePublication RPC. Sends a request to /programs.v1.ProgramsService/CreatePublication.
+    pub async fn create_publication(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.create_publication_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CreatePublication RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn create_publication_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreatePublicationRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreatePublicationResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_CREATE_PUBLICATION_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetPublication RPC. Sends a request to /programs.v1.ProgramsService/GetPublication.
+    pub async fn get_publication(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_publication_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetPublication RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_publication_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetPublicationRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetPublicationResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_PUBLICATION_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetDocumentSummary RPC. Sends a request to /programs.v1.ProgramsService/GetDocumentSummary.
+    pub async fn get_document_summary(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_document_summary_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetDocumentSummary RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_document_summary_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentSummaryRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentSummaryResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_DOCUMENT_SUMMARY_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListDocumentFolders RPC. Sends a request to /programs.v1.ProgramsService/ListDocumentFolders.
+    pub async fn list_document_folders(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_document_folders_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListDocumentFolders RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_document_folders_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentFoldersRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentFoldersResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_DOCUMENT_FOLDERS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CreateDocumentFolder RPC. Sends a request to /programs.v1.ProgramsService/CreateDocumentFolder.
+    pub async fn create_document_folder(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.create_document_folder_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CreateDocumentFolder RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn create_document_folder_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentFolderRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentFolderResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_CREATE_DOCUMENT_FOLDER_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the UpdateDocumentFolder RPC. Sends a request to /programs.v1.ProgramsService/UpdateDocumentFolder.
+    pub async fn update_document_folder(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.update_document_folder_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the UpdateDocumentFolder RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn update_document_folder_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentFolderRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentFolderResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_UPDATE_DOCUMENT_FOLDER_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the DeleteDocumentFolder RPC. Sends a request to /programs.v1.ProgramsService/DeleteDocumentFolder.
+    pub async fn delete_document_folder(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentFolderRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                ::buffa_types::google::protobuf::__buffa::view::EmptyView<'static>,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.delete_document_folder_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the DeleteDocumentFolder RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn delete_document_folder_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentFolderRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                ::buffa_types::google::protobuf::__buffa::view::EmptyView<'static>,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_DELETE_DOCUMENT_FOLDER_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ListDocuments RPC. Sends a request to /programs.v1.ProgramsService/ListDocuments.
+    pub async fn list_documents(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.list_documents_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ListDocuments RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn list_documents_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ListDocumentsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListDocumentsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_LIST_DOCUMENTS_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CreateDocument RPC. Sends a request to /programs.v1.ProgramsService/CreateDocument.
+    pub async fn create_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.create_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CreateDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn create_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CreateDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CreateDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_CREATE_DOCUMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the CompleteDocument RPC. Sends a request to /programs.v1.ProgramsService/CompleteDocument.
+    pub async fn complete_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.complete_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the CompleteDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn complete_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::CompleteDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::CompleteDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_COMPLETE_DOCUMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the GetDocument RPC. Sends a request to /programs.v1.ProgramsService/GetDocument.
+    pub async fn get_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.get_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the GetDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn get_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::GetDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::GetDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_GET_DOCUMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the UpdateDocument RPC. Sends a request to /programs.v1.ProgramsService/UpdateDocument.
+    pub async fn update_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.update_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the UpdateDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn update_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::UpdateDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::UpdateDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_UPDATE_DOCUMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the DeleteDocument RPC. Sends a request to /programs.v1.ProgramsService/DeleteDocument.
+    pub async fn delete_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                ::buffa_types::google::protobuf::__buffa::view::EmptyView<'static>,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.delete_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the DeleteDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn delete_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::DeleteDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                ::buffa_types::google::protobuf::__buffa::view::EmptyView<'static>,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_DELETE_DOCUMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the DownloadDocument RPC. Sends a request to /programs.v1.ProgramsService/DownloadDocument.
+    pub async fn download_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.download_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the DownloadDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn download_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::DownloadDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::DownloadDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_DOWNLOAD_DOCUMENT_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ReviewDocument RPC. Sends a request to /programs.v1.ProgramsService/ReviewDocument.
+    pub async fn review_document(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.review_document_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ReviewDocument RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn review_document_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ReviewDocumentRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ReviewDocumentResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_REVIEW_DOCUMENT_SPEC
                     .with_origin(::connectrpc::SpecOrigin::Client),
                 request,
                 options,

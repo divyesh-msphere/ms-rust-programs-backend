@@ -1,0 +1,1 @@
+-- The system folders and counters are data: removing them would orphan documents, so the down migration leaves them.

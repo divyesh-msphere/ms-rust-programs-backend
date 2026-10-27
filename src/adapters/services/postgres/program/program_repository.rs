@@ -246,6 +246,24 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             .await
             .map_err(db_error)?;
 
+        // The Documents page's counters row and its four system folders, for the same reason.
+        sqlx::query("INSERT INTO program_storage (program_id) VALUES ($1)")
+            .bind(id)
+            .execute(&mut *tx)
+            .await
+            .map_err(db_error)?;
+        sqlx::query(
+            "INSERT INTO document_folders (id, program_id, name, key, system) \
+             SELECT gen_random_uuid(), $1, f.name, f.key, true FROM (VALUES \
+                ('general', 'General'), ('import_artifacts', 'Import artifacts'), \
+                ('program_documents', 'Program Documents'), ('store_enrollment_documents', 'Store Enrollment Documents') \
+             ) AS f (key, name)",
+        )
+        .bind(id)
+        .execute(&mut *tx)
+        .await
+        .map_err(db_error)?;
+
         let program = ProgramDbMapper::to_entity(model);
         record_change(&mut tx, id, &input.actor, "created", None, Some(snapshot(&program)))
             .await

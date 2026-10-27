@@ -24,6 +24,7 @@ impl DbMapper<ModuleDefinition, ModuleDefinitionDbModel> for ModuleDefinitionDbM
             api_base: model.api_base,
             selectable: model.selectable,
             allow_components: model.allow_components,
+            default_mode: model.default_mode,
             create_time: model.create_time,
             update_time: model.update_time,
         }
@@ -48,6 +49,7 @@ impl DbMapper<ModuleDefinition, ModuleDefinitionDbModel> for ModuleDefinitionDbM
             api_base: entity.api_base,
             selectable: entity.selectable,
             allow_components: entity.allow_components,
+            default_mode: entity.default_mode,
             create_time: entity.create_time,
             update_time: entity.update_time,
         }

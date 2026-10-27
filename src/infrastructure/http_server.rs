@@ -47,7 +47,6 @@ pub async fn http_server(
             application_config: deps.application_config.clone(),
             repositories: deps.repositories.clone(),
             use_cases: deps.use_cases.clone(),
-            library_catalog: deps.library_catalog.clone(),
         });
 
         // Opt-in CORS for browser tools such as Swagger UI's "Try it out". Off unless an
@@ -63,7 +62,7 @@ pub async fn http_server(
             .app_data(data.clone())
             .app_data(web::JsonConfig::default().error_handler(json_error_handler))
             .app_data(web::QueryConfig::default().error_handler(query_error_handler))
-            .configure(routes)
+            .configure(routes(deps.application_config.features.enrollment_review))
             .default_service(web::route().to(not_found_handler))
             .wrap(TracingLogger::<HealthSkippingRootSpanBuilder>::new())
             .wrap(middleware::NormalizePath::new(

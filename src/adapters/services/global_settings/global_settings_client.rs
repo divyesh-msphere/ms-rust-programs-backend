@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
-use tracing::{debug, warn};
+use tracing::warn;
 use uuid::Uuid;
 
 /// A cached library may be served for this many multiples of the soft TTL while global-settings
@@ -18,8 +18,6 @@ const HARD_TTL_FACTOR: u32 = 40;
 ///   * a cached library is returned from memory with no network call;
 ///   * once it is older than the soft TTL it is STILL returned immediately, and refreshed in
 ///     the background (stale-while-revalidate), so no reader ever waits on a refresh;
-///   * a change event from global-settings (`invalidate`) drops the cache and re-warms it, so
-///     an option added or renamed there shows up right away;
 ///   * only a library that has never been read (or is past the hard TTL) costs one network call.
 pub struct GlobalSettingsClient {
     inner: Arc<Inner>,
@@ -213,25 +211,6 @@ impl LibraryCatalog for GlobalSettingsClient {
             }
             // Never read, or too old to trust: one network call, then it is cached.
             _ => self.inner.load(library_id).await,
-        }
-    }
-
-    fn invalidate(&self, library_id: Option<Uuid>) {
-        let dropped: Vec<Uuid> = {
-            let mut cache = self.inner.cache.write().unwrap_or_else(|e| e.into_inner());
-            match library_id {
-                Some(id) => cache.remove(&id).map(|_| id).into_iter().collect(),
-                None => cache.drain().map(|(id, _)| id).collect(),
-            }
-        };
-        debug!(count = dropped.len(), "global-settings cache invalidated");
-
-        // Re-warm in the background, so the next page load is usually a memory hit again.
-        for id in dropped {
-            let inner = self.inner.clone();
-            tokio::spawn(async move {
-                let _ = inner.load(id).await;
-            });
         }
     }
 }

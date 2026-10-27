@@ -55,14 +55,17 @@ overrides:
   # it is not a paginated list, so it has no next_page_token.
   - files:
       - "openapi.yaml#/components/responses/ProgramModulesResponse"
+      - "openapi.yaml#/components/responses/RuleSetsResponse"
+      - "openapi.yaml#/components/responses/DocumentFoldersResponse"
     rules:
       aep-158-response-next-page-token-property: "off"
-  # The global-settings webhook is an internal event receiver, not an AEP resource: the linter's
+  # The document-scan webhook is an internal event receiver, not an AEP resource: the linter's
   # path-shape heuristic reads a POST to it as a Create and expects a resource body, an id
   # parameter and an AEP-133 operation id, none of which apply to an event delivery.
   - files:
-      - "openapi.yaml#/paths/~1webhooks~1global-settings/post"
-      - "openapi.yaml#/paths/~1webhooks~1global-settings"
+      - "openapi.yaml#/paths/~1webhooks~1document-scan/post"
+      - "openapi.yaml#/paths/~1webhooks~1document-scan"
+      - "openapi.yaml#/components/schemas/DocumentScanEvent"
     rules:
       aep-133-operation-id: "off"
       aep-133-id-parameter: "off"
@@ -72,7 +75,21 @@ overrides:
   # response is not a paginated list and has no next_page_token.
   - files:
       - "openapi.yaml#/components/schemas/ListFieldValuesResponse"
-      - "openapi.yaml#/components/schemas/ListRequirementsResponse"
-      - "openapi.yaml#/components/schemas/ListApprovalStepsResponse"
+      - "openapi.enrollment-review.yaml#/components/schemas/ListRequirementsResponse"
+      - "openapi.enrollment-review.yaml#/components/schemas/ListApprovalStepsResponse"
+      - "openapi.enrollment-review.yaml#/components/schemas/ListSignoffsResponse"
+      - "openapi.yaml#/components/schemas/DiscountLevels"
     rules:
       aep-158-response-next-page-token-property: "off"
+  # The program and domain discount levels are not resources of their own (they are two views of the
+  # discount a store inherits), so their response has no next_page_token and is not an AEP resource body.
+  - files:
+      - "openapi.yaml#/components/schemas/DiscountLevel"
+    rules:
+      aep-134-response-body: "off"
+  # Starting an upload answers with the new file AND the presigned request to send its bytes to: two things,
+  # not one resource body.
+  - files:
+      - "openapi.yaml#/components/schemas/CreateDocumentResponse"
+    rules:
+      aep-133-response-body: "off"

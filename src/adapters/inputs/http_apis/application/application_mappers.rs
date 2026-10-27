@@ -23,7 +23,7 @@ pub fn to_presenter(application: Application) -> ApplicationPresenter {
         store_name: application.store_name,
         website_id: application.website_id,
         website_name: application.website_name,
-        actions: allowed_actions(&application.status),
+        actions: allowed_actions(&application.status, application.current_step_id.is_some()),
         status: application.status,
         current_step_id: application.current_step_id.map(|id| id.to_string()),
         current_step_name: application.current_step_name,

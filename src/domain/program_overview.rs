@@ -29,7 +29,8 @@ pub struct RuleSync {
     pub module_key: String,
     pub name: String,
     pub rule_type: Option<String>,
-    /// `never` (never published), `drifted` (a newer draft exists) or `in_sync`.
+    /// `empty` (no rules saved yet), `never` (saved but never published), `drifted` (a newer draft than what is
+    /// live) or `in_sync`.
     pub state: String,
     pub draft_version: Option<i32>,
     pub published_version: Option<i32>,
@@ -37,6 +38,8 @@ pub struct RuleSync {
 
 pub fn rule_state(draft_version: Option<i32>, published_version: Option<i32>) -> &'static str {
     match (draft_version, published_version) {
+        // Nothing saved yet: there is nothing to publish, so it is not drift.
+        (None, None) => "empty",
         (_, None) => "never",
         (Some(draft), Some(published)) if draft > published => "drifted",
         _ => "in_sync",
@@ -68,8 +71,12 @@ impl AuditEntry {
             "program" => "Program",
             other => other,
         };
-        if self.target_type == "application" {
-            return format!("Application {}", self.action);
+        match self.target_type.as_str() {
+            "application" => return format!("Application {}", self.action.replace('_', " ")),
+            "enrollment" => return format!("Enrollment {}", self.action.replace('_', " ")),
+            "document" => return format!("Document {}", self.action.replace('_', " ")),
+            "document_folder" => return format!("Folder {}", self.action.replace('_', " ")),
+            _ => {}
         }
         match self.action.as_str() {
             "created" => format!("{what} created"),
@@ -171,7 +178,7 @@ mod tests {
 
     #[test]
     fn rule_states() {
-        assert_eq!(rule_state(None, None), "never");
+        assert_eq!(rule_state(None, None), "empty");
         assert_eq!(rule_state(Some(3), None), "never");
         assert_eq!(rule_state(Some(3), Some(3)), "in_sync");
         assert_eq!(rule_state(Some(4), Some(3)), "drifted");
@@ -183,6 +190,10 @@ mod tests {
     fn summaries_read_like_the_screen() {
         assert_eq!(entry("created", "program").summary(), "Program created");
         assert_eq!(entry("submitted", "application").summary(), "Application submitted");
+        assert_eq!(entry("step_approved", "application").summary(), "Application step approved");
+        assert_eq!(entry("status_changed", "enrollment").summary(), "Enrollment status changed");
+        assert_eq!(entry("uploaded", "document").summary(), "Document uploaded");
+        assert_eq!(entry("renamed", "document_folder").summary(), "Folder renamed");
         assert_eq!(entry("updated", "program").summary(), "Program updated");
         assert_eq!(entry("deleted", "program").summary(), "Program deleted");
         assert_eq!(entry("undeleted", "program").summary(), "Program restored");

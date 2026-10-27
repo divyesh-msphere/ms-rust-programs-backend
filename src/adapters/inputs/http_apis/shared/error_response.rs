@@ -77,6 +77,16 @@ impl ErrorResponse {
                 "RESOURCE_EXHAUSTED",
                 "Too Many Requests",
             ),
+            ApplicationErrorKind::PayloadTooLarge => (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "PAYLOAD_TOO_LARGE",
+                "Payload Too Large",
+            ),
+            ApplicationErrorKind::UnsupportedMediaType => (
+                StatusCode::UNSUPPORTED_MEDIA_TYPE,
+                "UNSUPPORTED_MEDIA_TYPE",
+                "Unsupported Media Type",
+            ),
             ApplicationErrorKind::UnprocessableEntity => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "UNPROCESSABLE_ENTITY",

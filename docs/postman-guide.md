@@ -20,14 +20,31 @@ APP__GRPC_PORT=50061 cargo run --bin programs_grpc
 
 Check: `curl localhost:8090/health` → `{"status":"ok","service":"programs",...}`.
 
+**Documents also need object storage** (the file bytes; Postgres keeps only the metadata). Start the S3-compatible MinIO from the
+compose file, which also creates the bucket:
+
+```bash
+docker compose up -d minio      # S3 API http://localhost:9000, console http://localhost:9001 (programs / programs-local-secret)
+```
+
+The service reads it from the `[storage]` section of `src/config/config.toml` (override with `APP__STORAGE__ENDPOINT`, ...). The collection's
+**Documents** folders upload real files to it.
+
 ## 2. Import into Postman (HTTP)
 
 1. **Import** → both files from the [postman/](../postman/) folder:
    - `programs.postman_collection.json`
    - `programs.local.postman_environment.json`
+   - `enrollment-review.postman_collection.json` (Requirements, Approval steps, Applications, Signoffs; see below)
 2. Top right, choose the environment **Programs local**. Its variables: `base_url` = `http://localhost:8090`,
    `grpc_host` = `localhost:50061`.
 3. Run the collection (**Run** → **Run Programs API (local)**), or send requests one by one, **top to bottom**.
+
+**Two collections.** Requirements, Approval steps, Applications and Signoffs are switched off by default, so their requests live in
+`enrollment-review.postman_collection.json`. Run the main collection with the server as it starts (switch off): the **Parked modules
+(switched off)** folder checks that those paths answer 404 and the two pages cannot be selected. To run the other collection, start the
+server with `APP__FEATURES__ENROLLMENT_REVIEW=true` first. Run each collection against the matching server; the main one against a
+server with the switch on would fail its "Parked modules" folder. See [parked-enrollment-review.md](parked-enrollment-review.md).
 
 The collection generates a fresh slug (`pm-<time>`) on the first run, keeps it in the `slug` and `program_id`
 variables, and **deletes its test program at the end**, so you can run it again and again. Expected result:
@@ -38,7 +55,6 @@ variables, and **deletes its test program at the end**, so you can run it again 
 | **Programs** | create → list → get by slug / by id → module manifest → update → delete → list deleted → undelete |
 | **Settings and rules** | build a program with a **rule** leaf and a **settings** leaf (every type), read it back, replace its settings, change modes, switch modules off, add a new module |
 | **Setting values** | save the values admins enter (every type, in one request), read them back, the version check, clearing, and options that disappear |
-| **Webhook (global-settings -> programs)** | the event global-settings sends when a library changes |
 | **Programs - negative checks** | duplicate slug 409, bad slug / level / module / name 422, unknown program 404, undelete of a live program 400 |
 | **Settings and rules - negative checks** | 21 rejected payloads (bad type, library + own options, unknown library, duplicate names, wrong default, ...) |
 | **Setting values - negative checks** | 14 rejected saves (wrong type, wrong option, required cleared, unknown setting, ...) |
@@ -186,12 +202,10 @@ setting with saved values cannot change type; defaults must match the type; at m
 A rejected request saves nothing.
 
 **Library options** (`library_id`) are read from global-settings and kept in memory: a read costs about **2 ms** with the options
-included. They stay current: global-settings calls `POST /webhooks/global-settings` when a library, attribute or option changes and
-the cache is cleared and re-read, so a new or renamed option shows up on the very next read; anything missed is refreshed in the
-background every 30 seconds. If global-settings is down, the page still loads and the affected setting reports
-`"library_error": "unavailable"`. To make it work locally set `[global_settings] base_url` (default `http://localhost:8000`) and
-give global-settings `APP__ENABLE_EVENT=true` and a webhook URL of `http://localhost:8090/webhooks/global-settings` (a library must also
-have `event_enabled`). The Postman variable `library_id` must be a library that exists there.
+included. They stay current by refreshing in the background: a copy older than 30 seconds is still served, and re-read, so a new or renamed
+option shows up within about 30 seconds (there is no webhook from global-settings). If global-settings is down, the page still loads and the affected setting reports
+`"library_error": "unavailable"`. To make it work locally set `[global_settings] base_url` (default `http://localhost:8000`) and run
+global-settings there. The Postman variable `library_id` must be a library that exists there.
 
 ### Saving the values
 
@@ -224,6 +238,28 @@ POST /programs/kbb/field-values:batchUpdate
   them with the version. A saved choice whose option was since deactivated or removed from its library is kept and listed in
   `missing_option_ids`, so the page can warn; it can no longer be chosen.
 
+### Fees (a rule page that starts with a rule)
+
+Folder **Fees (a rule by default)**. Fees (`order_transaction.core_returns.fees`, in Core Returns) is a Rule leaf as soon as a program selects it, with no
+Settings or Rules choice. The folder shows it three ways (its own key, its group `order_transaction.core_returns`, and a later PATCH), then reads the
+**starter rule** that is already saved: draft 1, valid, a GoRules decision graph (request, one decision table with one row that charges 0, response).
+It then publishes that rule as it is, saves an edit (version 2), and shows that Fees cannot become a Settings page once it has versions (400).
+`default_mode` appears on every module definition (`rule` for Fees, `null` for the rest).
+
+### Module definitions (the catalog; what Create Program uses)
+
+Read-only: the list of every page a program can have, as a tree. Folders **Module definitions** and **Module definitions - negative checks** (the first two in the collection).
+
+- `GET /module-definitions`: the six main modules (Overview, Catalog & Pricing, Enrollment, Document & Agreements, Order & Transaction, Configuration & Oversight), in display order, with
+  `total_size`. **Overview is `selectable: false`** (it is added to every program automatically), so Create Program shows the other five.
+- `GET /module-definitions?parent_id={id}`: the direct children of one module (the right panel of Create Program). A leaf, or an unknown id, gives an empty list.
+- `GET /module-definitions?full_tree=true`: the **whole tree in one call**, nested under `children` (71 modules). With `&parent_id={id}` it returns the tree below that module (unknown id: **404**).
+  The simplest way to build Create Program is to load this once and render it.
+- `GET /module-definitions/{id or key}`: one module, for example `/module-definitions/enrollment`.
+- Paging uses `max_page_size` (default 50, capped at 200, **400** if below 1) and `page_token` (a UUID; **400** if it is not one).
+- There is no write API: the catalog comes from seed migrations (`POST /module-definitions` is a 404).
+- gRPC: `ListModuleDefinitions` and `GetModuleDefinition`.
+
 ### Overview and audit log
 
 - `GET /programs/{program}/overview` is the default page every program has. One call returns the program, `stats`, the `funnel`
@@ -235,6 +271,8 @@ POST /programs/kbb/field-values:batchUpdate
 - gRPC: `programs.v1.ProgramsService/GetOverview` and `/ListAuditLogs` (same fields).
 
 ### Requirements
+
+> **Parked.** These requests are in `enrollment-review.postman_collection.json` and need `APP__FEATURES__ENROLLMENT_REVIEW=true`.
 
 What a store must satisfy before it can be approved. Types: `signup`, `card_on_file`, `credit_application`, `contract` (one of each
 per program; a second gives **409**) and `custom_field` (as many as you like).
@@ -251,6 +289,8 @@ per program; a second gives **409**) and `custom_field` (as many as you like).
 
 ### Approval steps
 
+> **Parked.** These requests are in `enrollment-review.postman_collection.json` and need `APP__FEATURES__ENROLLMENT_REVIEW=true`.
+
 The sign-offs an application goes through, in order; each step is decided by one role (`approver_role`).
 
 - `GET /programs/{program}/approval-steps` lists them in order (never paged).
@@ -265,6 +305,8 @@ The sign-offs an application goes through, in order; each step is decided by one
 - The library-backed folders need global-settings running on port 8000.
 
 ### Applications
+
+> **Parked.** These requests are in `enrollment-review.postman_collection.json` and need `APP__FEATURES__ENROLLMENT_REVIEW=true`.
 
 A store's request to join a program (the Application Panel under Enrollment). Statuses: `draft`, `submitted`, `in_review`,
 `approved`, `rejected`, `withdrawn`.
@@ -281,9 +323,161 @@ A store's request to join a program (the Application Panel under Enrollment). St
 - Any move the status does not allow gives **400** (`cannot submit an application that is already submitted`).
 - Each change updates the Overview counters and the funnel in the same transaction and shows up in the history as
   `Application created` / `submitted` / `withdrawn`. Applications are data, not configuration: they do **not** bump `config_version`.
-- Approve / reject (signoffs) and answers checking are not built yet.
+- Approve and reject are Signoffs (below). Checking `answers` against the requirements is not built yet.
 - gRPC: `ListApplications`, `GetApplication`, `CreateApplication`, `SubmitApplication`, `WithdrawApplication`.
 - Collection folders: **Applications** and **Applications - negative checks**.
+
+### Signoffs (approve and reject)
+
+> **Parked.** These requests are in `enrollment-review.postman_collection.json` and need `APP__FEATURES__ENROLLMENT_REVIEW=true`.
+
+An approver's decision on the approval step an application is waiting at. Recorded once, never changed.
+
+- `POST /programs/{program}/applications/{application}/signoffs` with `{decision: "approved" | "rejected", comment?, approval_step_id?}`.
+  - `approved` moves the application to the next step (status `in_review`); approving the **last** step approves the application.
+  - `rejected` rejects it, at any step.
+  - Only a `submitted` or `in_review` application that is waiting at a step can be decided (**400** otherwise: a draft, a decided or
+    withdrawn one, or one whose program had no approval steps when it was submitted).
+  - Send `approval_step_id` (the step you were looking at): if the application has moved on, the answer is **409** and nothing is
+    written. This makes a double click, or two approvers at once, safe.
+  - The approver is the `X-User-Id` header (`system` when absent). Checking that the approver has the step's `approver_role` waits for
+    authentication; it is **not enforced yet**.
+- `GET .../signoffs` lists the decisions in the order they were made; `GET .../signoffs/{signoff}` reads one.
+- A decision that ends the application (approved or rejected) takes it out of "pending approvals" on the Overview, in the same
+  transaction, and shows in the history as `Application step approved` / `approved` / `rejected`.
+- The application's `actions` now include `approve` and `reject` while it waits at a step.
+- A step that has signoffs can no longer be removed (409), which the Approval steps folder cannot show, but this one does.
+- **Approving the last step also enrolls the store** (see Enrollments), in the same transaction.
+- gRPC: `ListSignoffs`, `GetSignoff`, `CreateSignoff`.
+- Collection folders: **Signoffs** and **Signoffs - negative checks**.
+
+### Enrollments (Enrolled Stores)
+
+A store enrolled in a program on one website: the Enrolled Stores page. Statuses: `pending`, `active`, `suspended`, `ended`.
+
+- **How a store gets enrolled:** automatically when its application's **last** approval step is approved (an `active` enrollment
+  linked to the application); by an admin with `POST /programs/{program}/enrollments` (no application needed); or in bulk with
+  `POST /programs/{program}/enrollments:batchCreate`.
+- `GET /programs/{program}/enrollments` is the page: newest first, filters `website_id` (All websites), `status` (chips, comma-separated),
+  `store` (name prefix, any case); `max_page_size` / `page_token`. `total_size` is the "N STORES" count for the active filters.
+  Each row has `actions`: the status changes allowed from there.
+- `POST .../enrollments` body `{store_id, website_id, store_name?, website_name?, customer_group?, status?}`; `status` is `active`
+  (default) or `pending`. Without `store_name` the row has `store_resolved: false` ("Unresolved store"). A store with a live
+  (pending / active / suspended) enrollment on the website gets **409**; after `ended` it can be enrolled again.
+- `PATCH .../enrollments/{enrollment}` body `{status?, customer_group?}`. Allowed: `pending -> active`, `active <-> suspended`,
+  anything `-> ended`. Anything else is **409**; `ended` is final. Sending the current status is not a change. An empty
+  `customer_group` clears it.
+- `POST .../enrollments:batchCreate` body `{items:[...]}` (1 to 500): every item gets its own outcome in the order sent,
+  `created` / `already_enrolled` / `failed`; one bad item never fails the rest.
+- Every change moves the Overview's `active_enrollments` and `enrollments_total` in the same transaction and shows in the history as
+  `Enrollment created` / `status changed` / `updated` / `batch created`. Enrollments do **not** bump `config_version`.
+- Not built yet: the contracts of an enrollment (`contracts_count` stays 0), resolving store and website names from the storefront
+  (names are supplied by the caller), and anything that reads enrollments to price (Store Discounts).
+- gRPC: `ListEnrollments`, `GetEnrollment`, `CreateEnrollment`, `BatchCreateEnrollments`, `UpdateEnrollment`.
+- Collection folders: **Enrollments** and **Enrollments - negative checks**.
+
+### Store discounts
+
+**Operate → Store discounts** (module `catalog_pricing.store_discounts.control_panel`, so a program must be created with that module in
+`modules`, otherwise every call below is **400**). Each enrolled store (pending, active or suspended) shows its effective discount and
+which level it came from.
+
+**Three levels, lowest to highest priority: Program → Domain (website) → Store.** Each of the four fields (`enabled`, `type`
+`percentage|fixed`, `amount`, `currency_code`) is inherited **on its own**: a store can set only the amount and still take `enabled` from
+the program. With nothing set anywhere a store is disabled, a percentage, of 0.
+
+- `GET /programs/{program}/store-discounts` (query `website_id`, `store` = name prefix, `max_page_size`, `page_token`): newest first;
+  `total_size` counts the matches. Each row has `resolved` (the Resolved Discount column), `sources` (the badge next to each field:
+  `program` / `domain` / `store`), `set_at` (the Set At column: the highest level that set anything), `store_override` (what the store
+  sets itself) and `inherited` (what it would get if its override were reverted).
+- `GET .../store-discounts/{enrollment}`: the same row, what the edit panel opens with.
+- `PATCH .../store-discounts/{enrollment}` body `{"discount": {...}}`: a field you send is **set**; a field sent as `null` is **reverted**
+  to the inherited value (the revert button); `{"discount": null}` is "Revert all to inherited". A body without `discount` is **400**.
+  The value the store would end up with is checked: a percentage cannot pass 100 (**422**), an amount has at most 2 decimals,
+  `currency_code` is 3 uppercase letters.
+- `POST .../store-discounts:batchUpdate` body `{"ids": [...], "discount": {...} | null}` is **Mass edit**: 1 to 500 enrollment ids, one write
+  statement, **one** version bump and **one** audit entry whatever the number. All ids must be enrolled stores (**404**, naming them);
+  if the result is invalid for any store the **whole** batch is refused (**422**, naming the store). `updated` counts the stores that
+  really changed.
+- `GET .../store-discount-levels` returns the program default and every website that sets something. `PATCH .../store-discount-levels/program`
+  and `PATCH .../store-discount-levels/domains/{website_id}` change those two levels with the same `{"discount": ...}` body.
+- Every change bumps `config_version` (the module requires publish, so the Overview shows **unpublished changes**), writes an audit entry and an
+  outbox event; a request that changes nothing writes nothing. **Publishing is not built yet**, so edits are saved but not live.
+- gRPC has no `null`: use `revert_fields` (a list of field names) and `revert_all` inside `discount`. Methods: `ListStoreDiscounts`,
+  `GetStoreDiscount`, `UpdateStoreDiscount`, `BatchUpdateStoreDiscounts`, `ListDiscountLevels`, `UpdateDiscountLevel` (unset `website_id` =
+  the program level).
+- The amount is a plain number and the currency a code: the **UI** formats the symbol (`£11.21 off`, `15% off`, `Disabled`).
+- Collection folders: **Store discounts** and **Store discounts - negative checks**.
+
+### Rule sets, versions and publishing
+
+**Rule sets.** A module switched on with mode `rule` is a *rule leaf* (for example Catalog & Pricing → Products & Rules → Warranty). The rule
+engine itself is a frontend component: the backend keeps what it saves, versioned, and publishes it. A rule set is addressed by its **module key**
+(or its rule set id).
+
+- `GET /programs/{program}/rule-sets` lists the program's rule leaves with their `state`: `empty` (no rules saved yet; nothing to publish, so not drift),
+  `never` (saved, never published), `drifted` (a newer draft than what is live) or `in_sync`.
+- `GET .../rule-sets/{module_key}` is what the rule builder opens with: the leaf, its `draft_version` / `published_version` and the newest version in
+  full under `draft`. **400** if the module is not a rule leaf of this program.
+- `POST .../rule-sets/{module_key}/versions` saves the builder's draft as a new **immutable version**: `{definition, compiled?, valid?, validation_errors?,
+  rule_type?}`. `definition` is an object (up to 1 MB) that the backend keeps as it is. Saving what is already the newest version (same definition, same
+  validity, even with the keys in another order) creates nothing and answers `created: false`. An **incomplete draft can be saved** with `valid: false`
+  (and `validation_errors`), but it **blocks publishing**. Rules are configuration: a real save bumps `config_version`.
+- `GET .../rule-sets/{module_key}/versions` (newest first, paged, no definitions) and `GET .../versions/{version}` (one, in full).
+- A version is `draft` (the newest save), `published` (live) or `superseded`. A published version is never changed.
+
+**Publishing.** `POST /programs/{program}/publications` publishes the program, in one transaction under the program lock so the snapshot is consistent:
+every rule leaf's newest draft becomes its published version (the previous one is superseded), the **bundle** is built and stored, and an audit entry and
+outbox event are written. The bundle holds: the program, the enabled modules with their settings and values, the requirements, the approval steps, the
+**store → discount map** (the three levels worked out once, for active stores that really get a discount) and the published rules. The answer carries a
+`summary` (counts and the rule versions), not the bundle.
+
+- **400** when there is nothing new to publish (the program has not changed since the last publication), and **400** naming the rules when a rule's newest
+  draft is invalid. A change that is not a rule (a requirement, a store discount, ...) can be published too.
+- Publishing does not change `config_version`; it records the version it covers. The Overview then shows `unpublished_changes: false`,
+  `published_config_version` equal to `config_version`, and the rule leaves `in_sync`.
+- `GET .../publications` (newest first, paged, rows carry the `summary`) and `GET .../publications/{publication}` (with the whole bundle).
+- **Store discounts become part of what is published**, so editing them shows "unpublished changes" until the next publish. Nothing reads the bundle yet.
+- gRPC: `ListRuleSets`, `GetRuleSet`, `CreateRuleVersion`, `ListRuleVersions`, `GetRuleVersion`, `ListPublications`, `CreatePublication`, `GetPublication`.
+- Collection folders: **Rules and publishing** and **Rules and publishing - negative checks**.
+
+### Documents (the file manager)
+
+**Configure → Documents** (module `document_agreement.documents.documents_panel`: a program must be created with it in `modules`, otherwise every call
+below is **400**). **The file bytes never pass through this service**: the browser sends them straight to the object storage with a presigned URL, and
+the service only signs the URL and later asks the storage what arrived.
+
+**The upload, in three steps**
+1. `POST /programs/{program}/documents` with `{name, content_type, size_bytes, checksum?, folder_id?}`. Size and type are checked first (**413** too big,
+   **415** type not allowed; defaults: 25 MB, pdf / png / jpeg / docx / xlsx / csv / plain text). The row is created as `uploading` (hidden from every list, not
+   counted) and the answer carries `upload: {url, method: "PUT", headers, expires_time}`.
+2. `PUT` the file bytes to `upload.url` with **exactly** `upload.headers` (`content-type`, and `x-amz-checksum-sha256` when a checksum was declared). The URL is
+   for one object key and expires in minutes; the type, size and checksum are signed into it, so the **storage itself refuses** anything else (403 / 400).
+3. `POST .../documents/{document}:complete`. The server asks the storage what really arrived: object missing → **409**; size, type or SHA-256 different → **422**.
+   Then the file is `pending_scan`, counted in the totals and its folder, and the outbox event the scanner listens to is written. Completing twice is harmless.
+
+**The page**
+- `GET .../documents:summary`: "N files · X KB", the locations (`all`, `recent`, `needs_review`, `quarantined`) and the folders with their counts, in one read
+  of a counters row (never a `COUNT(*)`).
+- `GET .../documents`: newest first, paged. `location=recent` (the newest 20, no next page), `needs_review`, `quarantined`; `folder_id`; `q` (name prefix, any case).
+- `GET|PATCH|DELETE .../documents/{document}`: `PATCH {name?, folder_id?}` renames and/or moves (the folder counters follow); `DELETE` is a soft delete (the totals follow).
+- `POST .../documents/{document}:download` returns a short-lived presigned GET (an attachment named after the file). **409** while the file is `quarantined` or `uploading`.
+- Folders: `GET|POST .../document-folders`, `PATCH|DELETE .../document-folders/{folder}`. Every program has four **system folders** (General, Import artifacts, Program
+  Documents, Store Enrollment Documents) that cannot be renamed or deleted (**409**); a folder with files or sub-folders cannot be deleted (**409**); a name is
+  unique in its parent, ignoring case (**409**), and has no slashes (**422**).
+
+**Scan and review**
+- `POST /webhooks/document-scan` `{document_id, result: clean|suspicious|infected, scanner?}` (the scanner's callback, **204**): a file that is `pending_scan` becomes `ok`,
+  `needs_review` or `quarantined`; a repeated callback, or one for a file that is not waiting, changes nothing. Nothing becomes `ok` until it was scanned. With
+  `storage.scan_webhook_secret` set, the `X-Webhook-Secret` header must carry it.
+- `POST .../documents/{document}:review` `{decision: approve|reject, note?}`: only a file that `needs_review` (**409** otherwise); approve → `ok`, reject → `quarantined`.
+
+Files are data, not configuration: nothing here bumps `config_version`. Every change writes an audit entry and an outbox event. gRPC (no bytes): `GetDocumentSummary`,
+`ListDocumentFolders`, `CreateDocumentFolder`, `UpdateDocumentFolder`, `DeleteDocumentFolder`, `ListDocuments`, `CreateDocument` (returns the upload instructions),
+`CompleteDocument`, `GetDocument`, `UpdateDocument`, `DeleteDocument`, `DownloadDocument`, `ReviewDocument`. Collection folders: **Documents** and **Documents - negative checks**.
+
+**Not built yet:** a job that removes uploads stuck in `uploading` (they are hidden and never counted, but their rows and any object stay), removing the object of a
+deleted file (use a bucket retention rule), the scanner itself (only its callback).
 
 ## 6. gRPC in Postman
 
@@ -335,7 +529,7 @@ The same from a terminal: `grpcurl -plaintext -d '{"program":"cpo","path":"progr
 ## 7. Swagger UI (browse and try the HTTP API)
 
 ```bash
-docker compose up -d swagger     # http://localhost:8082  (8081 is the currency project's Swagger)
+docker compose up -d swagger     # http://localhost:8082  (8081 is the currency project's Swagger); the drop-down at the top also lists the parked modules' spec
 
 # "Try it out" calls the API from the browser, so allow this page as a CORS origin:
 APP__CORS_ALLOWED_ORIGIN=http://localhost:8082 APP__HTTP_PORT=8090 cargo run --bin programs_http

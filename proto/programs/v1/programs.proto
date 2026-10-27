@@ -204,6 +204,261 @@ service ProgramsService {
     };
   }
 
+  // ---- Signoffs ----
+  rpc ListSignoffs(ListSignoffsRequest) returns (ListSignoffsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/applications/*"}]
+    };
+  }
+  rpc GetSignoff(GetSignoffRequest) returns (GetSignoffResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/applications/*/signoffs/*"}]
+    };
+  }
+  rpc CreateSignoff(CreateSignoffRequest) returns (CreateSignoffResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/applications/*"}]
+    };
+  }
+
+  // ---- Enrollments ----
+  rpc ListEnrollments(ListEnrollmentsRequest) returns (ListEnrollmentsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetEnrollment(GetEnrollmentRequest) returns (GetEnrollmentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/enrollments/*"}]
+    };
+  }
+  rpc CreateEnrollment(CreateEnrollmentRequest) returns (CreateEnrollmentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc BatchCreateEnrollments(BatchCreateEnrollmentsRequest) returns (BatchCreateEnrollmentsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UpdateEnrollment(UpdateEnrollmentRequest) returns (UpdateEnrollmentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/enrollments/*"}]
+    };
+  }
+
+  // ---- Store discounts ----
+  rpc ListStoreDiscounts(ListStoreDiscountsRequest) returns (ListStoreDiscountsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetStoreDiscount(GetStoreDiscountRequest) returns (GetStoreDiscountResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/store-discounts/*"}]
+    };
+  }
+  rpc UpdateStoreDiscount(UpdateStoreDiscountRequest) returns (UpdateStoreDiscountResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/store-discounts/*"}]
+    };
+  }
+  rpc BatchUpdateStoreDiscounts(BatchUpdateStoreDiscountsRequest) returns (BatchUpdateStoreDiscountsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc ListDiscountLevels(ListDiscountLevelsRequest) returns (ListDiscountLevelsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UpdateDiscountLevel(UpdateDiscountLevelRequest) returns (UpdateDiscountLevelResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
+  // ---- Rule sets and publishing ----
+  rpc ListRuleSets(ListRuleSetsRequest) returns (ListRuleSetsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetRuleSet(GetRuleSetRequest) returns (GetRuleSetResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/rule-sets/*"}]
+    };
+  }
+  rpc CreateRuleVersion(CreateRuleVersionRequest) returns (CreateRuleVersionResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/rule-sets/*"}]
+    };
+  }
+  rpc ListRuleVersions(ListRuleVersionsRequest) returns (ListRuleVersionsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/rule-sets/*"}]
+    };
+  }
+  rpc GetRuleVersion(GetRuleVersionRequest) returns (GetRuleVersionResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/rule-sets/*/versions/*"}]
+    };
+  }
+  rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc CreatePublication(CreatePublicationRequest) returns (CreatePublicationResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc GetPublication(GetPublicationRequest) returns (GetPublicationResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/publications/*"}]
+    };
+  }
+
+  // ---- Documents ----
+  rpc GetDocumentSummary(GetDocumentSummaryRequest) returns (GetDocumentSummaryResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc ListDocumentFolders(ListDocumentFoldersRequest) returns (ListDocumentFoldersResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc CreateDocumentFolder(CreateDocumentFolderRequest) returns (CreateDocumentFolderResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UpdateDocumentFolder(UpdateDocumentFolderRequest) returns (UpdateDocumentFolderResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/document-folders/*"}]
+    };
+  }
+  rpc DeleteDocumentFolder(DeleteDocumentFolderRequest) returns (google.protobuf.Empty) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/document-folders/*"}]
+    };
+  }
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc CreateDocument(CreateDocumentRequest) returns (CreateDocumentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc CompleteDocument(CompleteDocumentRequest) returns (CompleteDocumentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/documents/*"}]
+    };
+  }
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/documents/*"}]
+    };
+  }
+  rpc UpdateDocument(UpdateDocumentRequest) returns (UpdateDocumentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/documents/*"}]
+    };
+  }
+  rpc DeleteDocument(DeleteDocumentRequest) returns (google.protobuf.Empty) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*/documents/*"}]
+    };
+  }
+  rpc DownloadDocument(DownloadDocumentRequest) returns (DownloadDocumentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/documents/*"}]
+    };
+  }
+  rpc ReviewDocument(ReviewDocumentRequest) returns (ReviewDocumentResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*/documents/*"}]
+    };
+  }
+
   // ---- Overview and history ----
   rpc GetOverview(GetOverviewRequest) returns (GetOverviewResponse) {
     option (msapi.v1.sso_permission) = {

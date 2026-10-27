@@ -12,6 +12,10 @@ pub enum ApplicationErrorKind {
     /// `version`). Reload and retry. HTTP 409, gRPC `Aborted`.
     Conflict,
     ResourceExhausted,
+    /// A file bigger than the limit. HTTP 413, gRPC `ResourceExhausted`.
+    PayloadTooLarge,
+    /// A file type that is not allowed. HTTP 415, gRPC `InvalidArgument`.
+    UnsupportedMediaType,
     /// A well-formed request whose content violates a resource-format rule
     /// (e.g. AEP-122 `code` pattern) — distinct from `InvalidArgument`
     /// (400) so this class of validation can map to 422 instead.
@@ -113,6 +117,14 @@ impl ApplicationError {
             Some(msg.to_string()),
             None,
         )
+    }
+
+    pub fn payload_too_large(msg: &str) -> Self {
+        Self::into::<std::io::Error>(None, ApplicationErrorKind::PayloadTooLarge, Some(msg.to_string()), None)
+    }
+
+    pub fn unsupported_media_type(msg: &str) -> Self {
+        Self::into::<std::io::Error>(None, ApplicationErrorKind::UnsupportedMediaType, Some(msg.to_string()), None)
     }
 
     pub fn failed_precondition(msg: &str) -> Self {

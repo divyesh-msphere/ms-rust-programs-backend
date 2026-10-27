@@ -19,6 +19,8 @@ impl GrpcErrorResponse {
             ApplicationErrorKind::FailedPrecondition => ErrorCode::FailedPrecondition,
             ApplicationErrorKind::Conflict => ErrorCode::Aborted,
             ApplicationErrorKind::ResourceExhausted => ErrorCode::ResourceExhausted,
+            ApplicationErrorKind::PayloadTooLarge => ErrorCode::ResourceExhausted,
+            ApplicationErrorKind::UnsupportedMediaType => ErrorCode::InvalidArgument,
             // gRPC's status space has no HTTP-422 equivalent; this kind means
             // "well-formed request, malformed resource-format value" (e.g.
             // AEP-122 `code` pattern) — still the client's fault, so it

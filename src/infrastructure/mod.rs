@@ -1,3 +1,4 @@
+pub mod feature_switch;
 pub mod grpc_server;
 pub mod http_server;
 pub mod repositories;

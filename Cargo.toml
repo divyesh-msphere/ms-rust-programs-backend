@@ -49,3 +49,8 @@ buffa-types = { version = "0.9", features = ["json"] }
 actix-cors = "0.7.2"
 reqwest = { version = "0.13.5", default-features = false, features = ["json", "native-tls"] }
 futures = "0.3.34"
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+base64 = "0.22"
+percent-encoding = "2"

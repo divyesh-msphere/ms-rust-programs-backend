@@ -39,6 +39,7 @@ fn to_grpc_module_definition(module_definition: ModuleDefinition) -> GrpcModuleD
         api_base: module_definition.api_base,
         selectable: module_definition.selectable,
         allow_components: module_definition.allow_components,
+        default_mode: module_definition.default_mode,
         create_time: format_datetime(module_definition.create_time),
         update_time: format_datetime(module_definition.update_time),
         ..Default::default()
@@ -118,6 +119,7 @@ fn to_grpc_tree_node(node: ModuleDefinitionNode) -> GrpcModuleDefinitionTreeNode
         api_base: module_definition.api_base,
         selectable: module_definition.selectable,
         allow_components: module_definition.allow_components,
+        default_mode: module_definition.default_mode,
         create_time: format_datetime(module_definition.create_time),
         update_time: format_datetime(module_definition.update_time),
         children: node.children.into_iter().map(to_grpc_tree_node).collect(),

@@ -34,6 +34,7 @@ pub struct ModuleDefinition {
     pub api_base: Option<String>,        // the API the frontend calls for it
     pub selectable: bool,                // false for Overview (always on)
     pub allow_components: bool,          // the admin may add settings / rules here
+    pub default_mode: Option<String>,    // "rule" | "settings": the mode a program gets when it selects the page
     pub create_time: DateTime<Utc>,      // OUTPUT_ONLY
     pub update_time: DateTime<Utc>,      // OUTPUT_ONLY
 }
@@ -118,6 +119,7 @@ mod tests {
             api_base: None,
             selectable: true,
             allow_components: false,
+            default_mode: None,
             create_time: chrono::Utc::now(),
             update_time: chrono::Utc::now(),
         }

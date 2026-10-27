@@ -20,6 +20,7 @@ pub struct ModuleDefinitionPresenter {
     pub api_base: Option<String>,
     pub selectable: bool,
     pub allow_components: bool,
+    pub default_mode: Option<String>,
     pub create_time: String,
     pub update_time: String,
 }

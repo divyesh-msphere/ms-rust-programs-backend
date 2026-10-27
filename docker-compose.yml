@@ -1,4 +1,4 @@
-# Swagger UI for openapi.yaml.
+# Swagger UI for openapi.yaml (and openapi.enrollment-review.yaml, the parked modules).
 #
 #   docker compose up -d swagger       →  http://localhost:8082
 #
@@ -25,5 +25,35 @@ services:
       DISPLAY_REQUEST_DURATION: "true"
       DEEP_LINKING: "true"
       TRY_IT_OUT_ENABLED: "true"
+      # A drop-down lists both specs. The second one (Requirements, Approval steps, Applications, Signoffs) is
+      # switched off in the service by default: see docs/parked-enrollment-review.md.
+      URLS: '[{"url":"/openapi.yaml","name":"Programs"},{"url":"/openapi.enrollment-review.yaml","name":"Enrollment review (off by default)"}]'
+      URLS_PRIMARY_NAME: "Programs"
     volumes:
       - ./openapi.yaml:/spec/openapi.yaml:ro
+      - ./openapi.enrollment-review.yaml:/spec/openapi.enrollment-review.yaml:ro
+
+  # S3-compatible object storage for the Documents module (file bytes; Postgres keeps only the metadata).
+  #
+  #   docker compose up -d minio      →  S3 API http://localhost:9000, console http://localhost:9001
+  #
+  # The official minio/minio image is no longer published on Docker Hub, so this is the Bitnami build of
+  # MinIO. The bucket is created on start. CORS allows the browser (the admin app, Swagger) to PUT a file to a
+  # presigned URL directly. Credentials here are for LOCAL development only.
+  minio:
+    image: bitnamilegacy/minio:latest
+    container_name: ms-rust-programs-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: programs
+      MINIO_ROOT_PASSWORD: programs-local-secret
+      MINIO_DEFAULT_BUCKETS: programs-documents
+      MINIO_API_CORS_ALLOW_ORIGIN: "http://localhost:8082,http://localhost:3000,http://localhost:5173"
+    volumes:
+      - minio-data:/bitnami/minio/data
+
+volumes:
+  minio-data:

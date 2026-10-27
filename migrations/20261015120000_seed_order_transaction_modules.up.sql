@@ -40,7 +40,8 @@ FROM (VALUES
     -- Core Returns
     ('order_transaction.core_returns.terms',                   'Terms',                       'order_transaction.core_returns', 1, 'field_form'),
     ('order_transaction.core_returns.attention',               'Attention',                   'order_transaction.core_returns', 2, 'custom:attention'),
-    ('order_transaction.core_returns.core_return_fees_panel',  'Core Return Fees Panel',      'order_transaction.core_returns', 3, 'custom:core_return_fees')
+    -- Fees: a rule leaf from the start (see 20261027110000_fees_module: rule_family, default mode and starter rule)
+    ('order_transaction.core_returns.fees',                    'Fees',                        'order_transaction.core_returns', 3, 'rule_playground')
 ) AS v(key, name, parent_key, position, ui_component)
 JOIN module_definitions p ON p.key = v.parent_key
 ON CONFLICT (key) DO NOTHING;

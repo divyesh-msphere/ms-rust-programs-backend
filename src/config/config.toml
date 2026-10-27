@@ -22,4 +22,24 @@ timeout_ms = 1500
 cache_seconds = 30
 client_id = ""
 client_secret = ""
-webhook_secret = ""
+
+# Object storage for Documents (S3 or MinIO: `docker compose up -d minio`). File bytes go browser <-> storage
+# through presigned URLs; this service keeps only the metadata. Override any value with APP__STORAGE__ENDPOINT, ...
+[storage]
+endpoint = "http://localhost:9000"
+public_endpoint = ""
+bucket = "programs-documents"
+region = "us-east-1"
+access_key = "programs"
+secret_key = "programs-local-secret"
+url_expiry_seconds = 600
+timeout_ms = 3000
+max_file_bytes = 26214400
+max_files_per_program = 10000
+scan_webhook_secret = ""
+
+# Finished modules that are switched off. Turning one on needs no code change: set it here or with
+# APP__FEATURES__ENROLLMENT_REVIEW=true and restart. See docs/parked-enrollment-review.md.
+[features]
+# Requirements, Approval steps, Applications and Signoffs (and their two pages in the module tree).
+enrollment_review = false

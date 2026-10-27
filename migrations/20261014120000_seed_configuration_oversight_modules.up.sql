@@ -61,7 +61,6 @@ FROM (VALUES
     ('configuration_oversight.settings.universal.program_settings',           'Program Settings',                'configuration_oversight.settings.universal',       7,  'field_form',                     true),
     ('configuration_oversight.settings.universal.vault_payment_methods',      'Vault Payment Methods',           'configuration_oversight.settings.universal',       8,  'field_form',                     true),
     ('configuration_oversight.settings.universal.about_program',              'About this Program',              'configuration_oversight.settings.universal',       9,  'field_form',                     true),
-    ('configuration_oversight.settings.universal.website_customer_group',     'Website & Customer Group',        'configuration_oversight.settings.universal',       10, 'custom:program_domains',         true),
 
     -- Settings > Program-Specific (one-off extras)
     ('configuration_oversight.settings.program_specific.billing',                'Billing',                         'configuration_oversight.settings.program_specific', 1,  'custom:billing',                  false),

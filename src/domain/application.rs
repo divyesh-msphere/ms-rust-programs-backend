@@ -53,10 +53,12 @@ pub struct NewApplication {
     pub actor: String,
 }
 
-/// What can still be done to an application in this status (the Actions column).
-pub fn allowed_actions(status: &str) -> Vec<&'static str> {
+/// What can still be done to an application in this status (the Actions column). It can be
+/// approved or rejected only while it waits at an approval step.
+pub fn allowed_actions(status: &str, at_step: bool) -> Vec<&'static str> {
     match status {
         DRAFT => vec!["submit", "withdraw"],
+        SUBMITTED | IN_REVIEW if at_step => vec!["approve", "reject", "withdraw"],
         SUBMITTED | IN_REVIEW => vec!["withdraw"],
         _ => vec![],
     }
@@ -170,11 +172,13 @@ mod tests {
 
     #[test]
     fn actions_follow_the_status() {
-        assert_eq!(allowed_actions(DRAFT), vec!["submit", "withdraw"]);
-        assert_eq!(allowed_actions(SUBMITTED), vec!["withdraw"]);
-        assert_eq!(allowed_actions(IN_REVIEW), vec!["withdraw"]);
+        assert_eq!(allowed_actions(DRAFT, false), vec!["submit", "withdraw"]);
+        assert_eq!(allowed_actions(SUBMITTED, true), vec!["approve", "reject", "withdraw"]);
+        assert_eq!(allowed_actions(IN_REVIEW, true), vec!["approve", "reject", "withdraw"]);
+        // No step to decide (the program had no approval steps): it can only be withdrawn.
+        assert_eq!(allowed_actions(SUBMITTED, false), vec!["withdraw"]);
         for done in [APPROVED, REJECTED, WITHDRAWN] {
-            assert!(allowed_actions(done).is_empty());
+            assert!(allowed_actions(done, false).is_empty());
         }
     }
 

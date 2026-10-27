@@ -41,8 +41,4 @@ pub trait LibraryCatalog: Send + Sync {
     /// A library with its options. Served from memory when it can be (see the adapter); a
     /// library that is gone is `NotFound`, an unreachable service `Unavailable`.
     async fn get(&self, library_id: Uuid) -> Result<Arc<Library>, CatalogError>;
-
-    /// Drops what is cached (every library, or just one) so the next read is fresh. Called
-    /// when global-settings says a library changed.
-    fn invalidate(&self, library_id: Option<Uuid>);
 }

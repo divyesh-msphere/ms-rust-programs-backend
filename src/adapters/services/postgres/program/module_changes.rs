@@ -50,8 +50,8 @@ pub async fn check_keys(conn: &mut PgConnection, program_id: Uuid, keys: &[Strin
 /// "descendant of" operator. Modules the program already has are left exactly as they are.
 pub async fn ensure_modules(conn: &mut PgConnection, program_id: Uuid, keys: &[String]) -> Result<(), ApplicationError> {
     sqlx::query(
-        "INSERT INTO program_modules (program_id, module_id, enabled, position) \
-         SELECT $1, md.id, true, md.position FROM module_definitions md \
+        "INSERT INTO program_modules (program_id, module_id, enabled, position, mode) \
+         SELECT $1, md.id, true, md.position, md.default_mode FROM module_definitions md \
          WHERE md.source = 'default' \
             OR EXISTS (SELECT 1 FROM module_definitions s WHERE s.key = ANY($2) \
                        AND (s.ancestry <@ md.ancestry OR md.ancestry <@ s.ancestry)) \
@@ -62,6 +62,59 @@ pub async fn ensure_modules(conn: &mut PgConnection, program_id: Uuid, keys: &[S
     .execute(&mut *conn)
     .await
     .map_err(db_error)?;
+    seed_default_rules(conn, program_id).await
+}
+
+#[derive(Debug, FromRow)]
+struct DefaultRuleRow {
+    module_id: Uuid,
+    rule_family: Option<String>,
+    default_rule: serde_json::Value,
+}
+
+/// A rule page that has a starter rule (`module_definitions.default_rule`) and nothing saved yet gets
+/// it as draft 1, so the rule editor opens on a working rule instead of an empty canvas. It runs on
+/// the caller's transaction, so the pages and their starter rules appear together. The version is a
+/// normal one: the admin's first save becomes version 2, and it can be published as it is. Nothing is
+/// written for a page whose rule set already has a version.
+async fn seed_default_rules(conn: &mut PgConnection, program_id: Uuid) -> Result<(), ApplicationError> {
+    let pending = sqlx::query_as::<_, DefaultRuleRow>(
+        "SELECT pm.module_id, md.rule_family, md.default_rule FROM program_modules pm \
+         JOIN module_definitions md ON md.id = pm.module_id \
+         LEFT JOIN rule_sets rs ON rs.program_id = pm.program_id AND rs.module_id = pm.module_id \
+         WHERE pm.program_id = $1 AND pm.mode = 'rule' AND md.default_rule IS NOT NULL \
+           AND rs.draft_version IS NULL AND rs.published_version IS NULL",
+    )
+    .bind(program_id)
+    .fetch_all(&mut *conn)
+    .await
+    .map_err(db_error)?;
+
+    for rule in pending {
+        let rule_set_id: Uuid = sqlx::query_scalar(
+            "INSERT INTO rule_sets (id, program_id, module_id, rule_type, draft_version) VALUES ($1, $2, $3, $4, 1) \
+             ON CONFLICT (program_id, module_id) DO UPDATE SET draft_version = 1, update_time = now() RETURNING id",
+        )
+        .bind(Uuid::now_v7())
+        .bind(program_id)
+        .bind(rule.module_id)
+        .bind(&rule.rule_family)
+        .fetch_one(&mut *conn)
+        .await
+        .map_err(db_error)?;
+        // The starter rule is both the model and the graph: it is already a decision graph, and it is complete.
+        sqlx::query(
+            "INSERT INTO rule_versions (id, rule_set_id, version, status, definition, compiled, valid, validation_errors, \
+                content_hash, size_bytes, created_by) \
+             VALUES ($1, $2, 1, 'draft', $3, $3, true, '[]'::jsonb, md5($3::jsonb::text), octet_length($3::jsonb::text), 'system')",
+        )
+        .bind(Uuid::now_v7())
+        .bind(rule_set_id)
+        .bind(&rule.default_rule)
+        .execute(&mut *conn)
+        .await
+        .map_err(db_error)?;
+    }
     Ok(())
 }
 
@@ -234,6 +287,7 @@ pub async fn apply_changes(
         }
     }
 
+    seed_default_rules(conn, program_id).await?;
     Ok(changed)
 }
 
