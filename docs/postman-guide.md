@@ -1,7 +1,7 @@
 # Testing the Programs API in Postman
 
 What exists today: **Programs** (create, get, list, update, delete, undelete), the **module manifest**
-(`GET /programs/{program}/modules`) and the **module registry** (`/module-definitions`). Everything is on **HTTP** and
+(`GET /programs/{program}/modules`) and the **module registry** (`/module-catalog`). Everything is on **HTTP** and
 **gRPC**, and `openapi.yaml` describes the HTTP side.
 
 ## 1. Start the servers
@@ -59,7 +59,7 @@ variables, and **deletes its test program at the end**, so you can run it again 
 | **Settings and rules - negative checks** | 21 rejected payloads (bad type, library + own options, unknown library, duplicate names, wrong default, ...) |
 | **Setting values - negative checks** | 14 rejected saves (wrong type, wrong option, required cleared, unknown setting, ...) |
 
-The collection covers the **Programs resource only**. (The module registry, `/module-definitions`, is not part of it.)
+The collection covers the **Programs resource only**. (The module registry, `/module-catalog`, is not part of it.)
 
 Every request has **Tests** (the checks), so a red cross tells you exactly which rule broke.
 
@@ -109,7 +109,7 @@ their children, so a client builds the tree in one pass:
 - **`source: container`** → the admin chooses what the leaf **is**: a **Rule** (`mode: "rule"`) or **Custom settings**
   (`mode: "settings"`, then they add settings with a name and a type). Until they choose, `mode` is `null`. The leaf's own
   name ("Pre Enrollment") is fixed by the module, so nothing needs naming. See section 5.
-- **`source: default`** → Overview, on every program automatically.
+- **`source: default`** → Overview, on every program automatically. The Danger zone page is `premade` and also on every program (`universal`).
 
 **An error** (RFC 9457 style):
 ```json
@@ -119,7 +119,7 @@ their children, so a client builds the tree in one pass:
 
 ## 4. How to use it properly
 
-**Choosing modules at creation.** `modules` takes module **keys**. List them with `GET /module-definitions?full_tree=true`.
+**Choosing modules at creation.** `modules` takes module **keys**. List them with `GET /module-catalog?full_tree=true`.
 You get the **premade** modules (the admin selects these), plus any group or leaf:
 
 | Premade module (key) | Screen |
@@ -212,7 +212,7 @@ global-settings there. The Postman variable `library_id` must be a library that 
 The settings above only DEFINE the fields. The values admins enter are saved separately, in one request per page:
 
 ```jsonc
-POST /programs/kbb/field-values:batchUpdate
+POST /programs/kbb/setting-values:batchUpdate
 {
   "version": 3,                                     // the config_version you last read (optional)
   "values": {
@@ -234,7 +234,7 @@ POST /programs/kbb/field-values:batchUpdate
   A stale one gives **409** and saves nothing; omit it to skip the check (last write wins).
 - **Only what differs is written.** Saving a page nobody edited reports `"changed": 0`, does not bump the version and shows no
   "unpublished changes". A real change bumps `config_version` and writes an audit entry (with before and after) and an outbox event.
-- **Reading:** the manifest shows each setting's `value` / `option_ids`; `GET /programs/{program}/field-values[?module=<key>]` lists
+- **Reading:** the manifest shows each setting's `value` / `option_ids`; `GET /programs/{program}/setting-values[?module=<key>]` lists
   them with the version. A saved choice whose option was since deactivated or removed from its library is kept and listed in
   `missing_option_ids`, so the page can warn; it can no longer be chosen.
 
@@ -244,21 +244,48 @@ Folder **Fees (a rule by default)**. Fees (`order_transaction.core_returns.fees`
 Settings or Rules choice. The folder shows it three ways (its own key, its group `order_transaction.core_returns`, and a later PATCH), then reads the
 **starter rule** that is already saved: draft 1, valid, a GoRules decision graph (request, one decision table with one row that charges 0, response).
 It then publishes that rule as it is, saves an edit (version 2), and shows that Fees cannot become a Settings page once it has versions (400).
-`default_mode` appears on every module definition (`rule` for Fees, `null` for the rest).
+`default_mode` appears on every module catalog item (`rule` for Fees, `null` for the rest).
 
-### Module definitions (the catalog; what Create Program uses)
+### Module catalog (the catalog; what Create Program uses)
 
-Read-only: the list of every page a program can have, as a tree. Folders **Module definitions** and **Module definitions - negative checks** (the first two in the collection).
+Read-only: the list of every page a program can have, as a tree. Folders **Module catalog** and **Module catalog - negative checks** (the first two in the collection).
 
-- `GET /module-definitions`: the six main modules (Overview, Catalog & Pricing, Enrollment, Document & Agreements, Order & Transaction, Configuration & Oversight), in display order, with
+- `GET /module-catalog`: the six main modules (Overview, Catalog & Pricing, Enrollment, Document & Agreements, Order & Transaction, Configuration & Oversight), in display order, with
   `total_size`. **Overview is `selectable: false`** (it is added to every program automatically), so Create Program shows the other five.
-- `GET /module-definitions?parent_id={id}`: the direct children of one module (the right panel of Create Program). A leaf, or an unknown id, gives an empty list.
-- `GET /module-definitions?full_tree=true`: the **whole tree in one call**, nested under `children` (71 modules). With `&parent_id={id}` it returns the tree below that module (unknown id: **404**).
+- `GET /module-catalog?parent_id={id}`: the direct children of one module (the right panel of Create Program). A leaf, or an unknown id, gives an empty list.
+- `GET /module-catalog?full_tree=true`: the **whole tree in one call**, nested under `children` (71 modules). With `&parent_id={id}` it returns the tree below that module (unknown id: **404**).
   The simplest way to build Create Program is to load this once and render it.
-- `GET /module-definitions/{id or key}`: one module, for example `/module-definitions/enrollment`.
+- `GET /module-catalog/{id or key}`: one module, for example `/module-catalog/enrollment`.
 - Paging uses `max_page_size` (default 50, capped at 200, **400** if below 1) and `page_token` (a UUID; **400** if it is not one).
-- There is no write API: the catalog comes from seed migrations (`POST /module-definitions` is a 404).
-- gRPC: `ListModuleDefinitions` and `GetModuleDefinition`.
+- There is no write API: the catalog comes from seed migrations (`POST /module-catalog` is a 404).
+- gRPC: `ListModuleCatalog` and `GetModuleCatalogItem`.
+
+### Notifications (the premade page in Settings)
+
+`configuration_oversight.settings.universal.notifications` is a **premade** page (`api_base: notifications`) that a program gets by picking it in Create program;
+it is then in `GET /programs/{program}/modules`.
+
+- `GET /programs/{program}/notifications` is the grid: `channels` (the columns), `triggers` (key, label, email, sms, push, in_app) and `version`. A new program starts with 8 triggers. **404** when the program did not pick the page.
+- `PUT /programs/{program}/notifications` saves the **whole grid** at once (ticks, added and removed triggers): `{"version": 1, "triggers": [...]}`. A trigger missing from the list is removed. `version` is the `config_version` from the last read: stale -> **409**; omit it to skip the check. Bad or repeated key, empty label -> **400**. The same grid again changes nothing.
+- Folder **Notifications (premade page, picked in Create program)** covers all of it. gRPC: `GetNotifications`, `ReplaceNotifications`.
+
+### Danger zone (the premade page in Settings)
+
+`configuration_oversight.settings.universal.danger_zone` is a **premade** page (`api_base: danger-zone`, not selectable). Every program
+has it, with its parents (Settings > Universal), without anyone picking it: new programs get it on create, existing ones got it from
+the migration. So when the Settings page loads, the manifest (`GET /programs/{p}/modules`) already lists it, and the frontend calls:
+
+- `GET /programs/{program}/danger-zone` is the card: `archived`, `archive_time`, `can_archive`, `can_unarchive`, `can_delete`,
+  `delete_blockers` (`enrollments`, `applications`, `publications`, `documents`) and `delete_blocked_reason`.
+- `POST /programs/{program}/danger-zone:archive` and `:unarchive`: **Archive program** takes the program out of the working catalog
+  (`GET /programs` leaves it out; `GET /programs?show_archived=true` lists only archived ones). Nothing is lost, the program stays
+  readable, `state` stays ACTIVE. Both return the card after the change; archiving twice (or unarchiving a live one) is a **400**.
+- `POST /programs/{program}/danger-zone:deletePermanently` (**Delete program**, **204**): removes the program and its modules, values and
+  rules for good. Only with no operational history: **409** while it has enrollments, applications, publications or documents (the
+  card says which in `delete_blockers`); archive it then. The audit entry stays. This is different from `DELETE /programs/{program}`,
+  the reversible soft delete.
+- Folder **Danger zone (premade page, on every program)** covers all of it. gRPC: `GetDangerZone`, `ArchiveProgram`,
+  `UnarchiveProgram`, `DeleteProgramPermanently`.
 
 ### Overview and audit log
 
@@ -484,7 +511,7 @@ deleted file (use a bucket retention rule), the scanner itself (only its callbac
 1. **New → gRPC**, URL `localhost:50061` (the `grpc_host` variable), **no TLS**.
 2. **Select a method → Use server reflection** — Postman reads `programs.v1.ProgramsService` and lists the methods:
    `CreateProgram`, `GetProgram`, `ListPrograms`, `UpdateProgram`, `DeleteProgram`, `UndeleteProgram`,
-   `ListProgramModules`, `ListModuleDefinitions`, `GetModuleDefinition`, `ListHealthCheck`.
+   `ListProgramModules`, `ListModuleCatalog`, `GetModuleCatalogItem`, `ListHealthCheck`.
 3. Pick a method, press **Use Example Message** (or paste a body), then **Invoke**. For the audit actor add **Metadata**
    `x-user-id: divyesh`.
 
@@ -521,7 +548,7 @@ Example bodies (gRPC JSON uses camelCase):
 // ListProgramModules
 { "program": "cpo", "path": "programs/cpo" }
 
-// ListModuleDefinitions with the whole tree
+// ListModuleCatalog with the whole tree
 { "fullTree": true }
 ```
 The same from a terminal: `grpcurl -plaintext -d '{"program":"cpo","path":"programs/cpo"}' localhost:50061 programs.v1.ProgramsService/GetProgram`.

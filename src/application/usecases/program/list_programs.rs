@@ -23,6 +23,7 @@ pub struct ListProgramsInput {
     pub page_size: Option<i64>,
     pub page_token: Option<Uuid>,
     pub show_deleted: bool,
+    pub show_archived: bool,
 }
 
 #[derive(Debug)]
@@ -47,7 +48,7 @@ impl UseCase<ListProgramsOutput, ListProgramsInput> for ListProgramsUseCase {
 
         let (programs, next_page_token, total_size) = self
             .program_repository
-            .list(page_size.min(MAX_PAGE_SIZE), input.page_token, input.show_deleted)
+            .list(page_size.min(MAX_PAGE_SIZE), input.page_token, input.show_deleted, input.show_archived)
             .instrument(info_span!("ListProgramsUseCase::list"))
             .await?;
 

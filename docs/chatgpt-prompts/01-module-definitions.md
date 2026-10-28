@@ -1,4 +1,4 @@
-You are a senior backend engineer and a patient teacher. I am learning a Rust backend service called "Programs". I will give you everything about ONE module of it: the first one, "Module definitions". Teach it to me.
+You are a senior backend engineer and a patient teacher. I am learning a Rust backend service called "Programs". I will give you everything about ONE module of it: the first one, "Module catalog". Teach it to me.
 
 Rules for you:
 - Use ONLY the facts below. If something is not covered, say "this is not in what you gave me" instead of guessing.
@@ -15,7 +15,7 @@ The admin screen of one program has three tabs: Overview, Configure, Operate. Pa
 Tech: Rust, actix-web (HTTP), connectrpc (gRPC), Postgres (sqlx, hand-written SQL), AEP-style REST (resource paths, "?parent_id=", ":custom" methods). Layered code: route -> mappers -> use case -> domain -> repository -> database.
 
 =====================================================================
-2. THIS MODULE: "Module definitions" (the catalog)
+2. THIS MODULE: "Module catalog" (the catalog)
 =====================================================================
 Purpose: the read-only catalog of EVERY page that can exist, arranged as a tree of groups and leaves. The frontend and the program builder use it to know what pages exist and how each behaves (which code handles it, which API backs it, whether the admin can pick it). It is data, not code: adding a page means adding a row in a migration, not deploying new code. There is NO write API: the rows come from seed migrations.
 
@@ -111,7 +111,7 @@ The whole "Enrollment" branch as the API returns it (full tree):
 
 One row as JSON (the Overview, the "default" module):
   {
-    "path": "module-definitions/0239b5f9-9a53-8a52-284f-38e02d62a0ab",
+    "path": "module-catalog/0239b5f9-9a53-8a52-284f-38e02d62a0ab",
     "id": "0239b5f9-9a53-8a52-284f-38e02d62a0ab",
     "key": "overview", "name": "Overview", "kind": "leaf",
     "parent_id": null, "ancestry": "overview", "position": 0,
@@ -123,7 +123,7 @@ One row as JSON (the Overview, the "default" module):
 
 One row as JSON (a premade leaf):
   {
-    "path": "module-definitions/90576b1c-18a7-a4fb-e6ce-cecfe0ef04fc",
+    "path": "module-catalog/90576b1c-18a7-a4fb-e6ce-cecfe0ef04fc",
     "id": "90576b1c-18a7-a4fb-e6ce-cecfe0ef04fc",
     "key": "enrollment.applications_approvals.application_panel",
     "name": "Application Panel", "kind": "leaf",
@@ -140,7 +140,7 @@ One row as JSON (a premade leaf):
 =====================================================================
 HTTP (2 endpoints, both read-only):
 
-  GET /module-definitions
+  GET /module-catalog
      query parameters (all optional):
        parent_id       uuid   list the DIRECT children of this module; omitted = the 6 top-level modules
        max_page_size   int    default 50, at most 200, must be >= 1
@@ -149,19 +149,19 @@ HTTP (2 endpoints, both read-only):
      response: { "results": [ ...modules... ], "next_page_token": null or uuid, "total_size": number }
      Example: with no parameters it returns the 6 top-level modules and total_size = 6.
 
-  GET /module-definitions/{module_definition}
-     {module_definition} is the id (UUID) OR the key, for example /module-definitions/enrollment
+  GET /module-catalog/{module_catalog_item}
+     {module_catalog_item} is the id (UUID) OR the key, for example /module-catalog/enrollment
      response: one module (the JSON above). If it is a UUID the SQL looks up by id, otherwise by key.
 
 gRPC (same data, same rules; the service is "ProgramsService"):
-  ListModuleDefinitions(parent_id?, max_page_size?, page_token?, full_tree?) -> results, next_page_token, total_size (and the nested tree when full_tree is true)
-  GetModuleDefinition(module_definition = id or key, path) -> the module
+  ListModuleCatalog(parent_id?, max_page_size?, page_token?, full_tree?) -> results, next_page_token, total_size (and the nested tree when full_tree is true)
+  GetModuleCatalogItem(module_catalog_item = id or key, path) -> the module
   (Both are tagged for authorization as permission "programs.module_definitions", action "reader".)
 
 Errors seen live:
-  GET /module-definitions/no.such.module   -> 404 {"type":"NOT_FOUND","detail":"Module definition with key no.such.module not found"}
-  GET /module-definitions?parent_id=nope   -> 400 {"type":"INVALID_ARGUMENT","detail":"Validation error: parent_id must be a UUID"}
-  GET /module-definitions?max_page_size=0  -> 400 {"type":"INVALID_ARGUMENT","detail":"Validation error: max_page_size must be at least 1"}
+  GET /module-catalog/no.such.module   -> 404 {"type":"NOT_FOUND","detail":"Module catalog item with key no.such.module not found"}
+  GET /module-catalog?parent_id=nope   -> 400 {"type":"INVALID_ARGUMENT","detail":"Validation error: parent_id must be a UUID"}
+  GET /module-catalog?max_page_size=0  -> 400 {"type":"INVALID_ARGUMENT","detail":"Validation error: max_page_size must be at least 1"}
 
 =====================================================================
 6. HOW IT WORKS INSIDE (the real SQL)
@@ -187,11 +187,11 @@ Full tree (ONE query, then nested in memory):
   The rows come back flat; a function (build_tree) groups them under their parents into nested "children".
 
 Code layout (about 600 lines in total):
-  src/domain/module_definition.rs                                   the ModuleDefinition type, the repository TRAIT (get, list, list_descendants), build_tree
-  src/adapters/services/postgres/module_definition/                 the repository (all SQL), a model (database row) and a mapper (row -> domain)
-  src/application/usecases/module_definition/                       list_module_definitions.rs, get_module_definition.rs, get_module_definition_tree.rs
-  src/adapters/inputs/http_apis/module_definition/                  the HTTP controller and mappers
-  src/adapters/inputs/grpc_apis/module_definition/                  the gRPC service and mappers
+  src/domain/module_catalog_item.rs                                   the ModuleCatalogItem type, the repository TRAIT (get, list, list_descendants), build_tree
+  src/adapters/services/postgres/module_catalog_item/                 the repository (all SQL), a model (database row) and a mapper (row -> domain)
+  src/application/usecases/module_catalog_item/                       list_module_definitions.rs, get_module_catalog_item.rs, get_module_catalog_tree.rs
+  src/adapters/inputs/http_apis/module_catalog_item/                  the HTTP controller and mappers
+  src/adapters/inputs/grpc_apis/module_catalog_item/                  the gRPC service and mappers
   Seed data (these migrations create the 71 rows): 20261014100000_seed_root_modules, 20261014110000_seed_catalog_pricing_modules, 20261014120000_seed_configuration_oversight_modules, 20261015100000_seed_document_agreement_modules, 20261015110000_seed_enrollment_modules, 20261015120000_seed_order_transaction_modules, 20261016100000_seed_module_classification (marks the premade leaves, their handler_key and api_base)
 
 =====================================================================
@@ -210,7 +210,7 @@ Code layout (about 600 lines in total):
     ON CONFLICT (program_id, module_id) DO NOTHING        -- modules the program already has are left exactly as they are
   That is why the tree (parent_id and ancestry) matters.
 - The program's "manifest" (GET /programs/{program}/modules) is a JOIN of program_modules with module_definitions: it tells the frontend which pages the program has, which handler renders each (handler_key, ui_component) and which API backs it (api_base).
-- Because program_modules.module_id is ON DELETE RESTRICT, a module definition that a program uses can never be deleted.
+- Because program_modules.module_id is ON DELETE RESTRICT, a module catalog item that a program uses can never be deleted.
 - Store Discounts and Documents check that the program has THEIR module switched on, by looking up their key in this catalog (for example "catalog_pricing.store_discounts.control_panel" and "document_agreement.documents.documents_panel").
 
 =====================================================================
@@ -221,7 +221,7 @@ Code layout (about 600 lines in total):
 3. Explain "ltree" and why the table has BOTH parent_id and ancestry. What does each one make easy? Why two indexes on ancestry (btree and gist)?
 4. Explain keyset paging versus OFFSET paging using the list query above, and why "page size + 1" is fetched.
 5. Take each API call (list roots, list children, full tree, get by key, get by id) and tell me, step by step, what SQL runs and what comes back, using the Enrollment branch as the example.
-6. Draw an ASCII diagram of the layers (route -> use case -> domain -> repository -> database) for GET /module-definitions/{key}.
+6. Draw an ASCII diagram of the layers (route -> use case -> domain -> repository -> database) for GET /module-catalog/{key}.
 7. Explain the three "source" kinds and how they decide what the admin can do with a page.
 8. Point out design trade-offs or risks you notice (for example: no write API, ON DELETE RESTRICT, seed-only data) and say what you would check next.
 9. Finish with 8 quiz questions about this module (do NOT show the answers yet). After I answer, grade me and explain what I missed.

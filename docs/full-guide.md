@@ -35,7 +35,7 @@ There are three kinds of module (`module_definitions.source`):
 | Kind | What it is | Examples |
 |---|---|---|
 | `default` | On every program, not selectable | Overview |
-| `premade` | A page written in code; the admin only switches it on | Applications, Enrolled Stores, Store Discounts, Requirements, Documents |
+| `premade` | A page written in code; the admin only switches it on (or, when `universal`, it is on every program: Danger zone) | Applications, Enrolled Stores, Store Discounts, Requirements, Documents, Notifications, Danger zone |
 | `container` | An empty page; the admin decides what it is: a **Rule** page (the frontend rule engine) or a **Settings** page (typed settings) | Warranty, Pre-Enrollment, Program Settings, Shopping Cart |
 
 **Who calls the service:** the admin frontend (HTTP), other services (gRPC, and by reading the published bundle), the storage and the scanner (webhooks),
@@ -145,7 +145,7 @@ The 22nd table, `operations`, exists but nothing uses it.
 Each module below answers: **why it exists**, **where it is in the UI**, **its APIs and the tables each one touches**, and **the rules worth remembering**.
 (In the API tables, "R" is a read and "W" is a write; writes always include `audit_log` and `outbox` unless stated.)
 
-### 5.1 Module definitions: the catalog
+### 5.1 Module catalog: the catalog
 
 **Why.** The frontend and the program builder need the list of every page that exists, and how each one behaves (premade or container, which code handles it,
 which API backs it). It is data, not code, so adding a page is a migration, not a deployment.
@@ -154,13 +154,13 @@ which API backs it). It is data, not code, so adding a page is a migration, not 
 
 | API | Tables |
 |---|---|
-| `GET /module-definitions` (`parent_id` for children, `full_tree=true` for everything nested in one response) | R `module_definitions` |
-| `GET /module-definitions/{id or key}` | R `module_definitions` |
+| `GET /module-catalog` (`parent_id` for children, `full_tree=true` for everything nested in one response) | R `module_definitions` |
+| `GET /module-catalog/{id or key}` | R `module_definitions` |
 
 **Table `module_definitions`**: `key` (unique, like `enrollment.applications_approvals.application_panel`), `kind` (`group` or `leaf`), `parent_id`, `ancestry` (an `ltree`, so
 a whole subtree is one query), `source`, `handler_key`, `api_base`, `ui_component`, `rule_family`, `requires_publish`, `selectable`, `allow_components`, `default_mode`, `default_rule`, `permission_key`.
 `default_mode` (`rule` or `settings`) and `default_rule` (a starter rule) let a page start configured: today only **Fees** (Core Returns) has them, so a program that selects it gets a Rule leaf with a simple GoRules decision table already saved as draft 1.
-**Code:** `domain/module_definition.rs`, `postgres/module_definition/`, `usecases/module_definition/`.
+**Code:** `domain/module_catalog_item.rs`, `postgres/module_catalog_item/`, `usecases/module_catalog_item/`.
 
 ### 5.2 Programs
 
@@ -224,14 +224,14 @@ warmed at start-up. There is no webhook from global-settings, so a changed optio
 
 | API | Tables |
 |---|---|
-| `GET /programs/{p}/field-values[?module=key]` | R `program_field_values`, `program_fields`, `programs` (the version) |
-| `POST /programs/{p}/field-values:batchUpdate` `{version?, values: {setting_id: {value or option_ids} or null}}` | W `program_field_values`, `programs` (version bump) |
+| `GET /programs/{p}/setting-values[?module=key]` | R `program_field_values`, `program_fields`, `programs` (the version) |
+| `POST /programs/{p}/setting-values:batchUpdate` `{version?, values: {setting_id: {value or option_ids} or null}}` | W `program_field_values`, `programs` (version bump) |
 
 **Rules.** The whole page saves in **one request and one transaction**. Every value is checked first against its type and options, and *all* problems are reported together.
 `version` (the `config_version` you last read) makes a stale save a 409, so two admins cannot overwrite each other. Only values that differ are written. A boolean takes
 `value`; radio, checkbox and dropdown take `option_ids`; a required setting cannot be cleared.
 **Table `program_field_values`** (key `(program_id, field_id, scope_type, scope_id)`): `value` (JSON), `option_ids` (uuid[]), `library_id`.
-**Code:** `domain/program_field_value.rs`, `postgres/program_field_value/`.
+**Code:** `domain/program_setting_value.rs`, `postgres/program_setting_value/`.
 
 ### 5.6 Overview and the audit log
 
@@ -249,6 +249,35 @@ zero-filled); `published_rules` (each rule leaf's state, `in_sync` count, `drift
 **Rules.** `unpublished_changes` is true when the program changed since it was last published (or changed since creation and was never published). A rule leaf's state is `empty`
 (nothing saved, not drift), `never`, `drifted` or `in_sync`. The audit log is newest first, paged by time, with the `before` and `after` of each change; `summary` is the line shown in the list.
 **Code:** `domain/program_overview.rs`, `postgres/program_overview/`, `postgres/audit_log/`.
+
+### 5.6a Notifications (premade page in Settings, picked in Create program)
+
+**Why.** Each trigger point (Enrollment Approved, Payment Due, ...) tells the customer through some channels (Email, SMS, Push, In-App). The grid is the same shape on every program, so it is a premade page, not a form of settings.
+
+**UI.** The Notifications card: the grid, **Add trigger** (key + label), the bin icon, and the page's **Save changes**. The program has it when it is picked in the Create program module list; it then comes back in `GET /programs/{p}/modules` as a `premade` module with `api_base notifications`, so the page loads with the rest of Settings.
+
+| API | Tables |
+|---|---|
+| `GET /programs/{p}/notifications` | R `programs.config_version`, `program_notification_triggers` |
+| `PUT /programs/{p}/notifications` | W `program_notification_triggers`, `programs.config_version`, `audit_log` (`notifications_updated`), `outbox` |
+
+**Rules.** A new program starts with 8 usual trigger points (seeded once, when the page arrives). `PUT` sends the whole grid: missing triggers are removed, new keys added, list order = row order. Key: lower-case letters, digits, `_`, starts with a letter, unique; label 1-100 characters; at most 100 triggers. `version` (the program's `config_version`) is checked like the setting values (409 when stale; omit = last write wins). Saving the grid unchanged writes nothing. 404 on a program that did not pick the page. **Code:** `domain/notifications.rs`, `postgres/notifications/`.
+
+### 5.6b Danger zone (premade page in Settings, on every program)
+
+**Why.** An admin needs to take a program out of use without losing it (Archive), and to remove one made by mistake (Delete).
+
+**UI.** The Danger zone card at the bottom of Settings, with **Archive program** and **Delete program**. It is on every program without being selected.
+
+| API | Tables |
+|---|---|
+| `GET /programs/{p}/danger-zone` | R `programs`, `enrollments`, `applications`, `publications`, `documents` (counts) |
+| `POST /programs/{p}/danger-zone:archive` / `:unarchive` | W `programs.archive_time`, `audit_log`, `outbox` |
+| `POST /programs/{p}/danger-zone:deletePermanently` | D `programs` (cascade); `audit_log` entry stays |
+
+**Rules.** Archive is reversible and keeps everything (`state` stays ACTIVE); the program list leaves archived programs out (`GET /programs?show_archived=true` lists them). Delete permanently
+is allowed only with no operational history (no enrollments, applications, publications or documents); otherwise **409**, and the card's `delete_blockers` say what is in the way. `DELETE /programs/{p}`
+is still the reversible soft delete. **Code:** `domain/danger_zone.rs`, `postgres/danger_zone/`.
 
 ### 5.7 Requirements
 
@@ -417,7 +446,7 @@ change. Files are data: no `config_version` bump. The program must have the modu
 ## 6. How the modules work together: one program's life
 
 1. **Build.** The admin creates a program: `POST /programs` with the modules they want. One transaction creates the program, its modules, a settings page's settings, a rule page's empty rule set, the Overview counters, the Documents counters and four system folders. *(Programs, Program modules, Builder.)*
-2. **Configure.** They save setting values (`field-values:batchUpdate`), add requirements and approval steps, set the program and website discounts, and build rules in the rule builder. Every change bumps `config_version`, so the Overview shows **unpublished changes**. *(Setting values, Requirements, Approval steps, Store discounts, Rule sets.)*
+2. **Configure.** They save setting values (`setting-values:batchUpdate`), add requirements and approval steps, set the program and website discounts, and build rules in the rule builder. Every change bumps `config_version`, so the Overview shows **unpublished changes**. *(Setting values, Requirements, Approval steps, Store discounts, Rule sets.)*
 3. **Publish.** `POST /publications` freezes all of that into a bundle. The Overview shows **in sync**. *(Publishing.)*
 4. **A store applies.** `POST /applications`, then `:submit`: the requirements are frozen into the application and it waits at the first approval step. The Overview's pending count goes up. *(Applications.)*
 5. **Approvers decide.** Each `POST /signoffs` moves the application on; the last approval approves it and **enrolls the store in the same transaction**. *(Signoffs, Enrollments.)*
@@ -454,7 +483,7 @@ change. Files are data: no `config_version` bump. The program must have the modu
 | Swagger | `docker compose up -d swagger`, then http://localhost:8082 |
 | Unit tests | `cargo test --lib` (86 tests) |
 | Proto | `buf lint proto`, then `buf generate proto --path proto/programs/v1`, then `buf build proto --path proto/programs/v1 -o src/adapters/generated/grpc_services/programs.binpb`. Never run a plain `buf generate`: it would read the remote repository. |
-| API tests | Import `postman/programs.postman_collection.json` and the environment file. `newman run` on the main collection runs 828 assertions with the parked modules off; with `APP__FEATURES__ENROLLMENT_REVIEW=true`, also run `postman/enrollment-review.postman_collection.json` (327 assertions). Each module has a folder and a "negative checks" folder; the negative folders set up their own data, so any request can be sent alone. |
+| API tests | Import `postman/programs.postman_collection.json` and the environment file. `newman run` on the main collection runs 900 assertions with the parked modules off; with `APP__FEATURES__ENROLLMENT_REVIEW=true`, also run `postman/enrollment-review.postman_collection.json` (327 assertions). Each module has a folder and a "negative checks" folder; the negative folders set up their own data, so any request can be sent alone. |
 | Parked modules | Requirements, Approval steps, Applications and Signoffs are off by default: `APP__FEATURES__ENROLLMENT_REVIEW=true` turns them on. See [parked-enrollment-review.md](parked-enrollment-review.md). |
 | OpenAPI | `spectral lint openapi.yaml` (one accepted false positive on the Overview's operation id) |
 
@@ -464,9 +493,9 @@ change. Files are data: no `config_version` bump. The program must have the modu
 
 | Item | Status |
 |---|---|
-| Imports (Upload Consignment Orders, Import History, Price Import) | **Dropped** by decision. The `import_jobs` API is not planned. |
+| Imports (Upload Consignment Orders, Import History) | **Dropped**, and removed from the module catalog. The `import_jobs` API is not planned. |
 | Contracts and agreements | Parked. `enrollments.contracts_count` and `last_contract_time` stay empty. |
-| Reports | Parked until confirmed. |
+| Reports (Enrollment Reports Panel) | **Dropped**, and removed from the module catalog. |
 | Custom CSV rules, manual products, rule test cases, simulating a rule set | Parked (they belong to the rule engine). |
 | Anything that **reads** the published bundle (pricing) | Not part of this service yet. |
 | Authentication | Approver roles, reviewers and the scanner webhook are not authenticated beyond an optional shared secret. |

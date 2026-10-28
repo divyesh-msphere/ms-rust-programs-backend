@@ -20,7 +20,6 @@ INSERT INTO module_definitions
 SELECT md5('module:' || v.key)::uuid, v.key, v.name, 'group', p.id, v.key::ltree,
        v.position, false, false
 FROM (VALUES
-    ('order_transaction.imports',      'Imports',      'order_transaction', 1),
     ('order_transaction.core_returns', 'Core Returns', 'order_transaction', 2)
 ) AS v(key, name, parent_key, position)
 JOIN module_definitions p ON p.key = v.parent_key
@@ -33,9 +32,6 @@ INSERT INTO module_definitions
 SELECT md5('module:' || v.key)::uuid, v.key, v.name, 'leaf', p.id, v.key::ltree,
        v.position, v.ui_component, NULL, false, false
 FROM (VALUES
-    -- Imports
-    ('order_transaction.imports.import_history',               'Import History',              'order_transaction.imports',      1, 'custom:import_history'),
-    ('order_transaction.imports.upload_consignment_orders',    'Upload Consignment Orders',   'order_transaction.imports',      2, 'custom:upload_consignment_orders'),
 
     -- Core Returns
     ('order_transaction.core_returns.terms',                   'Terms',                       'order_transaction.core_returns', 1, 'field_form'),

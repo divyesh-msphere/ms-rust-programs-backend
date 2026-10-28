@@ -52,8 +52,12 @@ pub async fn http_server(
         // Opt-in CORS for browser tools such as Swagger UI's "Try it out". Off unless an
         // origin is configured (`cors_allowed_origin`), so nothing changes in a deployment.
         let cors_origin = deps.application_config.cors_allowed_origin.trim().to_string();
-        let cors = Cors::default()
-            .allowed_origin(&cors_origin)
+        // Several origins can be given, comma-separated (e.g. localhost and the LAN address).
+        let cors = cors_origin
+            .split(',')
+            .map(str::trim)
+            .filter(|o| !o.is_empty())
+            .fold(Cors::default(), |c, o| c.allowed_origin(o))
             .allow_any_method()
             .allow_any_header()
             .max_age(3600);

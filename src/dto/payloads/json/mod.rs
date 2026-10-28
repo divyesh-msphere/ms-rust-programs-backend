@@ -1,10 +1,11 @@
 pub mod application;
 pub mod approval_step;
 pub mod enrollment;
-pub mod module_definition;
+pub mod module_catalog_item;
 pub mod program;
-pub mod program_field_value;
+pub mod program_setting_value;
 pub mod program_module;
+pub mod danger_zone;
 pub mod program_overview;
 pub mod requirement;
 pub mod signoff;
@@ -12,3 +13,4 @@ pub mod store_discount;
 pub mod publication;
 pub mod rule_set;
 pub mod document;
+pub mod notifications;

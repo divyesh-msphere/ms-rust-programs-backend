@@ -41,8 +41,8 @@ Premade modules can only use `settings`. A leaf's mode cannot change once it has
 its options) for a settings leaf, and a `rule` summary for a rule leaf. **Built:** create and `PATCH /programs/{program}` accept
 `modules: [{key, mode, enabled, settings}]` (replace semantics, options matched by `code`); library-backed settings read their
 options from global-settings through an in-memory cache (stale-while-revalidate, refreshed in the background; the `lib.*` webhook at
-`POST /webhooks/global-settings` was **removed**, so a change shows up within about 30 seconds). **Setting values are built:** `POST /programs/{program}/field-values:batchUpdate` (one transaction, per-type and per-option
-validation, optimistic `version`, only differing values written, audit + outbox) and `GET /programs/{program}/field-values`; the
+`POST /webhooks/global-settings` was **removed**, so a change shows up within about 30 seconds). **Setting values are built:** `POST /programs/{program}/setting-values:batchUpdate` (one transaction, per-type and per-option
+validation, optimistic `version`, only differing values written, audit + outbox) and `GET /programs/{program}/setting-values`; the
 manifest carries each setting's saved `value` / `option_ids` and `missing_option_ids`. **The Overview and the audit log are built:**
 `GET /programs/{program}/overview` (counters, a funnel with all six statuses, rules sync state `never`/`drifted`/`in_sync`,
 `unpublished_changes`, latest 10 changes; ONE database query, about 2 ms) and `GET /programs/{program}/audit-logs[?action=a,b]`
@@ -163,9 +163,9 @@ All lists use `max_page_size`, `page_token`, `next_page_token`, `total_size`.
 
 | Method | Path | Request | Response |
 |---|---|---|---|
-| `GET` | `/programs/{program}/modules` | `parent_id?`, `full_tree?` | enabled modules only (same shape as module definitions) |
-| `GET` | `/module-definitions` | `parent_id?`, `full_tree?`, paging | *done* |
-| `GET` | `/module-definitions/{id-or-key}` | – | *done* |
+| `GET` | `/programs/{program}/modules` | `parent_id?`, `full_tree?` | enabled modules only (same shape as module catalog) |
+| `GET` | `/module-catalog` | `parent_id?`, `full_tree?`, paging | *done* |
+| `GET` | `/module-catalog/{id-or-key}` | – | *done* |
 
 ### 4.3 Settings (the new core)
 
@@ -223,7 +223,7 @@ Response: the same body as `GET` (fresh `version`, so the page can re-render).
 ### 4.5 gRPC (same names, `programs.v1.ProgramsService`)
 `ListPrograms`, `CreateProgram`, `GetProgram`, `UpdateProgram`, `DeleteProgram`, `UndeleteProgram`,
 `ListProgramModules`, `GetProgramSettings`, `UpdateProgramSettings`, `ListAuditLogs`, plus the
-existing `ListModuleDefinitions`, `GetModuleDefinition`, `ListHealthCheck`.
+existing `ListModuleCatalog`, `GetModuleCatalogItem`, `ListHealthCheck`.
 
 ---
 
@@ -245,7 +245,7 @@ existing `ListModuleDefinitions`, `GetModuleDefinition`, `ListHealthCheck`.
 2. **Extras that a library attribute cannot hold** (default value, tooltip, show-only-when rule, "applies to
    KBB only"): a small `module_field_extras` table keyed by attribute id — needed now, or later?
 3. **Toggles** (Yes/No): stored as plain booleans (no library). Confirm.
-4. **Archive vs delete** (Danger Zone): is *Archived* the same as soft-deleted, or a separate state?
+4. **Archive vs delete** (Danger Zone): *answered and built*: Archive is a separate, reversible `archive_time` (state stays ACTIVE, the program list leaves it out); soft delete is unchanged; Delete permanently is allowed only with no operational history. See `docs/modules-walkthrough.md` section 6b.
 5. **Program Level** saves on its own button today; keep it a separate `PATCH /programs/{program}` call?
 6. **Programs belong to a business unit?** If yes, `programs` needs `business_unit_id` and `slug` becomes unique per unit.
 7. **`global-settings` speed-ups** (batch get, revision / ETag, revision in webhook): do them first, or start without?
@@ -624,7 +624,7 @@ Screen: Catalog & Pricing → Products & Rules (one page, three rule areas + a s
 | **Warranty** | *"Match product attributes to warranty durations in days."* Warranty rules: `IF <Field> <Value>` (+ **Add OR condition**, **AND group**) `THEN Warranty <N> days`; **Add warranty rule**; **Replicate Above**; Rules / Custom CSV. | **Yes** (`warranty`) |
 | **Live results** (side panel) | *Auto-updated*; *"Add a complete rule to see matched products."* + **Add product manually**. | Uses the same engine (preview) |
 
-Registry modules (already seeded): `catalog_pricing.products_rules.pre_enrollment`, `.post_enrollment`, `.warranty`, `.live_results`.
+Registry modules (already seeded): `catalog_pricing.products_rules.pre_enrollment`, `.post_enrollment`, `.warranty`.
 
 ### 11.1 The key idea: a guided rule model, compiled to the engine
 

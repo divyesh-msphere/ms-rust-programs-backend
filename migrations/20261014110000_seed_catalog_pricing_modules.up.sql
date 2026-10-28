@@ -46,7 +46,6 @@ FROM (VALUES
     ('catalog_pricing.products_rules.pre_enrollment',          'Pre-Enrollment',                'catalog_pricing.products_rules',  1, 'rule_playground',                 'pre_enrollment',  true),
     ('catalog_pricing.products_rules.post_enrollment',         'Post-Enrollment',               'catalog_pricing.products_rules',  2, 'rule_playground',                 'post_enrollment', true),
     ('catalog_pricing.products_rules.warranty',                'Warranty',                      'catalog_pricing.products_rules',  3, 'field_form',                      NULL,             true),
-    ('catalog_pricing.products_rules.live_results',            'Live Results',                  'catalog_pricing.products_rules',  4, 'custom:live_results',             NULL,             false),
 
     -- Pricing
     ('catalog_pricing.pricing.discount_rules',                 'Discount Rules',                'catalog_pricing.pricing',         1, 'rule_playground',                 'discount',        true),

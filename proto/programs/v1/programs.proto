@@ -6,15 +6,15 @@ import "msapi/v1/annotations.proto";
 import "programs/v1/types.proto";
 
 service ProgramsService {
-  // ---- Module definitions (read-only) ----
-  rpc ListModuleDefinitions(ListModuleDefinitionsRequest) returns (ListModuleDefinitionsResponse) {
+  // ---- Module catalog (read-only) ----
+  rpc ListModuleCatalog(ListModuleCatalogRequest) returns (ListModuleCatalogResponse) {
     option (msapi.v1.sso_permission) = {permission: "programs.module_definitions" action: "reader" collection_scope: true};
   }
-  rpc GetModuleDefinition(GetModuleDefinitionRequest) returns (GetModuleDefinitionResponse) {
+  rpc GetModuleCatalogItem(GetModuleCatalogItemRequest) returns (GetModuleCatalogItemResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.module_definitions"
       action: "reader"
-      resource_fields: [{field: "path" pattern: "module-definitions/*"}]
+      resource_fields: [{field: "path" pattern: "module-catalog/*"}]
     };
   }
 
@@ -54,6 +54,52 @@ service ProgramsService {
     };
   }
 
+  // ---- Danger zone (the premade page in Settings; on every program) ----
+  rpc GetDangerZone(GetDangerZoneRequest) returns (GetDangerZoneResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc ArchiveProgram(ArchiveProgramRequest) returns (ArchiveProgramResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc UnarchiveProgram(UnarchiveProgramRequest) returns (UnarchiveProgramResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc DeleteProgramPermanently(DeleteProgramPermanentlyRequest) returns (google.protobuf.Empty) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
+  // ---- Notifications (the premade page in Settings; picked in Create program) ----
+  rpc GetNotifications(GetNotificationsRequest) returns (GetNotificationsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+  rpc ReplaceNotifications(ReplaceNotificationsRequest) returns (ReplaceNotificationsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "admin"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
+
   // ---- Program modules (the manifest) ----
   rpc ListProgramModules(ListProgramModulesRequest) returns (ListProgramModulesResponse) {
     option (msapi.v1.sso_permission) = {
@@ -64,14 +110,14 @@ service ProgramsService {
   }
 
   // ---- Setting values ----
-  rpc ListFieldValues(ListFieldValuesRequest) returns (ListFieldValuesResponse) {
+  rpc ListSettingValues(ListSettingValuesRequest) returns (ListSettingValuesResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "reader"
       resource_fields: [{field: "path" pattern: "programs/*"}]
     };
   }
-  rpc BatchUpdateFieldValues(BatchUpdateFieldValuesRequest) returns (BatchUpdateFieldValuesResponse) {
+  rpc BatchUpdateSettingValues(BatchUpdateSettingValuesRequest) returns (BatchUpdateSettingValuesResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "writer"

@@ -43,6 +43,8 @@ pub struct ListProgramsPayload {
     pub max_page_size: Option<i64>,
     pub page_token: Option<String>,
     pub show_deleted: Option<bool>,
+    /// Only archived programs; the default lists the working catalog.
+    pub show_archived: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

@@ -4,9 +4,10 @@ use crate::adapters::services::postgres::audit_log::audit_log_repository::AuditL
 use crate::adapters::services::postgres::db_connection::PostgresDbConnection;
 use crate::adapters::services::postgres::document::document_repository::DocumentRepositoryPostgresImpl;
 use crate::adapters::services::postgres::enrollment::enrollment_repository::EnrollmentRepositoryPostgresImpl;
-use crate::adapters::services::postgres::module_definition::module_definition_repository::ModuleDefinitionRepositoryPostgresImpl;
+use crate::adapters::services::postgres::module_catalog_item::module_catalog_item_repository::ModuleCatalogItemRepositoryPostgresImpl;
 use crate::adapters::services::postgres::program::program_repository::ProgramRepositoryPostgresImpl;
-use crate::adapters::services::postgres::program_field_value::program_field_value_repository::ProgramFieldValueRepositoryPostgresImpl;
+use crate::adapters::services::postgres::program_setting_value::program_setting_value_repository::ProgramSettingValueRepositoryPostgresImpl;
+use crate::adapters::services::postgres::danger_zone::danger_zone_repository::DangerZoneRepositoryPostgresImpl;
 use crate::adapters::services::postgres::program_overview::program_overview_repository::ProgramOverviewRepositoryPostgresImpl;
 use crate::adapters::services::postgres::program_module::program_module_repository::ProgramModuleRepositoryPostgresImpl;
 use crate::adapters::services::postgres::signoff::signoff_repository::SignoffRepositoryPostgresImpl;
@@ -20,10 +21,13 @@ use crate::domain::application::ApplicationRepository;
 use crate::domain::approval_step::ApprovalStepRepository;
 use crate::domain::document::DocumentRepository;
 use crate::domain::enrollment::EnrollmentRepository;
-use crate::domain::module_definition::ModuleDefinitionRepository;
+use crate::domain::module_catalog_item::ModuleCatalogItemRepository;
 use crate::domain::program::ProgramRepository;
-use crate::domain::program_field_value::ProgramFieldValueRepository;
+use crate::domain::program_setting_value::ProgramSettingValueRepository;
 use crate::domain::program_module::ProgramModuleRepository;
+use crate::domain::danger_zone::DangerZoneRepository;
+use crate::domain::notifications::NotificationsRepository;
+use crate::adapters::services::postgres::notifications::notifications_repository::NotificationsRepositoryPostgresImpl;
 use crate::domain::program_overview::{AuditLogRepository, ProgramOverviewRepository};
 use crate::domain::publication::PublicationRepository;
 use crate::domain::requirement::RequirementRepository;
@@ -33,11 +37,13 @@ use crate::domain::store_discount::StoreDiscountRepository;
 use std::sync::Arc;
 
 pub struct Repositories {
-    pub module_definition_repository: Arc<dyn ModuleDefinitionRepository>,
+    pub module_catalog_item_repository: Arc<dyn ModuleCatalogItemRepository>,
     pub program_repository: Arc<dyn ProgramRepository>,
     pub program_module_repository: Arc<dyn ProgramModuleRepository>,
-    pub program_field_value_repository: Arc<dyn ProgramFieldValueRepository>,
+    pub program_setting_value_repository: Arc<dyn ProgramSettingValueRepository>,
     pub program_overview_repository: Arc<dyn ProgramOverviewRepository>,
+    pub danger_zone_repository: Arc<dyn DangerZoneRepository>,
+    pub notifications_repository: Arc<dyn NotificationsRepository>,
     pub audit_log_repository: Arc<dyn AuditLogRepository>,
     pub requirement_repository: Arc<dyn RequirementRepository>,
     pub approval_step_repository: Arc<dyn ApprovalStepRepository>,
@@ -59,13 +65,15 @@ impl Repositories {
             .expect("Failed to apply [features] (apply migrations/20261027100000_parked_modules.up.sql first)");
 
         Self {
-            module_definition_repository: Arc::new(ModuleDefinitionRepositoryPostgresImpl::new(
+            module_catalog_item_repository: Arc::new(ModuleCatalogItemRepositoryPostgresImpl::new(
                 postgres_connection.clone(),
             )),
             program_repository: Arc::new(ProgramRepositoryPostgresImpl::new(postgres_connection.clone())),
             program_module_repository: Arc::new(ProgramModuleRepositoryPostgresImpl::new(postgres_connection.clone())),
-            program_field_value_repository: Arc::new(ProgramFieldValueRepositoryPostgresImpl::new(postgres_connection.clone())),
+            program_setting_value_repository: Arc::new(ProgramSettingValueRepositoryPostgresImpl::new(postgres_connection.clone())),
             program_overview_repository: Arc::new(ProgramOverviewRepositoryPostgresImpl::new(postgres_connection.clone())),
+            danger_zone_repository: Arc::new(DangerZoneRepositoryPostgresImpl::new(postgres_connection.clone())),
+            notifications_repository: Arc::new(NotificationsRepositoryPostgresImpl::new(postgres_connection.clone())),
             audit_log_repository: Arc::new(AuditLogRepositoryPostgresImpl::new(postgres_connection.clone())),
             requirement_repository: Arc::new(RequirementRepositoryPostgresImpl::new(postgres_connection.clone())),
             approval_step_repository: Arc::new(ApprovalStepRepositoryPostgresImpl::new(postgres_connection.clone())),

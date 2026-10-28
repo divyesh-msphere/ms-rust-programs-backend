@@ -1,0 +1,2 @@
+pub mod module_catalog_item_mappers;
+pub mod module_catalog_item_service_impl;

@@ -8,7 +8,7 @@
 //     never the whole page.
 use crate::application::errors::application_error::ApplicationError;
 use crate::domain::library_catalog::{CatalogError, Library, LibraryCatalog};
-use crate::domain::program_field_value::missing_options;
+use crate::domain::program_setting_value::missing_options;
 use crate::domain::program_module::ProgramModule;
 use crate::domain::program_setting::{ModuleChange, OptionsSource, SettingOption, library_ids};
 use futures::future::join_all;

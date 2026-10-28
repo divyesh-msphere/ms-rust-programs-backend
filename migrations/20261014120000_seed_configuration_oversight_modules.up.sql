@@ -23,7 +23,6 @@ INSERT INTO module_definitions
 SELECT md5('module:' || v.key)::uuid, v.key, v.name, 'group', p.id, v.key::ltree,
        v.position, v.universal, false
 FROM (VALUES
-    ('configuration_oversight.reports',  'Reports',  'configuration_oversight', 1, false),
     ('configuration_oversight.settings', 'Settings', 'configuration_oversight', 2, true)
 ) AS v(key, name, parent_key, position, universal)
 JOIN module_definitions p ON p.key = v.parent_key
@@ -48,8 +47,6 @@ INSERT INTO module_definitions
 SELECT md5('module:' || v.key)::uuid, v.key, v.name, 'leaf', p.id, v.key::ltree,
        v.position, v.ui_component, NULL, v.universal, false
 FROM (VALUES
-    -- Reports
-    ('configuration_oversight.reports.enrollment_reports_panel',              'Enrollment Reports Panel',        'configuration_oversight.reports',                  1,  'custom:enrollment_reports',      false),
 
     -- Settings > Universal (every program)
     ('configuration_oversight.settings.universal.program_level',              'Program Level',                   'configuration_oversight.settings.universal',       1,  'field_form',                     true),

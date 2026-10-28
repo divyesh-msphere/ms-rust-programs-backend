@@ -20,6 +20,7 @@ erDiagram
   %% ===== overview (default for every program) =====
   PROGRAMS ||--|| PROGRAM_STATS : overview_counters
   PROGRAMS ||--o{ AUDIT_LOG : history_and_recent_activity
+  PROGRAMS ||--o{ PROGRAM_NOTIFICATION_TRIGGERS : notification_grid
   PROGRAMS ||--o{ PUBLICATIONS : published_bundles
 
   %% ===== container modules: Settings leaves =====
@@ -62,6 +63,7 @@ erDiagram
     int config_version "bumped by every configuration change"
     text config_hash
     text state "ACTIVE or DELETED"
+    timestamptz archive_time "NULL = not archived; archived programs leave the program list"
   }
   MODULE_DEFINITIONS {
     uuid id PK
@@ -118,6 +120,16 @@ erDiagram
     text label
     int position
     bool active
+  }
+  PROGRAM_NOTIFICATION_TRIGGERS {
+    uuid program_id PK,FK
+    text key PK "lower-case machine name"
+    text label
+    bool email
+    bool sms
+    bool push
+    bool in_app
+    int position
   }
   PROGRAM_FIELD_VALUES {
     uuid program_id PK

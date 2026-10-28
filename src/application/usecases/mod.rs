@@ -10,10 +10,12 @@ pub mod audit_log;
 pub mod document;
 pub mod interface;
 pub mod enrollment;
-pub mod module_definition;
+pub mod module_catalog_item;
 pub mod program;
-pub mod program_field_value;
+pub mod program_setting_value;
 pub mod program_module;
+pub mod danger_zone;
+pub mod notifications;
 pub mod program_overview;
 pub mod signoff;
 pub mod store_discount;
@@ -22,11 +24,13 @@ pub mod requirement;
 pub mod rule_set;
 
 pub struct UseCases {
-    pub module_definition: module_definition::ModuleDefinitionUseCases,
+    pub module_catalog_item: module_catalog_item::ModuleCatalogItemUseCases,
     pub program: program::ProgramUseCases,
     pub program_module: program_module::ProgramModuleUseCases,
-    pub program_field_value: program_field_value::ProgramFieldValueUseCases,
+    pub program_setting_value: program_setting_value::ProgramSettingValueUseCases,
     pub program_overview: program_overview::ProgramOverviewUseCases,
+    pub danger_zone: danger_zone::DangerZoneUseCases,
+    pub notifications: notifications::NotificationsUseCases,
     pub audit_log: audit_log::AuditLogUseCases,
     pub requirement: requirement::RequirementUseCases,
     pub approval_step: approval_step::ApprovalStepUseCases,
@@ -47,8 +51,8 @@ impl UseCases {
         document_policy: DocumentPolicy,
     ) -> Self {
         Self {
-            module_definition: module_definition::ModuleDefinitionUseCases::new(
-                repositories.module_definition_repository.clone(),
+            module_catalog_item: module_catalog_item::ModuleCatalogItemUseCases::new(
+                repositories.module_catalog_item_repository.clone(),
             ),
             program: program::ProgramUseCases::new(repositories.program_repository.clone(), library_catalog.clone()),
             program_module: program_module::ProgramModuleUseCases::new(
@@ -56,14 +60,22 @@ impl UseCases {
                 repositories.program_module_repository.clone(),
                 library_catalog.clone(),
             ),
-            program_field_value: program_field_value::ProgramFieldValueUseCases::new(
+            program_setting_value: program_setting_value::ProgramSettingValueUseCases::new(
                 repositories.program_repository.clone(),
-                repositories.program_field_value_repository.clone(),
+                repositories.program_setting_value_repository.clone(),
                 library_catalog,
             ),
             program_overview: program_overview::ProgramOverviewUseCases::new(
                 repositories.program_repository.clone(),
                 repositories.program_overview_repository.clone(),
+            ),
+            danger_zone: danger_zone::DangerZoneUseCases::new(
+                repositories.program_repository.clone(),
+                repositories.danger_zone_repository.clone(),
+            ),
+            notifications: notifications::NotificationsUseCases::new(
+                repositories.program_repository.clone(),
+                repositories.notifications_repository.clone(),
             ),
             audit_log: audit_log::AuditLogUseCases::new(
                 repositories.program_repository.clone(),

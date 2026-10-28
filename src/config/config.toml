@@ -2,7 +2,7 @@ app_name = "programs"
 http_port = 8080
 grpc_port = 50051
 # Browser origin allowed to call the HTTP API cross-origin (e.g. Swagger UI on http://localhost:8082).
-# Empty = CORS off. Override with APP__CORS_ALLOWED_ORIGIN.
+# Empty = CORS off. Comma-separated list allowed. Override with APP__CORS_ALLOWED_ORIGIN.
 cors_allowed_origin = ""
 
 [postgres]

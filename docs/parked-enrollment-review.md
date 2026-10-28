@@ -8,7 +8,7 @@ These four modules, and the two pages they belong to (**Requirements** and **App
 | Setting | `features.enrollment_review = false` | `features.enrollment_review = true` |
 | HTTP | the 20 paths do not exist (404) | served |
 | gRPC | the 20 rpcs answer `UNIMPLEMENTED` | served |
-| Module tree and manifests | the two pages are not in `GET /module-definitions`, not in any program's manifest, and cannot be selected (422) | present |
+| Module tree and manifests | the two pages are not in `GET /module-catalog`, not in any program's manifest, and cannot be selected (422) | present |
 | `openapi.yaml` | does not list them | `openapi.enrollment-review.yaml` lists them |
 | Postman | `programs.postman_collection.json` (the "Parked modules" folder proves they are off) | also run `enrollment-review.postman_collection.json` |
 

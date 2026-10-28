@@ -5,6 +5,7 @@
 // all of its module changes commit or roll back together. Nothing here calls another service
 // (global-settings libraries are validated by the use case BEFORE the transaction opens).
 use crate::application::errors::application_error::ApplicationError;
+use crate::domain::notifications::default_triggers;
 use crate::domain::program_setting::{
     ModuleChange, ModuleMode, OptionInput, SettingInput, code_for_option, key_from_name,
 };
@@ -45,14 +46,17 @@ pub async fn check_keys(conn: &mut PgConnection, program_id: Uuid, keys: &[Strin
     }
 }
 
-/// Gives the program the default modules (Overview), every named module with its ancestors (so
-/// the tree is connected) and, for a named group, everything under it. `<@` is the ltree
+/// Gives the program the default modules (Overview), the premade pages every program has (Danger zone,
+/// `universal`) with their ancestors, every named module with its ancestors (so the tree is connected) and, for a named group, everything under it. `<@` is the ltree
 /// "descendant of" operator. Modules the program already has are left exactly as they are.
 pub async fn ensure_modules(conn: &mut PgConnection, program_id: Uuid, keys: &[String]) -> Result<(), ApplicationError> {
+    let had_notifications = has_notifications(conn, program_id).await?;
     sqlx::query(
         "INSERT INTO program_modules (program_id, module_id, enabled, position, mode) \
          SELECT $1, md.id, true, md.position, md.default_mode FROM module_definitions md \
          WHERE md.source = 'default' \
+            OR EXISTS (SELECT 1 FROM module_definitions u WHERE u.source = 'premade' AND u.universal \
+                       AND u.ancestry <@ md.ancestry) \
             OR EXISTS (SELECT 1 FROM module_definitions s WHERE s.key = ANY($2) \
                        AND (s.ancestry <@ md.ancestry OR md.ancestry <@ s.ancestry)) \
          ON CONFLICT (program_id, module_id) DO NOTHING",
@@ -62,7 +66,45 @@ pub async fn ensure_modules(conn: &mut PgConnection, program_id: Uuid, keys: &[S
     .execute(&mut *conn)
     .await
     .map_err(db_error)?;
+    // Only when the page arrives: an admin who emptied the grid must not get the defaults back on the
+    // next program update.
+    if !had_notifications && has_notifications(conn, program_id).await? {
+        seed_default_notifications(conn, program_id).await?;
+    }
     seed_default_rules(conn, program_id).await
+}
+
+async fn has_notifications(conn: &mut PgConnection, program_id: Uuid) -> Result<bool, ApplicationError> {
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM program_modules pm JOIN module_definitions md ON md.id = pm.module_id \
+         WHERE pm.program_id = $1 AND md.handler_key = 'notifications')",
+    )
+    .bind(program_id)
+    .fetch_one(&mut *conn)
+    .await
+    .map_err(db_error)
+}
+
+/// A program that just got the Notifications page starts with the usual trigger points.
+async fn seed_default_notifications(conn: &mut PgConnection, program_id: Uuid) -> Result<(), ApplicationError> {
+    for (position, trigger) in default_triggers().into_iter().enumerate() {
+        sqlx::query(
+            "INSERT INTO program_notification_triggers (program_id, key, label, email, sms, push, in_app, position) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (program_id, key) DO NOTHING",
+        )
+        .bind(program_id)
+        .bind(&trigger.key)
+        .bind(&trigger.label)
+        .bind(trigger.email)
+        .bind(trigger.sms)
+        .bind(trigger.push)
+        .bind(trigger.in_app)
+        .bind(i32::try_from(position).unwrap_or(i32::MAX))
+        .execute(&mut *conn)
+        .await
+        .map_err(db_error)?;
+    }
+    Ok(())
 }
 
 #[derive(Debug, FromRow)]

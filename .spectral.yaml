@@ -74,7 +74,7 @@ overrides:
   # A program's saved setting values are always returned whole (at most a few dozen), so the
   # response is not a paginated list and has no next_page_token.
   - files:
-      - "openapi.yaml#/components/schemas/ListFieldValuesResponse"
+      - "openapi.yaml#/components/schemas/ListSettingValuesResponse"
       - "openapi.enrollment-review.yaml#/components/schemas/ListRequirementsResponse"
       - "openapi.enrollment-review.yaml#/components/schemas/ListApprovalStepsResponse"
       - "openapi.enrollment-review.yaml#/components/schemas/ListSignoffsResponse"

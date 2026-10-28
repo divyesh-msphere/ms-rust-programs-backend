@@ -413,12 +413,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=50",
+              "raw": "{{base_url}}/module-catalog?max_page_size=50",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -453,12 +453,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment.requirements.enrollment_requirements",
+              "raw": "{{base_url}}/module-catalog/enrollment.requirements.enrollment_requirements",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment.requirements.enrollment_requirements"
               ]
             },
@@ -489,12 +489,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment.applications_approvals.application_panel",
+              "raw": "{{base_url}}/module-catalog/enrollment.applications_approvals.application_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment.applications_approvals.application_panel"
               ]
             },
@@ -525,12 +525,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true&parent_id={{mdenroll}}",
+              "raw": "{{base_url}}/module-catalog?full_tree=true&parent_id={{mdenroll}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {

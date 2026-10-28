@@ -85,6 +85,7 @@ impl GrpcApiMapper<ListProgramsOutput, ListProgramsInput, ListProgramsResponse, 
             page_size: request.max_page_size,
             page_token: parse::optional_uuid("page_token", request.page_token.as_deref())?,
             show_deleted: request.show_deleted.unwrap_or(false),
+            show_archived: request.show_archived.unwrap_or(false),
         })
     }
 

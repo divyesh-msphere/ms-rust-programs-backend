@@ -18,6 +18,9 @@ servers:
 - url: http://localhost:8090
   description: Local (Swagger UI on :8082 needs APP__CORS_ALLOWED_ORIGIN=http://localhost:8082)
   x-name: local
+- url: http://10.10.29.38:8090
+  description: LAN (Swagger UI on http://10.10.29.38:8082 needs APP__CORS_ALLOWED_ORIGIN to include it)
+  x-name: lan
 - url: https://api.dev.mobilesentrix.com/programs
   description: Development environment
   x-name: development
@@ -38,8 +41,8 @@ tags:
 - name: programs
   x-summary: Programs
   description: 'Programs: create, read, update, soft delete and undelete.'
-- name: module-definitions
-  x-summary: Module Definitions
+- name: module-catalog
+  x-summary: Module Catalog
   description: A node of the module tree (group or leaf). Seeded; the tree can nest to any depth.
 - name: program-modules
   x-summary: Program Modules
@@ -69,12 +72,20 @@ tags:
 - name: webhooks
   x-summary: Webhooks
   description: Events other services send to this one.
-- name: field-values
+- name: setting-values
   x-summary: Setting values
   description: What admins enter into the settings they defined.
 - name: overview
   x-summary: Overview
   description: A program's default Overview page.
+- name: danger-zone
+  x-summary: Danger zone
+  description: 'The premade Danger zone page in Settings, on every program: archive (reversible), unarchive
+    and delete permanently (only with no operational history).'
+- name: notifications
+  x-summary: Notifications
+  description: 'The premade Notifications page in Settings: trigger points x channels (Email, SMS, Push,
+    In-App). A program has it when it is picked in Create program.'
 - name: store-discounts
   x-summary: Store Discounts
   description: 'The Store Discounts page: each enrolled store''s effective discount.'
@@ -104,11 +115,13 @@ paths:
       summary: List programs
       tags:
       - programs
-      description: Returns programs in creation order.
+      description: 'Returns the working catalog in creation order: archived programs are left out (see
+        `show_archived`).'
       parameters:
       - $ref: '#/components/parameters/maxPageSize'
       - $ref: '#/components/parameters/pageToken'
       - $ref: '#/components/parameters/showDeleted'
+      - $ref: '#/components/parameters/showArchived'
       responses:
         '200':
           $ref: '#/components/responses/ProgramsResponse'
@@ -356,12 +369,12 @@ paths:
           description: Another live program already uses this program's slug.
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /module-definitions:
+  /module-catalog:
     get:
-      operationId: ListModuleDefinitions
-      summary: List module definitions
+      operationId: ListModuleCatalog
+      summary: List module catalog
       tags:
-      - module-definitions
+      - module-catalog
       description: Returns the direct children of `parent_id`, or the root-level (main) modules when it
         is omitted, in display order. Pass `full_tree=true` to get the whole tree in one response instead,
         nested under `children`; combined with `parent_id` it returns everything beneath that module.
@@ -385,34 +398,34 @@ paths:
           with `parent_id`, the subtree beneath that module) as nested `children`, in a single response.
       responses:
         '200':
-          $ref: '#/components/responses/ModuleDefinitionsResponse'
+          $ref: '#/components/responses/ModuleCatalogResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
         '404':
           $ref: '#/components/responses/NotFound'
-  /module-definitions/{module_definition}:
+  /module-catalog/{module_catalog_item}:
     parameters:
-    - name: module_definition
+    - name: module_catalog_item
       in: path
       required: true
       schema:
         type: string
-      description: The module definition's ID, or its key (e.g. `catalog_pricing`).
+      description: The module catalog item's ID, or its key (e.g. `catalog_pricing`).
     get:
-      operationId: GetModuleDefinition
-      summary: Get a module definition
+      operationId: GetModuleCatalogItem
+      summary: Get a module catalog item
       tags:
-      - module-definitions
-      description: Returns a single module definition by ID or by key.
+      - module-catalog
+      description: Returns a single module catalog item by ID or by key.
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModuleDefinition'
+                $ref: '#/components/schemas/ModuleCatalogItem'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -499,7 +512,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/field-values:
+  /programs/{program}/setting-values:
     parameters:
     - name: program
       in: path
@@ -508,10 +521,10 @@ paths:
         type: string
       description: The program's ID (UUID) or its slug.
     get:
-      operationId: ListFieldValues
+      operationId: ListSettingValues
       summary: List a program's saved setting values
       tags:
-      - field-values
+      - setting-values
       description: The saved values of the program's settings, with the `config_version` to send back
         on a save. Settings that have no value yet are not listed (the manifest shows every setting, each
         with its value).
@@ -528,7 +541,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListFieldValuesResponse'
+                $ref: '#/components/schemas/ListSettingValuesResponse'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -539,7 +552,7 @@ paths:
           are not a paginated collection.
       - rule: aep-158-page-token-parameter
         reason: 'Same: never paginated.'
-  /programs/{program}/field-values:batchUpdate:
+  /programs/{program}/setting-values:batchUpdate:
     parameters:
     - name: program
       in: path
@@ -548,10 +561,10 @@ paths:
         type: string
       description: The program's ID (UUID) or its slug.
     post:
-      operationId: :BatchUpdateFieldValues
+      operationId: :BatchUpdateSettingValues
       summary: Save setting values
       tags:
-      - field-values
+      - setting-values
       description: |-
         Saves everything changed on a page ("N unsaved changes" -> Save) in ONE request and ONE transaction. Each value is checked against its setting: a boolean must be true or false, a number a number, text text; a radio or dropdown takes one option, a checkbox a list; every chosen option must be one of the setting's own active options or, for a library-backed setting, one of its library's active options (read through the cache); a required setting cannot be cleared. ALL the problems are reported together and nothing is saved if any value is wrong.
 
@@ -582,7 +595,7 @@ paths:
                   type: object
                   maxProperties: 200
                   additionalProperties:
-                    $ref: '#/components/schemas/FieldValuePatch'
+                    $ref: '#/components/schemas/SettingValuePatch'
                   description: The changed values, keyed by setting id. A value of `null` clears that
                     setting.
                   example:
@@ -597,7 +610,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BatchUpdateFieldValuesResponse'
+                $ref: '#/components/schemas/BatchUpdateSettingValuesResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -642,6 +655,266 @@ paths:
         reason: A singleton, not paginated.
       - rule: aep-158-page-token-parameter
         reason: A singleton, not paginated.
+  /programs/{program}/notifications:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    get:
+      operationId: GetNotifications
+      summary: Get a program's Notifications
+      tags:
+      - notifications
+      description: 'The premade page in Settings (Settings > Universal > Notifications), for a program that picked
+        it in Create program. It comes back in `GET /programs/{program}/modules` as a `premade` module with
+        `api_base` `notifications`; this is the call that page makes. A program starts with the usual trigger
+        points (Enrollment Approved, Payment Due, ...). `version` is the program''s `config_version`: send it back
+        with a save. 404 when the program does not have the module.'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notifications'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-132-operation-id
+        reason: A singleton page, not a list.
+      - rule: aep-158-max-page-size-parameter
+        reason: A singleton, not paginated.
+      - rule: aep-158-page-token-parameter
+        reason: A singleton, not paginated.
+    put:
+      operationId: ReplaceNotifications
+      summary: Save a program's Notifications
+      tags:
+      - notifications
+      description: 'Saves the whole grid in ONE request and ONE transaction: ticked boxes, added triggers and
+        removed triggers ("Add trigger", the bin icon, then Save changes). Send the grid as it should be after the
+        save: a trigger not in the list is removed, a new key is added, the order of the list is the order of the
+        rows. A key is lower-case letters, digits and `_`, starting with a letter; it must be unique; the label
+        is 1 to 100 characters. Saving the grid as it already is changes nothing and bumps nothing; a change
+        bumps `config_version` and writes an audit entry (`notifications_updated`, with before and after).
+        `version` is the `config_version` you last read: if the program changed since, the save is rejected with
+        409; omit it to skip the check.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - triggers
+              properties:
+                version:
+                  type: integer
+                  format: int32
+                triggers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/NotificationTrigger'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notifications'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-134-update-method
+        reason: Replaces a singleton page as a whole, like PUT on a settings document.
+      - rule: aep-132-operation-id
+        reason: A singleton page, not a list.
+  /programs/{program}/danger-zone:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    get:
+      operationId: GetDangerZone
+      summary: Get a program's Danger zone
+      tags:
+      - danger-zone
+      description: 'The premade page in Settings (Settings > Universal > Danger zone), on every program
+        without being selected. It says whether the program is archived and what each button may do:
+        `can_archive`, `can_unarchive` and `can_delete` (true only when `delete_blockers` are all 0, that
+        is, the program has no enrollments, applications, publications or documents).'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DangerZone'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-ignore-rules:
+      - rule: aep-132-operation-id
+        reason: A singleton page, not a list.
+      - rule: aep-158-max-page-size-parameter
+        reason: A singleton, not paginated.
+      - rule: aep-158-page-token-parameter
+        reason: A singleton, not paginated.
+  /programs/{program}/danger-zone:archive:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    post:
+      operationId: :ArchiveProgram
+      summary: Archive a program
+      tags:
+      - danger-zone
+      description: 'Takes the program out of the working catalog (the program list). Reversible and nothing
+        is lost: the program stays readable and keeps its data; `state` does not change. Fails with 400
+        if it is already archived.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DangerZone'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/danger-zone:unarchive:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    post:
+      operationId: :UnarchiveProgram
+      summary: Unarchive a program
+      tags:
+      - danger-zone
+      description: Puts an archived program back in the working catalog. Fails with 400 if it is not
+        archived.
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DangerZone'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/danger-zone:deletePermanently:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    post:
+      operationId: :DeleteProgramPermanently
+      summary: Delete a program permanently
+      tags:
+      - danger-zone
+      description: 'Removes the program and everything that belongs to it (modules, setting values,
+        rules); it cannot be undone, unlike the soft delete (`DELETE /programs/{program}`, reversible with
+        `:undelete`). Allowed only while the program has no operational history: 409 when it has
+        enrollments, applications, publications or documents (see `delete_blockers` on the page); archive
+        it instead. The audit entry stays.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              description: No fields required; this custom method takes no input.
+      responses:
+        '204':
+          $ref: '#/components/responses/EmptyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: The program has operational history; archive it instead.
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /programs/{program}/enrollments:
     parameters:
     - name: program
@@ -2114,6 +2387,15 @@ components:
         default: false
       description: AEP-135 soft-delete flag. When false (default) only active resources are returned;
         when true, only soft-deleted resources are returned (the list does not mix the two).
+    showArchived:
+      name: show_archived
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: When false (default) archived programs are left out of the list (the working catalog);
+        when true, only archived programs are returned. Archive and unarchive live on the Danger zone page.
   responses:
     BadRequest:
       description: The request was invalid.
@@ -2164,7 +2446,7 @@ components:
               total_size:
                 type: integer
                 format: int64
-    ModuleDefinitionsResponse:
+    ModuleCatalogResponse:
       description: Successful response
       content:
         application/json:
@@ -2172,18 +2454,18 @@ components:
             type: object
             x-aep-resource:
               patterns:
-              - module-definitions/{module_definition}
-              singular: module-definition
-              plural: module-definitions
-              type: msrestapi.com/programs/module-definition
+              - module-catalog/{module_catalog_item}
+              singular: module-catalog-item
+              plural: module-catalog
+              type: msrestapi.com/programs/module-catalog-item
             properties:
               results:
                 type: array
                 items:
                   oneOf:
-                  - $ref: '#/components/schemas/ModuleDefinition'
-                  - $ref: '#/components/schemas/ModuleDefinitionTreeNode'
-                  description: Flat `ModuleDefinition`s, or nested `ModuleDefinitionTreeNode`s when `full_tree=true`.
+                  - $ref: '#/components/schemas/ModuleCatalogItem'
+                  - $ref: '#/components/schemas/ModuleCatalogTreeNode'
+                  description: Flat `ModuleCatalogItem`s, or nested `ModuleCatalogTreeNode`s when `full_tree=true`.
               next_page_token:
                 type: string
                 nullable: true
@@ -2455,15 +2737,15 @@ components:
           readOnly: true
         state:
           $ref: '#/components/schemas/ResourceState'
-    ModuleDefinition:
+    ModuleCatalogItem:
       type: object
       description: A node of the module tree (group or leaf). Seeded; the tree can nest to any depth.
       x-aep-resource:
         patterns:
-        - module-definitions/{module_definition}
-        singular: module-definition
-        plural: module-definitions
-        type: msrestapi.com/programs/module-definition
+        - module-catalog/{module_catalog_item}
+        singular: module-catalog-item
+        plural: module-catalog
+        type: msrestapi.com/programs/module-catalog-item
       properties:
         path:
           type: string
@@ -2768,7 +3050,7 @@ components:
           type: string
           example: Settings updated
           description: The line a history list shows.
-    FieldValue:
+    SettingValue:
       type: object
       description: The saved value of one setting.
       properties:
@@ -2849,17 +3131,17 @@ components:
         status:
           type: string
           example: ok
-    ModuleDefinitionTreeNode:
+    ModuleCatalogTreeNode:
       description: A module with its descendants nested under `children` (`full_tree=true`). Carries every
-        ModuleDefinition field.
+        ModuleCatalogItem field.
       allOf:
-      - $ref: '#/components/schemas/ModuleDefinition'
+      - $ref: '#/components/schemas/ModuleCatalogItem'
       type: object
       properties:
         children:
           type: array
           items:
-            $ref: '#/components/schemas/ModuleDefinitionTreeNode'
+            $ref: '#/components/schemas/ModuleCatalogTreeNode'
     ProgramWithModules:
       type: object
       description: 'Create''s response: the program plus the module manifest it was created with.'
@@ -3136,7 +3418,7 @@ components:
           type: integer
           format: int32
           nullable: true
-    FieldValuePatch:
+    SettingValuePatch:
       type: object
       description: 'One setting''s new value: `value` for a boolean / number / text setting, `option_ids`
         for a radio / checkbox / dropdown. A `null` entry, or an entry with neither field, clears the
@@ -3149,7 +3431,7 @@ components:
           items:
             type: string
             format: uuid
-    ListFieldValuesResponse:
+    ListSettingValuesResponse:
       type: object
       properties:
         version:
@@ -3160,8 +3442,8 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/FieldValue'
-    BatchUpdateFieldValuesResponse:
+            $ref: '#/components/schemas/SettingValue'
+    BatchUpdateSettingValuesResponse:
       type: object
       properties:
         version:
@@ -3175,7 +3457,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/FieldValue'
+            $ref: '#/components/schemas/SettingValue'
     OverviewStats:
       type: object
       properties:
@@ -3250,6 +3532,112 @@ components:
           items:
             $ref: '#/components/schemas/RuleFamilyStatus'
           description: The program's enabled rule leaves.
+    DeleteBlockers:
+      type: object
+      description: 'What stops a program from being deleted permanently: its operational history. Every
+        count must be 0.'
+      properties:
+        enrollments:
+          type: integer
+          format: int64
+        applications:
+          type: integer
+          format: int64
+        publications:
+          type: integer
+          format: int64
+        documents:
+          type: integer
+          format: int64
+          description: Documents point at files in object storage, so they count too.
+    NotificationTrigger:
+      type: object
+      description: One row of the Notifications grid.
+      required:
+      - key
+      - label
+      properties:
+        key:
+          type: string
+          description: Lower-case machine name (letters, digits, `_`; starts with a letter), unique in the program.
+          example: balance_threshold
+        label:
+          type: string
+          description: What the admin sees.
+          example: Balance Threshold
+        email:
+          type: boolean
+          default: false
+        sms:
+          type: boolean
+          default: false
+        push:
+          type: boolean
+          default: false
+        in_app:
+          type: boolean
+          default: false
+    Notifications:
+      type: object
+      description: 'The Notifications page of a program (a singleton: one per program, no id).'
+      properties:
+        path:
+          type: string
+          readOnly: true
+          description: programs/{program}/notifications
+        version:
+          type: integer
+          format: int32
+          readOnly: true
+          description: The program's `config_version`; send it back with a save.
+        channels:
+          type: array
+          readOnly: true
+          description: The columns of the grid, in order.
+          items:
+            type: string
+          example:
+          - email
+          - sms
+          - push
+          - in_app
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationTrigger'
+    DangerZone:
+      type: object
+      description: 'The Danger zone page of a program (a singleton: one per program, no id).'
+      properties:
+        path:
+          type: string
+          readOnly: true
+          description: programs/{program}/danger-zone
+        archived:
+          type: boolean
+          readOnly: true
+        archive_time:
+          type: string
+          nullable: true
+          readOnly: true
+          description: When it was archived; null when it is not.
+        can_archive:
+          type: boolean
+          readOnly: true
+        can_unarchive:
+          type: boolean
+          readOnly: true
+        can_delete:
+          type: boolean
+          readOnly: true
+          description: True only when there is no operational history.
+        delete_blockers:
+          $ref: '#/components/schemas/DeleteBlockers'
+        delete_blocked_reason:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Why it cannot be deleted; null when it can.
     Overview:
       type: object
       description: 'The default page every program has (a singleton: one per program, no id). Read in

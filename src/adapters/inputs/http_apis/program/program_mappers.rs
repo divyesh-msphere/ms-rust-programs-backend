@@ -82,6 +82,7 @@ impl ListProgramsMapper {
             page_size: payload.max_page_size,
             page_token: parse::optional_uuid("page_token", payload.page_token.as_deref())?,
             show_deleted: payload.show_deleted.unwrap_or(false),
+            show_archived: payload.show_archived.unwrap_or(false),
         })
     }
 

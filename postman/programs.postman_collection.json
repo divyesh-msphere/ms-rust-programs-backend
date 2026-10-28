@@ -404,7 +404,7 @@
   ],
   "item": [
     {
-      "name": "Module definitions",
+      "name": "Module catalog",
       "item": [
         {
           "name": "The main modules (the left list of Create Program)",
@@ -417,12 +417,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions",
+              "raw": "{{base_url}}/module-catalog",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ]
             },
             "description": ""
@@ -455,12 +455,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment",
+              "raw": "{{base_url}}/module-catalog/enrollment",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment"
               ]
             },
@@ -474,7 +474,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('Enrollment',()=>{pm.expect(j.key).to.eql('enrollment');pm.expect(j.name).to.eql('Enrollment');pm.expect(j.kind).to.eql('group');pm.expect(j.parent_id).to.eql(null);pm.expect(j.ancestry).to.eql('enrollment');pm.expect(j.path).to.eql('module-definitions/'+j.id);});"
+                  "pm.test('Enrollment',()=>{pm.expect(j.key).to.eql('enrollment');pm.expect(j.name).to.eql('Enrollment');pm.expect(j.kind).to.eql('group');pm.expect(j.parent_id).to.eql(null);pm.expect(j.ancestry).to.eql('enrollment');pm.expect(j.path).to.eql('module-catalog/'+j.id);});"
                 ]
               }
             }
@@ -491,12 +491,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/{{mdenroll}}",
+              "raw": "{{base_url}}/module-catalog/{{mdenroll}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "{{mdenroll}}"
               ]
             },
@@ -527,12 +527,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment.stores.enrolled_stores_control_panel",
+              "raw": "{{base_url}}/module-catalog/enrollment.stores.enrolled_stores_control_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment.stores.enrolled_stores_control_panel"
               ]
             },
@@ -563,12 +563,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/catalog_pricing.products_rules.pre_enrollment",
+              "raw": "{{base_url}}/module-catalog/catalog_pricing.products_rules.pre_enrollment",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "catalog_pricing.products_rules.pre_enrollment"
               ]
             },
@@ -599,12 +599,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?parent_id={{mdenroll}}",
+              "raw": "{{base_url}}/module-catalog?parent_id={{mdenroll}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -640,12 +640,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?parent_id=01a14424-0000-7000-8000-000000000000",
+              "raw": "{{base_url}}/module-catalog?parent_id=01a14424-0000-7000-8000-000000000000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -681,12 +681,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=2",
+              "raw": "{{base_url}}/module-catalog?max_page_size=2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -722,12 +722,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=2&page_token={{mdtoken}}",
+              "raw": "{{base_url}}/module-catalog?max_page_size=2&page_token={{mdtoken}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -767,12 +767,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=2&page_token={{mdtoken}}",
+              "raw": "{{base_url}}/module-catalog?max_page_size=2&page_token={{mdtoken}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -812,12 +812,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=1000",
+              "raw": "{{base_url}}/module-catalog?max_page_size=1000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -853,12 +853,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true",
+              "raw": "{{base_url}}/module-catalog?full_tree=true",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -879,11 +879,11 @@
                   "const j=pm.response.json();",
                   "pm.test('six roots, nested under children',()=>{pm.expect(j.results.length).to.eql(6);});",
                   "const all=[];const walk=(n,p)=>{all.push([n,p]);(n.children||[]).forEach(c=>walk(c,n));};j.results.forEach(n=>walk(n,null));",
-                  "pm.test('a real tree: at least 67 modules, every parent_id points at its parent, every ancestry equals its key',()=>{pm.expect(all.length).to.be.at.least(67);all.forEach(([n,p])=>{pm.expect(n.parent_id).to.eql(p?p.id:null);pm.expect(n.ancestry).to.eql(n.key);});});",
+                  "pm.test('a real tree: at least 60 modules, every parent_id points at its parent, every ancestry equals its key',()=>{pm.expect(all.length).to.be.at.least(60);all.forEach(([n,p])=>{pm.expect(n.parent_id).to.eql(p?p.id:null);pm.expect(n.ancestry).to.eql(n.key);});});",
                   "pm.test('groups hold children, leaves hold none',()=>all.forEach(([n])=>{if(n.kind==='leaf')pm.expect((n.children||[]).length).to.eql(0);}));",
                   "pm.test('the Enrollment branch has only the Stores page (the other two are switched off)',()=>{const e=j.results.find(r=>r.key==='enrollment');pm.expect(e.children.map(g=>g.name)).to.eql(['Stores']);pm.expect(e.children.map(g=>g.children.map(l=>l.name)[0])).to.eql(['Enrolled Stores Control Panel']);});",
-                  "pm.test('exactly three premade pages, with their handlers',()=>{const h=all.filter(([n])=>n.source==='premade').map(([n])=>n.handler_key).sort();pm.expect(h).to.eql(['documents','enrolled_stores','store_discounts']);});",
-                  "pm.test('only Overview is not selectable',()=>pm.expect(all.filter(([n])=>!n.selectable).map(([n])=>n.key)).to.eql(['overview']));"
+                  "pm.test('exactly five premade pages, with their handlers',()=>{const h=all.filter(([n])=>n.source==='premade').map(([n])=>n.handler_key).sort();pm.expect(h).to.eql(['danger_zone','documents','enrolled_stores','notifications','store_discounts']);});",
+                  "pm.test('only Overview and Danger zone are not selectable (on every program)',()=>pm.expect(all.filter(([n])=>!n.selectable).map(([n])=>n.key).sort()).to.eql(['configuration_oversight.settings.universal.danger_zone','overview']));"
                 ]
               }
             }
@@ -900,12 +900,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true&parent_id={{mdenroll}}",
+              "raw": "{{base_url}}/module-catalog?full_tree=true&parent_id={{mdenroll}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -2165,12 +2165,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/order_transaction.core_returns.fees",
+              "raw": "{{base_url}}/module-catalog/order_transaction.core_returns.fees",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "order_transaction.core_returns.fees"
               ]
             },
@@ -2201,12 +2201,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/order_transaction.core_returns.terms",
+              "raw": "{{base_url}}/module-catalog/order_transaction.core_returns.terms",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "order_transaction.core_returns.terms"
               ]
             },
@@ -2236,12 +2236,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true",
+              "raw": "{{base_url}}/module-catalog?full_tree=true",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -2280,12 +2280,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/order_transaction.core_returns.core_return_fees_panel",
+              "raw": "{{base_url}}/module-catalog/order_transaction.core_returns.core_return_fees_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "order_transaction.core_returns.core_return_fees_panel"
               ]
             },
@@ -3099,14 +3099,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values"
+                "setting-values"
               ]
             },
             "description": ""
@@ -3174,14 +3174,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -3240,14 +3240,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values?module=catalog_pricing.products_rules.warranty",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values?module=catalog_pricing.products_rules.warranty",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values"
+                "setting-values"
               ],
               "query": [
                 {
@@ -3316,14 +3316,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -3377,14 +3377,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -3405,14 +3405,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values"
+                "setting-values"
               ]
             },
             "description": ""
@@ -3476,14 +3476,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -3538,14 +3538,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -3692,14 +3692,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -4232,6 +4232,1736 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Danger zone (premade page, on every program)",
+      "item": [
+        {
+          "name": "Reset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "['dzslug','dzid','dzslug2','dzid2','dztotal'].forEach(k=>pm.collectionVariables.unset(k)); pm.test('cleared',()=>pm.expect(pm.collectionVariables.get('dzslug')).to.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create program (no Settings page chosen)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Danger zone program\",\n  \"slug\": \"{{dzslug}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"catalog_pricing.pricing.markup\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.collectionVariables.set('dzid', j.id);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.collectionVariables.get('dzslug')) pm.collectionVariables.set('dzslug','dz-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The page is on the program by default (premade, with its API)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "modules"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); const m=j.results.find(x=>x.key==='configuration_oversight.settings.universal.danger_zone');",
+                  "pm.test('Danger zone is there although nobody selected it',()=>pm.expect(m).to.not.be.undefined);",
+                  "pm.test('premade, with its own api_base, no mode',()=>{pm.expect(m.source).to.eql('premade');pm.expect(m.api_base).to.eql('danger-zone');pm.expect(m.mode).to.eql(null);});",
+                  "pm.test('its parents are there too (Settings > Universal)',()=>{const keys=j.results.map(x=>x.key);['configuration_oversight','configuration_oversight.settings','configuration_oversight.settings.universal'].forEach(k=>pm.expect(keys).to.include(k));});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Total of the working catalog (before)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs?max_page_size=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ],
+              "query": [
+                {
+                  "key": "max_page_size",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('dztotal', pm.response.json().total_size);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get the Danger zone",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/danger-zone",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "danger-zone"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('path',()=>pm.expect(j.path).to.eql('programs/'+pm.collectionVariables.get('dzid')+'/danger-zone'));",
+                  "pm.test('not archived: only Archive is allowed to start with',()=>{pm.expect(j.archived).to.eql(false);pm.expect(j.archive_time).to.eql(null);pm.expect(j.can_archive).to.eql(true);pm.expect(j.can_unarchive).to.eql(false);});",
+                  "pm.test('no history: it can be deleted',()=>{pm.expect(j.can_delete).to.eql(true);pm.expect(j.delete_blocked_reason).to.eql(null);pm.expect(j.delete_blockers).to.eql({enrollments:0,applications:0,publications:0,documents:0});});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archive (by id)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzid}}/danger-zone:archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzid}}",
+                "danger-zone:archive"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('archived, with a time; Unarchive is now the allowed one',()=>{pm.expect(j.archived).to.eql(true);pm.expect(j.archive_time).to.be.a('string');pm.expect(j.can_archive).to.eql(false);pm.expect(j.can_unarchive).to.eql(true);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archive again -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/danger-zone:archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "danger-zone:archive"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('says why',()=>pm.expect(pm.response.json().detail).to.include('already archived'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Working catalog leaves it out (total drops by one)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs?max_page_size=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ],
+              "query": [
+                {
+                  "key": "max_page_size",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('one fewer',()=>pm.expect(pm.response.json().total_size).to.eql(Number(pm.collectionVariables.get('dztotal'))-1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "show_archived lists archived programs only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs?show_archived=true&max_page_size=200",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ],
+              "query": [
+                {
+                  "key": "show_archived",
+                  "value": "true"
+                },
+                {
+                  "key": "max_page_size",
+                  "value": "200"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('it is in the archived list',()=>pm.expect(j.results.map(p=>p.slug)).to.include(pm.collectionVariables.get('dzslug')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "An archived program is still readable and keeps its data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('still ACTIVE (archive is not the soft delete)',()=>pm.expect(pm.response.json().state).to.eql('ACTIVE'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unarchive",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/danger-zone:unarchive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "danger-zone:unarchive"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('back in the working catalog',()=>{pm.expect(j.archived).to.eql(false);pm.expect(j.archive_time).to.eql(null);pm.expect(j.can_archive).to.eql(true);pm.expect(j.can_unarchive).to.eql(false);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unarchive again -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/danger-zone:unarchive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "danger-zone:unarchive"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('says why',()=>pm.response.json().detail.includes('not archived'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Working catalog has it back",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs?max_page_size=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ],
+              "query": [
+                {
+                  "key": "max_page_size",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('total back',()=>pm.expect(pm.response.json().total_size).to.eql(Number(pm.collectionVariables.get('dztotal'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Enroll a store (the program now has history)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/enrollments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "enrollments"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"store_id\": \"dz-store-1\",\n  \"website_id\": \"dz-web-1\",\n  \"status\": \"active\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History blocks delete: the page says so",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/danger-zone",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "danger-zone"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('cannot be deleted, and why',()=>{pm.expect(j.can_delete).to.eql(false);pm.expect(j.delete_blockers.enrollments).to.eql(1);pm.expect(j.delete_blocked_reason).to.include('1 enrollment');});",
+                  "pm.test('archive stays possible',()=>pm.expect(j.can_archive).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete permanently with history -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}/danger-zone:deletePermanently",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}",
+                "danger-zone:deletePermanently"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409',()=>pm.response.to.have.status(409));",
+                  "pm.test('names the history',()=>pm.expect(pm.response.json().detail).to.include('operational history'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Still there after the refusal",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a program with no history",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Danger zone clean program\",\n  \"slug\": \"{{dzslug2}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"catalog_pricing.pricing.markup\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('dzid2', pm.response.json().id);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.collectionVariables.get('dzslug2')) pm.collectionVariables.set('dzslug2','dz2-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete permanently (no history) -> 204",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug2}}/danger-zone:deletePermanently",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug2}}",
+                "danger-zone:deletePermanently"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "It is gone: not even in the trash -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzid2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzid2}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete permanently twice -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzid2}}/danger-zone:deletePermanently",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzid2}}",
+                "danger-zone:deletePermanently"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danger zone of a missing program -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/no-such-program-dz/danger-zone",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "no-such-program-dz",
+                "danger-zone"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archive a missing program -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/no-such-program-dz/danger-zone:archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "no-such-program-dz",
+                "danger-zone:archive"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clean up (soft delete the program with history)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{dzslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{dzslug}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notifications (premade page, picked in Create program)",
+      "item": [
+        {
+          "name": "Reset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "['nfslug','nfslug2','nfver','nfstale'].forEach(k=>pm.collectionVariables.unset(k)); pm.test('cleared',()=>pm.expect(pm.collectionVariables.get('nfslug')).to.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a program that picks Notifications",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Notifications program\",\n  \"slug\": \"{{nfslug}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"configuration_oversight.settings.universal.notifications\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.collectionVariables.get('nfslug')) pm.collectionVariables.set('nfslug','nf-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "It comes back in the modules load (premade, with its API)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "modules"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); const m=j.results.find(x=>x.key==='configuration_oversight.settings.universal.notifications');",
+                  "pm.test('Notifications is in the manifest',()=>pm.expect(m).to.not.be.undefined);",
+                  "pm.test('premade, with its own api_base, no mode',()=>{pm.expect(m.source).to.eql('premade');pm.expect(m.api_base).to.eql('notifications');pm.expect(m.mode).to.eql(null);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get the Notifications: the starting trigger points",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.collectionVariables.set('nfver', j.version);",
+                  "pm.test('channels are the grid columns',()=>pm.expect(j.channels).to.eql(['email','sms','push','in_app']));",
+                  "pm.test('8 starting triggers, in order',()=>{pm.expect(j.triggers.length).to.eql(8);pm.expect(j.triggers[0].key).to.eql('enrollment_approved');pm.expect(j.triggers[7].key).to.eql('balance_threshold');});",
+                  "pm.test('Payment Due uses every channel; Balance Threshold only email',()=>{const by=Object.fromEntries(j.triggers.map(t=>[t.key,t]));pm.expect([by.payment_due.email,by.payment_due.sms,by.payment_due.push,by.payment_due.in_app]).to.eql([true,true,true,true]);pm.expect([by.balance_threshold.email,by.balance_threshold.sms,by.balance_threshold.push,by.balance_threshold.in_app]).to.eql([true,false,false,false]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save: tick a box, add a trigger, remove the rest",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{nfver}},\n  \"triggers\": [\n    {\n      \"key\": \"payment_due\",\n      \"label\": \"Payment Due\",\n      \"email\": true,\n      \"push\": true\n    },\n    {\n      \"key\": \"balance_threshold\",\n      \"label\": \"Balance Threshold\",\n      \"email\": true\n    },\n    {\n      \"key\": \"sla_breach\",\n      \"label\": \"  SLA Breach \",\n      \"email\": true,\n      \"push\": true\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('version moved on by one',()=>pm.expect(j.version).to.eql(Number(pm.collectionVariables.get('nfver'))+1));",
+                  "pm.collectionVariables.set('nfstale', pm.collectionVariables.get('nfver')); pm.collectionVariables.set('nfver', j.version);",
+                  "pm.test('exactly what was sent, in that order',()=>{pm.expect(j.triggers.map(t=>t.key)).to.eql(['payment_due','balance_threshold','sla_breach']);pm.expect(j.triggers[0].sms).to.eql(false);pm.expect(j.triggers[2]).to.eql({key:'sla_breach',label:'SLA Breach',email:true,sms:false,push:true,in_app:false});});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get again: it was saved",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('3 triggers',()=>pm.expect(j.triggers.length).to.eql(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save the same grid again: nothing changes, no version bump",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{nfver}},\n  \"triggers\": [\n    {\n      \"key\": \"payment_due\",\n      \"label\": \"Payment Due\",\n      \"email\": true,\n      \"push\": true\n    },\n    {\n      \"key\": \"balance_threshold\",\n      \"label\": \"Balance Threshold\",\n      \"email\": true\n    },\n    {\n      \"key\": \"sla_breach\",\n      \"label\": \"SLA Breach\",\n      \"email\": true,\n      \"push\": true\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('same version',()=>pm.expect(pm.response.json().version).to.eql(Number(pm.collectionVariables.get('nfver'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save with a stale version -> 409",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{nfstale}},\n  \"triggers\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409',()=>pm.response.to.have.status(409));",
+                  "pm.test('says to reload',()=>pm.expect(pm.response.json().detail).to.include('reload'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save without a version (last write wins)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"triggers\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('empty grid is allowed',()=>pm.expect(pm.response.json().triggers).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate key -> 400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"triggers\": [\n    {\n      \"key\": \"a\",\n      \"label\": \"A\"\n    },\n    {\n      \"key\": \"a\",\n      \"label\": \"B\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('names the key',()=>pm.expect(pm.response.json().detail).to.include('appears twice'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad key -> 400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"triggers\": [\n    {\n      \"key\": \"Bad Key\",\n      \"label\": \"A\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('explains the rule',()=>pm.expect(pm.response.json().detail).to.include('lower-case'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Empty label -> 400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"triggers\": [\n    {\n      \"key\": \"a\",\n      \"label\": \"   \"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A program that did not pick it has no Notifications -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"No notifications program\",\n  \"slug\": \"{{nfslug2}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"catalog_pricing.pricing.markup\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.collectionVariables.get('nfslug2')) pm.collectionVariables.set('nfslug2','nf2-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get on it -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug2}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug2}}",
+                "notifications"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save on it -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug2}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug2}}",
+                "notifications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"triggers\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing program -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/no-such-program-nf/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "no-such-program-nf",
+                "notifications"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clean up",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clean up (second program)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{nfslug2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{nfslug2}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
                 ]
               }
             }
@@ -12972,14 +14702,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13033,14 +14763,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13094,14 +14824,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13155,14 +14885,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13216,14 +14946,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13277,14 +15007,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13338,14 +15068,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13399,14 +15129,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13460,14 +15190,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13521,14 +15251,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13582,14 +15312,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13643,14 +15373,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13703,14 +15433,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13764,14 +15494,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{vslug}}/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/{{vslug}}/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{vslug}}",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "body": {
@@ -13796,14 +15526,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/does-not-exist/field-values:batchUpdate",
+              "raw": "{{base_url}}/programs/does-not-exist/setting-values:batchUpdate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "does-not-exist",
-                "field-values:batchUpdate"
+                "setting-values:batchUpdate"
               ]
             },
             "description": "",
@@ -13835,14 +15565,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/does-not-exist/field-values",
+              "raw": "{{base_url}}/programs/does-not-exist/setting-values",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "does-not-exist",
-                "field-values"
+                "setting-values"
               ]
             },
             "description": ""
@@ -19361,7 +21091,7 @@
       ]
     },
     {
-      "name": "Module definitions - negative checks",
+      "name": "Module catalog - negative checks",
       "item": [
         {
           "name": "An unknown key -> 404",
@@ -19374,12 +21104,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/no.such.module",
+              "raw": "{{base_url}}/module-catalog/no.such.module",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "no.such.module"
               ]
             },
@@ -19409,12 +21139,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/01a14424-0000-7000-8000-000000000000",
+              "raw": "{{base_url}}/module-catalog/01a14424-0000-7000-8000-000000000000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "01a14424-0000-7000-8000-000000000000"
               ]
             },
@@ -19443,12 +21173,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?parent_id=nope",
+              "raw": "{{base_url}}/module-catalog?parent_id=nope",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -19483,12 +21213,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?page_token=nope",
+              "raw": "{{base_url}}/module-catalog?page_token=nope",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -19522,12 +21252,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=0",
+              "raw": "{{base_url}}/module-catalog?max_page_size=0",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -19562,12 +21292,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?max_page_size=-5",
+              "raw": "{{base_url}}/module-catalog?max_page_size=-5",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -19601,12 +21331,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions?full_tree=true&parent_id=01a14424-0000-7000-8000-000000000000",
+              "raw": "{{base_url}}/module-catalog?full_tree=true&parent_id=01a14424-0000-7000-8000-000000000000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ],
               "query": [
                 {
@@ -19648,12 +21378,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions",
+              "raw": "{{base_url}}/module-catalog",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions"
+                "module-catalog"
               ]
             },
             "description": "",
@@ -20052,12 +21782,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment.requirements.enrollment_requirements",
+              "raw": "{{base_url}}/module-catalog/enrollment.requirements.enrollment_requirements",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment.requirements.enrollment_requirements"
               ]
             },
@@ -20086,12 +21816,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment.applications_approvals.application_panel",
+              "raw": "{{base_url}}/module-catalog/enrollment.applications_approvals.application_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment.applications_approvals.application_panel"
               ]
             },
@@ -20120,12 +21850,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-definitions/enrollment.requirements",
+              "raw": "{{base_url}}/module-catalog/enrollment.requirements",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "module-definitions",
+                "module-catalog",
                 "enrollment.requirements"
               ]
             },

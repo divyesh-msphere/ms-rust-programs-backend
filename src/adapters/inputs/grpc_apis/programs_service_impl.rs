@@ -2,12 +2,14 @@ use crate::adapters::generated::grpc_services::buffa::programs::v1::*;
 use crate::adapters::generated::grpc_services::connect::programs::v1::ProgramsService;
 use crate::adapters::inputs::grpc_apis::application::application_service_impl::ApplicationServiceImpl;
 use crate::adapters::inputs::grpc_apis::approval_step::approval_step_service_impl::ApprovalStepServiceImpl;
+use crate::adapters::inputs::grpc_apis::danger_zone::danger_zone_service_impl::DangerZoneServiceImpl;
 use crate::adapters::inputs::grpc_apis::document::document_service_impl::DocumentServiceImpl;
 use crate::adapters::inputs::grpc_apis::enrollment::enrollment_service_impl::EnrollmentServiceImpl;
+use crate::adapters::inputs::grpc_apis::notifications::notifications_service_impl::NotificationsServiceImpl;
 use crate::adapters::inputs::grpc_apis::health::health_service_impl::HealthServiceImpl;
-use crate::adapters::inputs::grpc_apis::module_definition::module_definition_service_impl::ModuleDefinitionServiceImpl;
+use crate::adapters::inputs::grpc_apis::module_catalog_item::module_catalog_item_service_impl::ModuleCatalogItemServiceImpl;
 use crate::adapters::inputs::grpc_apis::program::program_service_impl::ProgramServiceImpl;
-use crate::adapters::inputs::grpc_apis::program_field_value::program_field_value_service_impl::ProgramFieldValueServiceImpl;
+use crate::adapters::inputs::grpc_apis::program_setting_value::program_setting_value_service_impl::ProgramSettingValueServiceImpl;
 use crate::adapters::inputs::grpc_apis::program_module::program_module_service_impl::ProgramModuleServiceImpl;
 use crate::adapters::inputs::grpc_apis::program_overview::program_overview_service_impl::ProgramOverviewServiceImpl;
 use crate::adapters::inputs::grpc_apis::requirement::requirement_service_impl::RequirementServiceImpl;
@@ -25,11 +27,13 @@ use std::sync::Arc;
 /// `programs.proto`) fanning out to the per-resource impls below — each keeps
 /// its own file, mappers and business logic; this struct only routes.
 pub struct ProgramsServiceImpl {
-    module_definition: ModuleDefinitionServiceImpl,
+    module_catalog_item: ModuleCatalogItemServiceImpl,
     program: ProgramServiceImpl,
     program_module: ProgramModuleServiceImpl,
-    program_field_value: ProgramFieldValueServiceImpl,
+    program_setting_value: ProgramSettingValueServiceImpl,
     program_overview: ProgramOverviewServiceImpl,
+    danger_zone: DangerZoneServiceImpl,
+    notifications: NotificationsServiceImpl,
     requirement: RequirementServiceImpl,
     approval_step: ApprovalStepServiceImpl,
     application: ApplicationServiceImpl,
@@ -48,11 +52,13 @@ impl ProgramsServiceImpl {
     pub fn new(app_state: Arc<AppState>) -> Self {
         Self {
             enrollment_review: app_state.application_config.features.enrollment_review,
-            module_definition: ModuleDefinitionServiceImpl::new(app_state.clone()),
+            module_catalog_item: ModuleCatalogItemServiceImpl::new(app_state.clone()),
             program: ProgramServiceImpl::new(app_state.clone()),
             program_module: ProgramModuleServiceImpl::new(app_state.clone()),
-            program_field_value: ProgramFieldValueServiceImpl::new(app_state.clone()),
+            program_setting_value: ProgramSettingValueServiceImpl::new(app_state.clone()),
             program_overview: ProgramOverviewServiceImpl::new(app_state.clone()),
+            danger_zone: DangerZoneServiceImpl::new(app_state.clone()),
+            notifications: NotificationsServiceImpl::new(app_state.clone()),
             requirement: RequirementServiceImpl::new(app_state.clone()),
             approval_step: ApprovalStepServiceImpl::new(app_state.clone()),
             application: ApplicationServiceImpl::new(app_state.clone()),
@@ -80,12 +86,12 @@ impl ProgramsServiceImpl {
 }
 
 impl ProgramsService for ProgramsServiceImpl {
-    // ---- Module definitions ----
-    async fn list_module_definitions(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListModuleDefinitionsRequest>) -> ServiceResult<ListModuleDefinitionsResponse> {
-        self.module_definition.list_module_definitions(request).await
+    // ---- Module catalog ----
+    async fn list_module_catalog(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListModuleCatalogRequest>) -> ServiceResult<ListModuleCatalogResponse> {
+        self.module_catalog_item.list_module_catalog(request).await
     }
-    async fn get_module_definition(&self, _ctx: RequestContext, request: ServiceRequest<'_, GetModuleDefinitionRequest>) -> ServiceResult<GetModuleDefinitionResponse> {
-        self.module_definition.get_module_definition(request).await
+    async fn get_module_catalog_item(&self, _ctx: RequestContext, request: ServiceRequest<'_, GetModuleCatalogItemRequest>) -> ServiceResult<GetModuleCatalogItemResponse> {
+        self.module_catalog_item.get_module_catalog_item(request).await
     }
 
     // ---- Programs ----
@@ -114,11 +120,11 @@ impl ProgramsService for ProgramsServiceImpl {
     }
 
     // ---- Setting values ----
-    async fn list_field_values(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListFieldValuesRequest>) -> ServiceResult<ListFieldValuesResponse> {
-        self.program_field_value.list_field_values(request).await
+    async fn list_setting_values(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListSettingValuesRequest>) -> ServiceResult<ListSettingValuesResponse> {
+        self.program_setting_value.list_setting_values(request).await
     }
-    async fn batch_update_field_values(&self, ctx: RequestContext, request: ServiceRequest<'_, BatchUpdateFieldValuesRequest>) -> ServiceResult<BatchUpdateFieldValuesResponse> {
-        self.program_field_value.batch_update_field_values(actor_from(&ctx), request).await
+    async fn batch_update_setting_values(&self, ctx: RequestContext, request: ServiceRequest<'_, BatchUpdateSettingValuesRequest>) -> ServiceResult<BatchUpdateSettingValuesResponse> {
+        self.program_setting_value.batch_update_setting_values(actor_from(&ctx), request).await
     }
 
     // ---- Requirements ----
@@ -311,6 +317,28 @@ impl ProgramsService for ProgramsServiceImpl {
     }
     async fn review_document(&self, ctx: RequestContext, request: ServiceRequest<'_, ReviewDocumentRequest>) -> ServiceResult<ReviewDocumentResponse> {
         self.document.review_document(actor_from(&ctx), request).await
+    }
+
+    // ---- Danger zone ----
+    async fn get_danger_zone(&self, ctx: RequestContext, request: ServiceRequest<'_, GetDangerZoneRequest>) -> ServiceResult<GetDangerZoneResponse> {
+        self.danger_zone.get_danger_zone(actor_from(&ctx), request).await
+    }
+    async fn archive_program(&self, ctx: RequestContext, request: ServiceRequest<'_, ArchiveProgramRequest>) -> ServiceResult<ArchiveProgramResponse> {
+        self.danger_zone.archive_program(actor_from(&ctx), request).await
+    }
+    async fn unarchive_program(&self, ctx: RequestContext, request: ServiceRequest<'_, UnarchiveProgramRequest>) -> ServiceResult<UnarchiveProgramResponse> {
+        self.danger_zone.unarchive_program(actor_from(&ctx), request).await
+    }
+    async fn delete_program_permanently(&self, ctx: RequestContext, request: ServiceRequest<'_, DeleteProgramPermanentlyRequest>) -> ServiceResult<Empty> {
+        self.danger_zone.delete_program_permanently(actor_from(&ctx), request).await
+    }
+
+    // ---- Notifications ----
+    async fn get_notifications(&self, _ctx: RequestContext, request: ServiceRequest<'_, GetNotificationsRequest>) -> ServiceResult<GetNotificationsResponse> {
+        self.notifications.get_notifications(request).await
+    }
+    async fn replace_notifications(&self, ctx: RequestContext, request: ServiceRequest<'_, ReplaceNotificationsRequest>) -> ServiceResult<ReplaceNotificationsResponse> {
+        self.notifications.replace_notifications(actor_from(&ctx), request).await
     }
 
     // ---- Overview and history ----

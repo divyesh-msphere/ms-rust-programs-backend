@@ -6,15 +6,15 @@ import "aep/api/resource.proto";
 import "google/protobuf/struct.proto";
 
 // ---------------------------------------------------------------------------
-// Module definitions (the program module tree; read-only)
+// Module catalog (the program module tree; read-only)
 // ---------------------------------------------------------------------------
 
-message ModuleDefinition {
+message ModuleCatalogItem {
   option (aep.api.resource) = {
-    type: "programs.mobilesentrix.com/module-definition"
-    singular: "module-definition"
-    plural: "module-definitions"
-    pattern: "module-definitions/{module_definition}"
+    type: "programs.mobilesentrix.com/module-catalog-item"
+    singular: "module-catalog-item"
+    plural: "module-catalog"
+    pattern: "module-catalog/{module_catalog_item}"
   };
 
   string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -49,9 +49,9 @@ message ModuleDefinition {
 }
 
 // A module with its descendants nested under `children` (`full_tree = true`).
-// Carries every ModuleDefinition field, so a tree node reads exactly like a
+// Carries every ModuleCatalogItem field, so a tree node reads exactly like a
 // list item plus its subtree.
-message ModuleDefinitionTreeNode {
+message ModuleCatalogTreeNode {
   string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string key = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -67,7 +67,7 @@ message ModuleDefinitionTreeNode {
   optional string permission_key = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string create_time = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string update_time = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  repeated ModuleDefinitionTreeNode children = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];  string source = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated ModuleCatalogTreeNode children = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];  string source = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string handler_key = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string api_base = 19 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool selectable = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -75,7 +75,7 @@ message ModuleDefinitionTreeNode {
   optional string default_mode = 22 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message ListModuleDefinitionsRequest {
+message ListModuleCatalogRequest {
   // List the direct children of this module (ID). Omitted returns the
   // root-level (main) modules.
   optional string parent_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
@@ -86,23 +86,23 @@ message ListModuleDefinitionsRequest {
   // `children`, in `tree_results`.
   optional bool full_tree = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
-message ListModuleDefinitionsResponse {
-  repeated ModuleDefinition results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message ListModuleCatalogResponse {
+  repeated ModuleCatalogItem results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   int64 total_size = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // Populated instead of `results` when the request had `full_tree = true`.
-  repeated ModuleDefinitionTreeNode tree_results = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated ModuleCatalogTreeNode tree_results = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool full_tree = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message GetModuleDefinitionRequest {
-  // The module definition's ID, or its key (`catalog_pricing`).
-  string module_definition = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+message GetModuleCatalogItemRequest {
+  // The module catalog item's ID, or its key (`catalog_pricing`).
+  string module_catalog_item = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
-message GetModuleDefinitionResponse {
-  ModuleDefinition module_definition = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message GetModuleCatalogItemResponse {
+  ModuleCatalogItem module_catalog_item = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // ---------------------------------------------------------------------------
@@ -248,6 +248,8 @@ message ListProgramsRequest {
   optional int64 max_page_size = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional string page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional bool show_deleted = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Only archived programs (the default lists the working catalog, which leaves them out).
+  optional bool show_archived = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message ListProgramsResponse {
   repeated Program results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -319,6 +321,101 @@ message UndeleteProgramResponse {
   Program program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
+// What stops a program from being deleted permanently: its operational history. Every count must be 0.
+message DeleteBlockers {
+  int64 enrollments = 1 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 applications = 2 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 publications = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 documents = 4 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+// The Danger zone page of a program: whether it is archived, and what each button may do.
+message DangerZone {
+  // programs/{program}/danger-zone
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool archived = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // When it was archived; unset when it is not.
+  optional string archive_time = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool can_archive = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool can_unarchive = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // True only when there is no operational history.
+  bool can_delete = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  DeleteBlockers delete_blockers = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Why it cannot be deleted; unset when it can.
+  optional string delete_blocked_reason = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+// One row of the Notifications grid.
+message NotificationTrigger {
+  // Lower-case machine name, e.g. balance_threshold.
+  string key = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // What the admin sees, e.g. Balance Threshold.
+  string label = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  bool email = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  bool sms = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  bool push = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  bool in_app = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+// The Notifications page of a program: trigger points x channels.
+message Notifications {
+  // programs/{program}/notifications
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The program's config_version: send it back with a save.
+  int32 version = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The columns of the grid, in order.
+  repeated string channels = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated NotificationTrigger triggers = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message GetNotificationsRequest {
+  // The program's ID or its slug.
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetNotificationsResponse {
+  Notifications notifications = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message ReplaceNotificationsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The config_version as the caller last read it. A stale one is rejected with ABORTED; unset skips the check.
+  optional int32 version = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The whole grid as it should be after the save.
+  repeated NotificationTrigger triggers = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ReplaceNotificationsResponse {
+  Notifications notifications = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message GetDangerZoneRequest {
+  // The program's ID or its slug.
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message GetDangerZoneResponse {
+  DangerZone danger_zone = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message ArchiveProgramRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ArchiveProgramResponse {
+  DangerZone danger_zone = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message UnarchiveProgramRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message UnarchiveProgramResponse {
+  DangerZone danger_zone = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+message DeleteProgramPermanentlyRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+
 message ListProgramModulesRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Only modules the program has switched on. Defaults to true.
@@ -336,7 +433,7 @@ message ListProgramModulesResponse {
 // Setting values (what admins enter into the settings they defined)
 // ---------------------------------------------------------------------------
 
-message FieldValue {
+message SettingValue {
   string setting_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string module_key = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string key = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -349,42 +446,42 @@ message FieldValue {
   string update_time = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message ListFieldValuesRequest {
+message ListSettingValuesRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Only one module's values (its key).
   optional string module = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
-message ListFieldValuesResponse {
+message ListSettingValuesResponse {
   // The program's config_version: send it back with a save to detect a concurrent change.
   int32 version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  repeated FieldValue results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated SettingValue results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // One setting's new value: `value` for boolean / number / text, `option_ids` for radio / checkbox /
 // dropdown. Neither (or `clear`) clears the setting's value.
-message FieldValueUpdate {
+message SettingValueUpdate {
   string setting_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   optional google.protobuf.Value value = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   repeated string option_ids = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   bool clear = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
-message BatchUpdateFieldValuesRequest {
+message BatchUpdateSettingValuesRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // The config_version as the caller last read it. A stale one is rejected with ABORTED so two
   // admins cannot overwrite each other; unset skips the check.
   optional int32 version = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  repeated FieldValueUpdate values = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  repeated SettingValueUpdate values = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
-message BatchUpdateFieldValuesResponse {
+message BatchUpdateSettingValuesResponse {
   int32 version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // How many values actually changed (a value sent unchanged is not a change).
   int32 changed = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  repeated FieldValue results = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated SettingValue results = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // ---------------------------------------------------------------------------

@@ -170,13 +170,16 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         page_size: i64,
         page_token: Option<Uuid>,
         show_deleted: bool,
+        show_archived: bool,
     ) -> Result<(Vec<Program>, Option<Uuid>, i64), ApplicationError> {
         // `state` is a LITERAL in the query text (not a bound parameter) so the planner
         // can use the partial indexes: an index-only scan over live (or deleted) rows,
         // never the whole table.
         let state = if show_deleted { "DELETED" } else { "ACTIVE" };
+        // The working catalog leaves archived programs out; `show_archived` lists only them.
+        let archived = if show_archived { "archive_time IS NOT NULL" } else { "archive_time IS NULL" };
 
-        let total_size: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM programs WHERE state = '{state}'"))
+        let total_size: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM programs WHERE state = '{state}' AND {archived}"))
             .fetch_one(self.db_connection.get_pool())
             .await
             .map_err(db_error)?;
@@ -184,7 +187,7 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         // Keyset on the primary key; UUIDv7 ids are in creation order.
         let query = format!(
             "SELECT {COLUMNS} FROM programs \
-             WHERE state = '{state}' AND ($1::uuid IS NULL OR id > $1) \
+             WHERE state = '{state}' AND {archived} AND ($1::uuid IS NULL OR id > $1) \
              ORDER BY id LIMIT $2"
         );
 

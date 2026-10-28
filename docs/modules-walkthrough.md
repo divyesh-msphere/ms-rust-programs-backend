@@ -31,19 +31,19 @@ Three things every write does (shared helpers, so every module behaves the same)
 
 ---
 
-## 1. Module definitions (the catalog)
+## 1. Module catalog (the catalog)
 
 **What it is.** The read-only list of every module a program can have (Overview, Applications, Enrolled Stores, and so on),
 arranged as a tree of groups and leaves. It is seeded by migrations and never changed through the API.
 
-**Endpoints.** `GET /module-definitions` (list, also as a tree), `GET /module-definitions/{module_definition}`.
-gRPC: `ListModuleDefinitions`, `GetModuleDefinition`.
+**Endpoints.** `GET /module-catalog` (list, also as a tree), `GET /module-catalog/{module_catalog_item}`.
+gRPC: `ListModuleCatalog`, `GetModuleCatalogItem`.
 
 **Files.**
-- Domain: `src/domain/module_definition.rs`
-- SQL: `src/adapters/services/postgres/module_definition/` (`module_definition_repository.rs`, `_mapper.rs`, `_model.rs`)
-- Use cases: `src/application/usecases/module_definition/` (`list_module_definitions.rs`, `get_module_definition.rs`, `get_module_definition_tree.rs`)
-- HTTP / gRPC: `http_apis/module_definition/`, `grpc_apis/module_definition/`
+- Domain: `src/domain/module_catalog_item.rs`
+- SQL: `src/adapters/services/postgres/module_catalog_item/` (`module_catalog_item_repository.rs`, `_mapper.rs`, `_model.rs`)
+- Use cases: `src/application/usecases/module_catalog_item/` (`list_module_definitions.rs`, `get_module_catalog_item.rs`, `get_module_catalog_tree.rs`)
+- HTTP / gRPC: `http_apis/module_catalog_item/`, `grpc_apis/module_catalog_item/`
 - Seeds: `migrations/20261014*`, `20261015*`, `20261016100000_seed_module_classification`
 
 **Table `module_definitions`** (read only):
@@ -59,7 +59,7 @@ gRPC: `ListModuleDefinitions`, `GetModuleDefinition`.
 | `position` | Display order among siblings |
 | `source` | `premade` (code-backed page the admin selects), `container` (admin decides what the leaf is) or `default` (on every program: Overview) |
 | `handler_key`, `api_base`, `ui_component` | What the frontend renders and which API backs a premade page |
-| `selectable` | Whether the admin can pick it (Overview is not selectable, it is automatic) |
+| `selectable` | Whether the admin can pick it (Overview and Danger zone are not selectable, they are automatic; Notifications is selectable) |
 | `allow_components` | Whether the leaf can hold a Rule or Settings |
 | `default_mode`, `default_rule` | A page that starts configured: `default_mode` (`rule` or `settings`) is the mode a program gets when it selects the page, and `default_rule` is a starter rule saved as draft 1. Only **Fees** (`order_transaction.core_returns.fees`, replacing the old Core Return Fees Panel) has them: it is a Rule leaf with one decision-table row (every return, fee 0) until the admin edits it. `default_mode` is in the API; `default_rule` is internal |
 | `requires_publish`, `rule_family`, `universal`, `permission_key` | Publishing and permission hints |
@@ -170,14 +170,14 @@ without an `id` is created, and one you leave out is soft-deleted. Options are m
 
 **What it is.** The values the admin saved for those settings ("N unsaved changes" → Save).
 
-**Endpoints.** `GET /programs/{program}/field-values[?module=<key>]`, `POST /programs/{program}/field-values:batchUpdate`.
-gRPC: `ListFieldValues`, `BatchUpdateFieldValues`.
+**Endpoints.** `GET /programs/{program}/setting-values[?module=<key>]`, `POST /programs/{program}/setting-values:batchUpdate`.
+gRPC: `ListSettingValues`, `BatchUpdateSettingValues`.
 
 **Files.**
-- Domain: `src/domain/program_field_value.rs` (type checks per setting type, tests)
-- SQL: `src/adapters/services/postgres/program_field_value/program_field_value_repository.rs`
-- Use cases: `src/application/usecases/program_field_value/` (`list_field_values`, `batch_update_field_values`)
-- HTTP / gRPC: `http_apis/program_field_value/`, `grpc_apis/program_field_value/`
+- Domain: `src/domain/program_setting_value.rs` (type checks per setting type, tests)
+- SQL: `src/adapters/services/postgres/program_setting_value/program_setting_value_repository.rs`
+- Use cases: `src/application/usecases/program_setting_value/` (`list_setting_values`, `batch_update_setting_values`)
+- HTTP / gRPC: `http_apis/program_setting_value/`, `grpc_apis/program_setting_value/`
 
 **Table `program_field_values`** (primary key `(program_id, field_id, scope_type, scope_id)`):
 
@@ -233,6 +233,45 @@ It is **written by the Applications, Signoffs and Enrollments modules**: applica
 **Table `outbox`** (written next to every audit entry): `id`, `topic` (`program.updated`, `application.submitted`, ...), `event_key`
 (the program id), `payload`, `status` (`pending`), `attempts`, `create_time`, `published_time`. Nothing reads it yet; it is the hook
 for other services.
+
+---
+
+## 6a. Notifications (premade page in Settings)
+
+**What it is.** The grid of trigger points x channels (Email, SMS, Push, In-App). It is a **premade** page
+(`configuration_oversight.settings.universal.notifications`, `handler_key notifications`, `api_base notifications`) that the admin **picks** in Create
+program (`selectable = true`, not `universal`). It then arrives with the normal modules load (`GET /programs/{p}/modules`), and the page calls its own API.
+Migration `20261028110000_notifications_premade.up.sql` made the page premade and added `program_notification_triggers`.
+
+| API | What it does | Tables |
+|---|---|---|
+| `GET /programs/{p}/notifications` | `{path, version, channels, triggers:[{key, label, email, sms, push, in_app}]}`; 404 without the page | R `program_notification_triggers`, `programs` |
+| `PUT /programs/{p}/notifications` | Saves the whole grid (ticks, added and removed triggers) in one transaction; `version` checked (409 when stale); unchanged = no write | W `program_notification_triggers`, `programs.config_version`, `audit_log` (`notifications_updated`), `outbox` |
+
+A program starts with 8 usual triggers, seeded once when the page is added (`ensure_modules`), not again after the admin empties the grid.
+**Code:** `domain/notifications.rs`, `postgres/notifications/`, `application/usecases/notifications/`, `http_apis/notifications/`, `grpc_apis/notifications/`.
+
+## 6b. Danger zone (premade page in Settings)
+
+**What it is.** The card at the bottom of Settings: **Archive program** and **Delete program**. It is a **premade** page
+(`configuration_oversight.settings.universal.danger_zone`, `handler_key danger_zone`, `api_base danger-zone`) that is on **every program** without
+being selected: `selectable = false`, `universal = true`, and `ensure_modules` adds every `premade` + `universal` page (with its parents) to a new
+program. Migration `20261028100000_danger_zone_premade.up.sql` did the same for existing programs.
+
+**Archive vs delete.** *Archive* is a separate, reversible state: `programs.archive_time` (NULL = not archived). `state` stays `ACTIVE`, so the program
+is still readable and editable; only the program list leaves it out (`show_archived=true` lists archived ones). *Soft delete* (`DELETE /programs/{p}`,
+`state DELETED`) is unchanged. *Delete permanently* removes the row, and everything cascades.
+
+| API | What it does | Tables |
+|---|---|---|
+| `GET /programs/{p}/danger-zone` | `archived`, `archive_time`, `can_archive`, `can_unarchive`, `can_delete`, `delete_blockers`, `delete_blocked_reason` | R `programs`, counts of `enrollments`, `applications`, `publications`, `documents` |
+| `POST /programs/{p}/danger-zone:archive` | Sets `archive_time`; 400 if already archived | W `programs`, `audit_log` (`archived`), `outbox` |
+| `POST /programs/{p}/danger-zone:unarchive` | Clears it; 400 if not archived | W `programs`, `audit_log` (`unarchived`), `outbox` |
+| `POST /programs/{p}/danger-zone:deletePermanently` | 204; **409** while the program has history | D `programs` (cascade), `audit_log` (`deleted_permanently`, kept) |
+
+**History** (what blocks a permanent delete) is any enrollment, application, publication or document. Documents count because their files are in object
+storage and would be left behind. The check and the delete run in one transaction with the program row locked.
+**Code:** `domain/danger_zone.rs`, `postgres/danger_zone/`, `application/usecases/danger_zone/`, `http_apis/danger_zone/`, `grpc_apis/danger_zone/`.
 
 ---
 

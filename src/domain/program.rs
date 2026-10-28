@@ -102,12 +102,15 @@ pub trait ProgramRepository: Send + Sync {
     async fn get(&self, identifier: &ResourceIdentifier, include_deleted: bool) -> Result<Program, ApplicationError>;
 
     /// `show_deleted` toggles between active-only (false) and deleted-only
-    /// (true); the returned `i64` is `total_size` for the same filter.
+    /// (true); `show_archived` between the working catalog (false: archived programs
+    /// left out) and archived-only (true). The returned `i64` is `total_size` for the
+    /// same filter.
     async fn list(
         &self,
         page_size: i64,
         page_token: Option<Uuid>,
         show_deleted: bool,
+        show_archived: bool,
     ) -> Result<(Vec<Program>, Option<Uuid>, i64), ApplicationError>;
 
     /// ONE transaction: the program, its modules, the Overview counters row,

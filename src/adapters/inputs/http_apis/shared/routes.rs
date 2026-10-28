@@ -1,11 +1,13 @@
 use crate::adapters::inputs::http_apis::application::application_controllers;
 use crate::adapters::inputs::http_apis::approval_step::approval_step_controllers;
+use crate::adapters::inputs::http_apis::danger_zone::danger_zone_controllers;
+use crate::adapters::inputs::http_apis::notifications::notifications_controllers;
 use crate::adapters::inputs::http_apis::document::document_controllers;
 use crate::adapters::inputs::http_apis::enrollment::enrollment_controllers;
 use crate::adapters::inputs::http_apis::health::health_controllers;
-use crate::adapters::inputs::http_apis::module_definition::module_definition_controllers;
+use crate::adapters::inputs::http_apis::module_catalog_item::module_catalog_item_controllers;
 use crate::adapters::inputs::http_apis::program::program_controllers;
-use crate::adapters::inputs::http_apis::program_field_value::program_field_value_controllers;
+use crate::adapters::inputs::http_apis::program_setting_value::program_setting_value_controllers;
 use crate::adapters::inputs::http_apis::program_module::program_module_controllers;
 use crate::adapters::inputs::http_apis::program_overview::program_overview_controllers;
 use crate::adapters::inputs::http_apis::requirement::requirement_controllers;
@@ -23,7 +25,7 @@ pub fn routes(enrollment_review: bool) -> impl Fn(&mut web::ServiceConfig) {
 
 fn configure(cfg: &mut web::ServiceConfig, enrollment_review: bool) {
     cfg.service(web::scope("/health").configure(health_controllers::routes));
-    cfg.service(web::scope("/module-definitions").configure(module_definition_controllers::routes));
+    cfg.service(web::scope("/module-catalog").configure(module_catalog_item_controllers::routes));
     // Custom methods (`:undelete`) sit outside the scope — see program_controllers.
     cfg.service(web::scope("/webhooks").configure(document_controllers::webhook_routes));
     cfg.configure(program_controllers::root_routes);
@@ -31,8 +33,10 @@ fn configure(cfg: &mut web::ServiceConfig, enrollment_review: bool) {
         web::scope("/programs")
             .configure(program_controllers::routes)
             .configure(program_module_controllers::routes)
-            .configure(program_field_value_controllers::routes)
+            .configure(program_setting_value_controllers::routes)
             .configure(program_overview_controllers::routes)
+            .configure(danger_zone_controllers::routes)
+            .configure(notifications_controllers::routes)
             .configure(move |cfg| {
                 if enrollment_review {
                     requirement_controllers::routes(cfg);

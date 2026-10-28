@@ -44,3 +44,4 @@ impl UseCase<Application, SubmitApplicationInput> for SubmitApplicationUseCase {
             .await
     }
 }
+    
