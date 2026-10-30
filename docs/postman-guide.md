@@ -436,6 +436,14 @@ the program. With nothing set anywhere a store is disabled, a percentage, of 0.
 - The amount is a plain number and the currency a code: the **UI** formats the symbol (`£11.21 off`, `15% off`, `Disabled`).
 - Collection folders: **Store discounts** and **Store discounts - negative checks**.
 
+### Execute rule (run a rule on an input)
+
+`POST /programs/{program}/rule-sets/{module_key}:execute` with `{"input": {...}}` runs the rule and returns `{program, module, type, version, status, result, duration_ms}`.
+Optional: `"type"` (the rule family you expect), `"version"` (`"published"` by default, `"draft"`, or a number), `"trace": true`.
+Each rule version says what it reads in `input_schema` (a list of `{name, type, required}`), saved with `POST .../versions`; **Publish refuses a rule that has none**.
+Wrong input answers **422** with `code: INPUT_MISMATCH` and the list to send: `required_fields`, `optional_fields`, `missing`, `wrong_type`. Other codes: `INVALID_BODY` (400),
+`TYPE_MISMATCH`, `RULE_INVALID`, `RULE_EXECUTION_FAILED` (with `node_id`) (422), `RULE_TIMEOUT` (504). Folder **Execute rule (run a rule on an input)** covers all of it. gRPC: `ExecuteRule`.
+
 ### Rule sets, versions and publishing
 
 **Rule sets.** A module switched on with mode `rule` is a *rule leaf* (for example Catalog & Pricing → Products & Rules → Warranty). The rule

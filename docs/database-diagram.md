@@ -158,7 +158,8 @@ erDiagram
     jsonb compiled "generated graph"
     bool valid
     jsonb validation_errors
-    text content_hash "md5 of the definition"
+    jsonb input_schema "the input the rule reads: name type required; Publish needs it"
+    text content_hash "md5 of the definition and input_schema"
     int size_bytes
     text created_by
   }

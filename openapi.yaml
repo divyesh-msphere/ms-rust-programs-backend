@@ -1545,6 +1545,72 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/rule-sets/{rule_set}:execute:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: rule_set
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The rule leaf's module key (for example `catalog_pricing.products_rules.pre_enrollment`)
+        or the id of its rule set.
+    post:
+      operationId: :ExecuteRule
+      summary: Run a rule on an input
+      tags:
+      - rule-sets
+      description: |-
+        Runs the rule of one module on the caller's `input` and returns what the rule outputs. Read-only: no version is made and `config_version` does not move. The request and the response are dynamic JSON: each rule reads and returns its own fields.
+
+        **Which version runs.** `published` (the default, what is live), `draft` (the newest save, for a "Test rule" button) or a version number. A version that is not valid, or has no compiled graph, cannot run.
+
+        **The input is checked first.** The version's `input_schema` lists what it reads. When the input does not fit, the rule is not run and the answer is 422 `INPUT_MISMATCH` with `required_fields`, `optional_fields`, `missing` and `wrong_type`, so the caller knows exactly what to send. A version without a schema is not checked (only a draft can lack one; Publish refuses it).
+
+        **Errors** carry a stable `code`: `INVALID_BODY` (400, `input` is not an object), `NOT_FOUND` (404: no such program or module, nothing published yet, no such version), `INPUT_MISMATCH` (422), `TYPE_MISMATCH` (422, `type` is not the module's rule family), `RULE_INVALID` (422, the version is incomplete or has no graph), `RULE_EXECUTION_FAILED` (422, the engine failed; `node_id` and `message` say where) and `RULE_TIMEOUT` (504, stopped after 5 seconds). A module that is not on the program as a rule module is 404 / 400 as for the other rule calls. On gRPC the code is not carried: the message holds the same sentence, including the required field list.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteRuleRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteRuleResult'
+        '400':
+          description: Bad request (`INVALID_BODY`, a bad `version`, or the module is not a rule module).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RuleExecutionError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: The input or the rule is wrong (`INPUT_MISMATCH`, `TYPE_MISMATCH`, `RULE_INVALID`, `RULE_EXECUTION_FAILED`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RuleExecutionError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          description: The rule ran past the time limit (`RULE_TIMEOUT`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RuleExecutionError'
+      x-ignore-rules:
+      - rule: aep-136-http-method
+        reason: A custom method that runs a computation; it changes nothing.
   /programs/{program}/rule-sets/{rule_set}/versions:
     parameters:
     - name: program
@@ -1587,7 +1653,8 @@ paths:
       description: 'Saves a new immutable version (the newest draft; any older unpublished draft is superseded).
         Saving what is already the newest version (same definition, same validity) creates nothing and
         answers `created: false`. `definition` must be an object (up to 1 MB), as must `compiled`; `validation_errors`
-        is a list (up to 100) and a version with errors cannot be `valid`. An incomplete draft CAN be
+        is a list (up to 100) and a version with errors cannot be `valid`. `input_schema` lists the fields the rule reads
+        (name, type, required); a draft may lack it, but Publish refuses a rule that has none. An incomplete draft CAN be
         saved, with `valid: false`, but it blocks publishing until it is fixed. The module must be switched
         on with mode `rule` (400 otherwise). It is a configuration change: it bumps `config_version` (the
         program then shows "unpublished changes" until it is published), writes an audit entry and an
@@ -2436,10 +2503,12 @@ components:
               plural: programs
               type: msrestapi.com/programs/program
             properties:
+              summary:
+                $ref: '#/components/schemas/ProgramListSummary'
               results:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Program'
+                  $ref: '#/components/schemas/ProgramListRow'
               next_page_token:
                 type: string
                 nullable: true
@@ -2674,6 +2743,85 @@ components:
                 items:
                   $ref: '#/components/schemas/DocumentFolder'
   schemas:
+    ProgramListSummary:
+      type: object
+      readOnly: true
+      description: The cards above the programs table. Counted over every program the filter matches,
+        not only the returned page.
+      properties:
+        live_programs:
+          type: integer
+          format: int64
+          description: Programs that are active.
+        not_live_programs:
+          type: integer
+          format: int64
+        active_enrollments:
+          type: integer
+          format: int64
+        total_enrollments:
+          type: integer
+          format: int64
+        pending_approvals:
+          type: integer
+          format: int64
+        programs_with_pending_approvals:
+          type: integer
+          format: int64
+    ProgramListRow:
+      description: A program as one row of the table - the program plus its numbers.
+      allOf:
+      - $ref: '#/components/schemas/Program'
+      - type: object
+        properties:
+          enrollments:
+            type: object
+            readOnly: true
+            properties:
+              active:
+                type: integer
+                format: int32
+              total:
+                type: integer
+                format: int32
+          pending_approvals:
+            type: integer
+            format: int32
+            readOnly: true
+          domains:
+            type: object
+            readOnly: true
+            description: The websites the program has live (pending, active or suspended) enrollments on.
+            properties:
+              count:
+                type: integer
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    website_id:
+                      type: string
+                    name:
+                      type: string
+                      nullable: true
+          last_activity:
+            type: object
+            readOnly: true
+            nullable: true
+            description: The newest change to the program.
+            properties:
+              actor:
+                type: string
+                description: The `X-User-Id` of the caller who made the change; `system` when none was sent.
+              action:
+                type: string
+              summary:
+                type: string
+                example: Program updated
+              time:
+                type: string
+                format: date-time
     Program:
       type: object
       description: A program (e.g. KBB, CPO, Credit Line) and its configuration root.
@@ -3957,6 +4105,159 @@ components:
             is required.
       required:
       - discount
+    RuleInputField:
+      type: object
+      description: One field of the input a rule reads.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: 1-100 letters, digits, `_`, `-` or `.`. `a.b` is the field `b` inside the object `a`.
+          example: credit_score
+        type:
+          type: string
+          enum:
+          - string
+          - number
+          - boolean
+          - object
+          - array
+          - any
+          default: any
+        required:
+          type: boolean
+          default: false
+          description: A required field must be present and not null.
+        description:
+          type: string
+    ExecuteRuleRequest:
+      type: object
+      required:
+      - input
+      properties:
+        type:
+          type: string
+          description: 'The rule family the caller expects (`pre_enrollment`, `markup`, ...). Checked against
+            the module; a mismatch is 422 `TYPE_MISMATCH`.'
+          example: pre_enrollment
+        version:
+          description: '`published` (the default), `draft` (the newest save, for a "Test rule" button) or a
+            version number.'
+          oneOf:
+          - type: string
+            enum:
+            - published
+            - draft
+          - type: integer
+            minimum: 1
+          default: published
+        input:
+          type: object
+          additionalProperties: true
+          description: "What the rule reads. Dynamic: its fields are whatever the rule's `input_schema` lists."
+        trace:
+          type: boolean
+          default: false
+          description: Also return the nodes that were visited.
+    ExecuteRuleResult:
+      type: object
+      properties:
+        program:
+          type: string
+          example: programs/01a186fc-76be-7144-bd3d-c2133dc9980a
+        module:
+          type: string
+          example: catalog_pricing.products_rules.pre_enrollment
+        type:
+          type: string
+          nullable: true
+          example: pre_enrollment
+        version:
+          type: integer
+          format: int32
+          description: The version that ran.
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+          - superseded
+        result:
+          description: Whatever the rule outputs. Dynamic JSON; the service never reshapes it.
+          example:
+            approved: true
+        duration_ms:
+          type: number
+        trace:
+          type: object
+          additionalProperties: true
+          description: The visited nodes, keyed by node id. Only when `trace` was true.
+    RuleExecutionError:
+      type: object
+      description: 'The error body of Execute rule (RFC 9457 problem details) plus a stable `code` and the details of that code.'
+      properties:
+        type:
+          type: string
+        status:
+          type: integer
+        title:
+          type: string
+        detail:
+          type: string
+          example: 'input does not match the rule (missing: credit_score); required fields: store_id, credit_score'
+        instance:
+          type: string
+        code:
+          type: string
+          enum:
+          - INVALID_BODY
+          - NOT_FOUND
+          - INPUT_MISMATCH
+          - TYPE_MISMATCH
+          - RULE_INVALID
+          - RULE_EXECUTION_FAILED
+          - RULE_TIMEOUT
+        required_fields:
+          type: array
+          items:
+            type: string
+          description: '`INPUT_MISMATCH`: everything the rule requires.'
+        optional_fields:
+          type: array
+          items:
+            type: string
+        missing:
+          type: array
+          items:
+            type: string
+          description: '`INPUT_MISMATCH`: required fields that are absent or null.'
+        wrong_type:
+          type: array
+          description: '`INPUT_MISMATCH`: fields present with the wrong type.'
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              expected:
+                type: string
+              got:
+                type: string
+        expected_type:
+          type: string
+          description: '`TYPE_MISMATCH`: the module''s rule family.'
+        validation_errors:
+          type: array
+          items: {}
+          description: '`RULE_INVALID`: what is wrong with the version.'
+        node_id:
+          type: string
+          nullable: true
+          description: '`RULE_EXECUTION_FAILED`: the decision node the engine stopped at.'
+        message:
+          type: string
+          description: '`RULE_EXECUTION_FAILED`: the engine''s message.'
     RuleVersion:
       type: object
       description: An immutable, numbered save of a rule set. The newest is the `draft`; publishing makes
@@ -4011,10 +4312,20 @@ components:
           maxItems: 100
           items: {}
           description: The rule engine's complaints. A version with errors cannot be valid.
+        input_schema:
+          type: array
+          nullable: true
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/RuleInputField'
+          description: "The input the rule reads. Execute checks the caller's input against it and, when it
+            does not fit, answers with the required field list. A draft may lack it; **Publish refuses a
+            rule that has none**. It is part of the version: the same definition with another schema is a
+            new version."
         content_hash:
           type: string
           readOnly: true
-          description: 'Hash of the definition: saving the same definition again creates no new version.'
+          description: 'Hash of the definition and its input_schema: saving the same again creates no new version.'
         size_bytes:
           type: integer
           format: int32

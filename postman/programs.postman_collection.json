@@ -1069,6 +1069,9 @@
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const first = pm.response.json();",
                   "pm.test('total_size is a number', () => pm.expect(first.total_size).to.be.a('number'));",
+                  "pm.test('summary cards are numbers', () => { ['live_programs','not_live_programs','active_enrollments','total_enrollments','pending_approvals','programs_with_pending_approvals'].forEach(k => pm.expect(first.summary[k], k).to.be.a('number')); });",
+                  "pm.test('summary counts every program, not the page', () => pm.expect(first.summary.live_programs + first.summary.not_live_programs).to.eql(first.total_size));",
+                  "pm.test('every row has the table numbers', () => first.results.forEach(r => { pm.expect(r.enrollments.active).to.be.a('number'); pm.expect(r.enrollments.total).to.be.a('number'); pm.expect(r.pending_approvals).to.be.a('number'); pm.expect(r.domains.count).to.eql(r.domains.items.length); pm.expect(r.last_activity).to.have.property('actor'); }));",
                   "// The list is oldest first and test programs pile up, so follow the page tokens until the new program is found.",
                   "const wanted = pm.collectionVariables.get('slug'); const base = pm.collectionVariables.get('base_url');",
                   "pm.test('contains the new program', function (done) {",
@@ -2791,7 +2794,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {\n    \"contentType\": \"application/vnd.gorules.decision\",\n    \"nodes\": [],\n    \"edges\": [],\n    \"note\": \"edited by the admin\"\n  },\n  \"valid\": true\n}"
+              "raw": "{\n  \"definition\": {\n    \"contentType\": \"application/vnd.gorules.decision\",\n    \"nodes\": [],\n    \"edges\": [],\n    \"note\": \"edited by the admin\"\n  },\n  \"valid\": true,\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -9132,7 +9135,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"definition\": {\"mode\": \"rules\", \"rules\": [{\"id\": \"w1\", \"when\": {\"field\": \"category\", \"op\": \"eq\", \"value\": \"Screens\"}, \"days\": 90}]}, \"compiled\": {\"nodes\": [1]}}"
+              "raw": "{\n  \"definition\": {\n    \"mode\": \"rules\",\n    \"rules\": [\n      {\n        \"id\": \"w1\",\n        \"when\": {\n          \"field\": \"category\",\n          \"op\": \"eq\",\n          \"value\": \"Screens\"\n        },\n        \"days\": 90\n      }\n    ]\n  },\n  \"compiled\": {\n    \"nodes\": [\n      1\n    ]\n  },\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -9216,7 +9219,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"definition\":{\"rules\":[{\"days\":90,\"id\":\"w1\",\"when\":{\"value\":\"Screens\",\"op\":\"eq\",\"field\":\"category\"}}],\"mode\":\"rules\"},\"compiled\":{\"nodes\":[1]}}"
+              "raw": "{\n  \"definition\": {\n    \"rules\": [\n      {\n        \"days\": 90,\n        \"id\": \"w1\",\n        \"when\": {\n          \"value\": \"Screens\",\n          \"op\": \"eq\",\n          \"field\": \"category\"\n        }\n      }\n    ],\n    \"mode\": \"rules\"\n  },\n  \"compiled\": {\n    \"nodes\": [\n      1\n    ]\n  },\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -9300,7 +9303,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"definition\": {\"mode\": \"rules\", \"rules\": [{\"id\": \"w2\"}]}, \"valid\": false, \"validation_errors\": [{\"rule\": \"w2\", \"message\": \"no field\"}]}"
+              "raw": "{\n  \"definition\": {\n    \"mode\": \"rules\",\n    \"rules\": [\n      {\n        \"id\": \"w2\"\n      }\n    ]\n  },\n  \"valid\": false,\n  \"validation_errors\": [\n    {\n      \"rule\": \"w2\",\n      \"message\": \"no field\"\n    }\n  ],\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -9458,7 +9461,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"definition\": {\"mode\": \"rules\", \"rules\": [{\"id\": \"w2\", \"when\": {\"field\": \"brand\", \"op\": \"eq\", \"value\": \"Apple\"}, \"days\": 365}]}}"
+              "raw": "{\n  \"definition\": {\n    \"mode\": \"rules\",\n    \"rules\": [\n      {\n        \"id\": \"w2\",\n        \"when\": {\n          \"field\": \"brand\",\n          \"op\": \"eq\",\n          \"value\": \"Apple\"\n        },\n        \"days\": 365\n      }\n    ]\n  },\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -9976,7 +9979,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"definition\": {\"mode\": \"rules\", \"rules\": []}}"
+              "raw": "{\n  \"definition\": {\n    \"mode\": \"rules\",\n    \"rules\": []\n  },\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -10389,6 +10392,1682 @@
                   "const j=pm.response.json();",
                   "pm.test('entries',()=>{const s=j.results.map(e=>e.summary);['Rule version saved','Published'].forEach(x=>pm.expect(s).to.include(x));});",
                   "pm.test('the first publish: who, what, which rules',()=>{const e=j.results.filter(e=>e.action==='published').pop();pm.expect(e.actor).to.eql('bob');pm.expect(e.after.rules_published).to.eql([{module_key:'catalog_pricing.products_rules.warranty',version:3}]);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute rule (run a rule on an input)",
+      "item": [
+        {
+          "name": "Reset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "['exslug','exslug2','expub'].forEach(k=>pm.collectionVariables.unset(k)); pm.test('cleared',()=>pm.expect(pm.collectionVariables.get('exslug')).to.be.undefined);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a program with a Pre-Enrollment rule (and Fees, a rule by default)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Execute rule program\",\n  \"slug\": \"{{exslug}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.pre_enrollment\",\n      \"mode\": \"rule\"\n    },\n    \"order_transaction.core_returns.fees\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.collectionVariables.get('exslug')) pm.collectionVariables.set('exslug','ex-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save the rule WITHOUT saying what input it reads: version 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {\n    \"nodes\": [\n      {\n        \"id\": \"in\",\n        \"name\": \"Request\",\n        \"type\": \"inputNode\",\n        \"position\": {\n          \"x\": 0,\n          \"y\": 0\n        }\n      },\n      {\n        \"id\": \"t\",\n        \"name\": \"Credit\",\n        \"type\": \"decisionTableNode\",\n        \"position\": {\n          \"x\": 200,\n          \"y\": 0\n        },\n        \"content\": {\n          \"hitPolicy\": \"first\",\n          \"inputs\": [\n            {\n              \"id\": \"i1\",\n              \"name\": \"Credit score\",\n              \"field\": \"credit_score\"\n            }\n          ],\n          \"outputs\": [\n            {\n              \"id\": \"o1\",\n              \"name\": \"Approved\",\n              \"field\": \"approved\"\n            }\n          ],\n          \"rules\": [\n            {\n              \"_id\": \"r1\",\n              \"i1\": \">= 650\",\n              \"o1\": \"true\"\n            },\n            {\n              \"_id\": \"r2\",\n              \"i1\": \"\",\n              \"o1\": \"false\"\n            }\n          ]\n        }\n      },\n      {\n        \"id\": \"out\",\n        \"name\": \"Response\",\n        \"type\": \"outputNode\",\n        \"position\": {\n          \"x\": 400,\n          \"y\": 0\n        }\n      }\n    ],\n    \"edges\": [\n      {\n        \"id\": \"e1\",\n        \"type\": \"edge\",\n        \"sourceId\": \"in\",\n        \"targetId\": \"t\"\n      },\n      {\n        \"id\": \"e2\",\n        \"type\": \"edge\",\n        \"sourceId\": \"t\",\n        \"targetId\": \"out\"\n      }\n    ]\n  },\n  \"compiled\": {\n    \"nodes\": [\n      {\n        \"id\": \"in\",\n        \"name\": \"Request\",\n        \"type\": \"inputNode\",\n        \"position\": {\n          \"x\": 0,\n          \"y\": 0\n        }\n      },\n      {\n        \"id\": \"t\",\n        \"name\": \"Credit\",\n        \"type\": \"decisionTableNode\",\n        \"position\": {\n          \"x\": 200,\n          \"y\": 0\n        },\n        \"content\": {\n          \"hitPolicy\": \"first\",\n          \"inputs\": [\n            {\n              \"id\": \"i1\",\n              \"name\": \"Credit score\",\n              \"field\": \"credit_score\"\n            }\n          ],\n          \"outputs\": [\n            {\n              \"id\": \"o1\",\n              \"name\": \"Approved\",\n              \"field\": \"approved\"\n            }\n          ],\n          \"rules\": [\n            {\n              \"_id\": \"r1\",\n              \"i1\": \">= 650\",\n              \"o1\": \"true\"\n            },\n            {\n              \"_id\": \"r2\",\n              \"i1\": \"\",\n              \"o1\": \"false\"\n            }\n          ]\n        }\n      },\n      {\n        \"id\": \"out\",\n        \"name\": \"Response\",\n        \"type\": \"outputNode\",\n        \"position\": {\n          \"x\": 400,\n          \"y\": 0\n        }\n      }\n    ],\n    \"edges\": [\n      {\n        \"id\": \"e1\",\n        \"type\": \"edge\",\n        \"sourceId\": \"in\",\n        \"targetId\": \"t\"\n      },\n      {\n        \"id\": \"e2\",\n        \"type\": \"edge\",\n        \"sourceId\": \"t\",\n        \"targetId\": \"out\"\n      }\n    ]\n  },\n  \"valid\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('saved, but it has no input_schema',()=>{pm.expect(j.version).to.eql(1);pm.expect(j.input_schema).to.eql(null);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish is refused: the rule does not say what input it reads",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/publications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "publications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('names the rule and the field',()=>{const d=pm.response.json().detail;pm.expect(d).to.include('input_schema');pm.expect(d).to.include('pre_enrollment');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A draft without a schema still runs (nothing to check against)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"draft\",\n  \"input\": {\n    \"credit_score\": 700\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('the rule ran',()=>{pm.expect(j.result).to.eql({approved:true});pm.expect(j.status).to.eql('draft');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save a new version that says what it reads: version 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {\n    \"nodes\": [\n      {\n        \"id\": \"in\",\n        \"name\": \"Request\",\n        \"type\": \"inputNode\",\n        \"position\": {\n          \"x\": 0,\n          \"y\": 0\n        }\n      },\n      {\n        \"id\": \"t\",\n        \"name\": \"Credit\",\n        \"type\": \"decisionTableNode\",\n        \"position\": {\n          \"x\": 200,\n          \"y\": 0\n        },\n        \"content\": {\n          \"hitPolicy\": \"first\",\n          \"inputs\": [\n            {\n              \"id\": \"i1\",\n              \"name\": \"Credit score\",\n              \"field\": \"credit_score\"\n            }\n          ],\n          \"outputs\": [\n            {\n              \"id\": \"o1\",\n              \"name\": \"Approved\",\n              \"field\": \"approved\"\n            }\n          ],\n          \"rules\": [\n            {\n              \"_id\": \"r1\",\n              \"i1\": \">= 650\",\n              \"o1\": \"true\"\n            },\n            {\n              \"_id\": \"r2\",\n              \"i1\": \"\",\n              \"o1\": \"false\"\n            }\n          ]\n        }\n      },\n      {\n        \"id\": \"out\",\n        \"name\": \"Response\",\n        \"type\": \"outputNode\",\n        \"position\": {\n          \"x\": 400,\n          \"y\": 0\n        }\n      }\n    ],\n    \"edges\": [\n      {\n        \"id\": \"e1\",\n        \"type\": \"edge\",\n        \"sourceId\": \"in\",\n        \"targetId\": \"t\"\n      },\n      {\n        \"id\": \"e2\",\n        \"type\": \"edge\",\n        \"sourceId\": \"t\",\n        \"targetId\": \"out\"\n      }\n    ],\n    \"revision\": 2\n  },\n  \"compiled\": {\n    \"nodes\": [\n      {\n        \"id\": \"in\",\n        \"name\": \"Request\",\n        \"type\": \"inputNode\",\n        \"position\": {\n          \"x\": 0,\n          \"y\": 0\n        }\n      },\n      {\n        \"id\": \"t\",\n        \"name\": \"Credit\",\n        \"type\": \"decisionTableNode\",\n        \"position\": {\n          \"x\": 200,\n          \"y\": 0\n        },\n        \"content\": {\n          \"hitPolicy\": \"first\",\n          \"inputs\": [\n            {\n              \"id\": \"i1\",\n              \"name\": \"Credit score\",\n              \"field\": \"credit_score\"\n            }\n          ],\n          \"outputs\": [\n            {\n              \"id\": \"o1\",\n              \"name\": \"Approved\",\n              \"field\": \"approved\"\n            }\n          ],\n          \"rules\": [\n            {\n              \"_id\": \"r1\",\n              \"i1\": \">= 650\",\n              \"o1\": \"true\"\n            },\n            {\n              \"_id\": \"r2\",\n              \"i1\": \"\",\n              \"o1\": \"false\"\n            }\n          ]\n        }\n      },\n      {\n        \"id\": \"out\",\n        \"name\": \"Response\",\n        \"type\": \"outputNode\",\n        \"position\": {\n          \"x\": 400,\n          \"y\": 0\n        }\n      }\n    ],\n    \"edges\": [\n      {\n        \"id\": \"e1\",\n        \"type\": \"edge\",\n        \"sourceId\": \"in\",\n        \"targetId\": \"t\"\n      },\n      {\n        \"id\": \"e2\",\n        \"type\": \"edge\",\n        \"sourceId\": \"t\",\n        \"targetId\": \"out\"\n      }\n    ],\n    \"revision\": 2\n  },\n  \"valid\": true,\n  \"input_schema\": [\n    {\n      \"name\": \"store_id\",\n      \"type\": \"string\",\n      \"required\": true\n    },\n    {\n      \"name\": \"credit_score\",\n      \"type\": \"number\",\n      \"required\": true,\n      \"description\": \"FICO-style score\"\n    },\n    {\n      \"name\": \"notes\",\n      \"type\": \"string\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('version 2 carries the schema',()=>{pm.expect(j.version).to.eql(2);pm.expect(j.input_schema.length).to.eql(3);pm.expect(j.input_schema[1].name).to.eql('credit_score');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The rule set read back shows the schema on the newest version",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('input_schema is there',()=>pm.expect(j.draft.input_schema.map(f=>f.name)).to.eql(['store_id','credit_score','notes']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish now works",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/publications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "publications"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('expub', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The bundle carries each rule with its input_schema",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/publications/{{expub}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "publications",
+                "{{expub}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('version 2 with its schema',()=>{const r=j.bundle.rules.find(x=>x.module_key==='catalog_pricing.products_rules.pre_enrollment');pm.expect(r.version).to.eql(2);pm.expect(r.input_schema.length).to.eql(3);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute the published rule: approved",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('what ran',()=>{pm.expect(j.module).to.eql('catalog_pricing.products_rules.pre_enrollment');pm.expect(j.type).to.eql('pre_enrollment');pm.expect(j.version).to.eql(2);pm.expect(j.status).to.eql('published');pm.expect(j.program.startsWith('programs/')).to.eql(true);});",
+                  "pm.test('the rule output is passed through as it is',()=>pm.expect(j.result).to.eql({approved:true}));",
+                  "pm.test('timed, and no trace unless asked',()=>{pm.expect(j.duration_ms).to.be.a('number');pm.expect(j.trace).to.be.undefined;});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute it: a different input gives a different result",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"pre_enrollment\",\n  \"input\": {\n    \"store_id\": \"S-2\",\n    \"credit_score\": 500,\n    \"notes\": \"extra fields are fine\",\n    \"other\": 1\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('not approved',()=>pm.expect(pm.response.json().result).to.eql({approved:false}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Decimals are kept (a score of 700.55 is not cut to 700)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trace\": true,\n  \"input\": {\n    \"store_id\": \"S-3\",\n    \"credit_score\": 700.55\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('the number reaches the rule as sent',()=>pm.expect(j.trace.in.output.credit_score).to.eql(700.55));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute with trace: the visited nodes come back",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trace\": true,\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('trace has the nodes',()=>{pm.expect(Object.keys(j.trace).sort()).to.eql(['in','out','t']);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute a past version by number (version 1 is now superseded)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1,\n  \"input\": {\n    \"credit_score\": 700\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('version 1',()=>{const j=pm.response.json();pm.expect(j.version).to.eql(1);pm.expect(j.status).to.eql('superseded');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing required field -> 422 with the required field list",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": \"S-1\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "const j=pm.response.json();",
+                  "pm.test('stable code and the list of what to send',()=>{pm.expect(j.code).to.eql('INPUT_MISMATCH');pm.expect(j.required_fields).to.eql(['store_id','credit_score']);pm.expect(j.optional_fields).to.eql(['notes']);pm.expect(j.missing).to.eql(['credit_score']);pm.expect(j.wrong_type).to.eql([]);});",
+                  "pm.test('the message says it in one line',()=>{pm.expect(j.detail).to.include('missing: credit_score');pm.expect(j.detail).to.include('required fields: store_id, credit_score');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Null counts as missing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": null\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "pm.test('both listed',()=>pm.expect(pm.response.json().missing).to.eql(['store_id','credit_score']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong types -> 422 with expected and got",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": 5,\n    \"credit_score\": \"high\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "const j=pm.response.json(); pm.test('each wrong field',()=>pm.expect(j.wrong_type).to.eql([{field:'store_id',expected:'string',got:'number'},{field:'credit_score',expected:'number',got:'string'}]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "input is not an object -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": [\n    1,\n    2\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('code',()=>pm.expect(pm.response.json().code).to.eql('INVALID_BODY'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "input missing -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "pm.test('says which',()=>pm.expect(pm.response.json().detail).to.include('input'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong rule family -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"markup\",\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "const j=pm.response.json(); pm.test('names the right one',()=>{pm.expect(j.code).to.eql('TYPE_MISMATCH');pm.expect(j.expected_type).to.eql('pre_enrollment');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "version is not published / draft / a number -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"latest\",\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A version that does not exist -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 99,\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A module the program does not have -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.pricing.markup:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.pricing.markup:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {}\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unknown program -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/no-such-program-ex/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "no-such-program-ex",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The Fees starter rule runs as it came (it was published with its input)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/order_transaction.core_returns.fees:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "order_transaction.core_returns.fees:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"condition\": \"damaged\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json(); pm.test('a fee comes back',()=>{pm.expect(j.type).to.eql('fees');pm.expect(j.result).to.have.property('fee');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A rule that fails inside the engine: save version 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {\n    \"nodes\": [\n      {\n        \"id\": \"in\",\n        \"name\": \"Request\",\n        \"type\": \"inputNode\",\n        \"position\": {\n          \"x\": 0,\n          \"y\": 0\n        }\n      },\n      {\n        \"id\": \"ex\",\n        \"name\": \"Boom\",\n        \"type\": \"expressionNode\",\n        \"position\": {\n          \"x\": 200,\n          \"y\": 0\n        },\n        \"content\": {\n          \"expressions\": [\n            {\n              \"id\": \"a\",\n              \"key\": \"y\",\n              \"value\": \"unknownFn(credit_score)\"\n            }\n          ]\n        }\n      },\n      {\n        \"id\": \"out\",\n        \"name\": \"Response\",\n        \"type\": \"outputNode\",\n        \"position\": {\n          \"x\": 400,\n          \"y\": 0\n        }\n      }\n    ],\n    \"edges\": [\n      {\n        \"id\": \"e1\",\n        \"type\": \"edge\",\n        \"sourceId\": \"in\",\n        \"targetId\": \"ex\"\n      },\n      {\n        \"id\": \"e2\",\n        \"type\": \"edge\",\n        \"sourceId\": \"ex\",\n        \"targetId\": \"out\"\n      }\n    ]\n  },\n  \"compiled\": {\n    \"nodes\": [\n      {\n        \"id\": \"in\",\n        \"name\": \"Request\",\n        \"type\": \"inputNode\",\n        \"position\": {\n          \"x\": 0,\n          \"y\": 0\n        }\n      },\n      {\n        \"id\": \"ex\",\n        \"name\": \"Boom\",\n        \"type\": \"expressionNode\",\n        \"position\": {\n          \"x\": 200,\n          \"y\": 0\n        },\n        \"content\": {\n          \"expressions\": [\n            {\n              \"id\": \"a\",\n              \"key\": \"y\",\n              \"value\": \"unknownFn(credit_score)\"\n            }\n          ]\n        }\n      },\n      {\n        \"id\": \"out\",\n        \"name\": \"Response\",\n        \"type\": \"outputNode\",\n        \"position\": {\n          \"x\": 400,\n          \"y\": 0\n        }\n      }\n    ],\n    \"edges\": [\n      {\n        \"id\": \"e1\",\n        \"type\": \"edge\",\n        \"sourceId\": \"in\",\n        \"targetId\": \"ex\"\n      },\n      {\n        \"id\": \"e2\",\n        \"type\": \"edge\",\n        \"sourceId\": \"ex\",\n        \"targetId\": \"out\"\n      }\n    ]\n  },\n  \"valid\": true,\n  \"input_schema\": [\n    {\n      \"name\": \"credit_score\",\n      \"type\": \"number\",\n      \"required\": true,\n      \"description\": \"FICO-style score\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute it -> 422 naming the node",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"draft\",\n  \"input\": {\n    \"credit_score\": 5\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "const j=pm.response.json(); pm.test('code, node and message',()=>{pm.expect(j.code).to.eql('RULE_EXECUTION_FAILED');pm.expect(j.node_id).to.eql('ex');pm.expect(j.message).to.include('unknownFn');pm.expect(j.detail).to.include('node ex');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save an incomplete draft: version 4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {\n    \"incomplete\": true\n  },\n  \"valid\": false,\n  \"validation_errors\": [\n    {\n      \"message\": \"no output node\"\n    }\n  ],\n  \"input_schema\": [\n    {\n      \"name\": \"credit_score\",\n      \"type\": \"number\",\n      \"required\": true,\n      \"description\": \"FICO-style score\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute it -> 422, the rule is incomplete",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"draft\",\n  \"input\": {\n    \"credit_score\": 5\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "const j=pm.response.json(); pm.test('says what is wrong with it',()=>{pm.expect(j.code).to.eql('RULE_INVALID');pm.expect(j.validation_errors).to.eql([{message:'no output node'}]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The published version still runs while a broken draft exists",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('version 2',()=>pm.expect(pm.response.json().version).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A bad input_schema is refused when saving: not a list -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": {\n    \"name\": \"a\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A bad input_schema: unknown type -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"a\",\n      \"type\": \"text\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "pm.test('names the allowed types',()=>pm.expect(pm.response.json().detail).to.include('string, number, boolean'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A bad input_schema: the same field twice -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}/rule-sets/catalog_pricing.products_rules.pre_enrollment/versions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment",
+                "versions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"a\"\n    },\n    {\n      \"name\": \"a\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a program where the rule was never published",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Execute rule unpublished\",\n  \"slug\": \"{{exslug2}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.products_rules.pre_enrollment\",\n      \"mode\": \"rule\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.collectionVariables.get('exslug2')) pm.collectionVariables.set('exslug2','ex2-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute the published rule of it -> 404 (nothing published yet)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug2}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug2}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));",
+                  "pm.test('says so',()=>pm.expect(pm.response.json().detail).to.include('no published version'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Execute the draft of it -> 404 (nothing saved yet)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug2}}/rule-sets/catalog_pricing.products_rules.pre_enrollment:execute",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug2}}",
+                "rule-sets",
+                "catalog_pricing.products_rules.pre_enrollment:execute"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"draft\",\n  \"input\": {\n    \"store_id\": \"S-1\",\n    \"credit_score\": 710\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clean up",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clean up (second program)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{exslug2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{exslug2}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
                 ]
               }
             }
@@ -18214,7 +19893,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": [\n    1\n  ]\n}"
+              "raw": "{\n  \"definition\": [\n    1\n  ],\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18259,7 +19938,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {},\n  \"compiled\": \"text\"\n}"
+              "raw": "{\n  \"definition\": {},\n  \"compiled\": \"text\",\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18304,7 +19983,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {},\n  \"validation_errors\": \"nope\"\n}"
+              "raw": "{\n  \"definition\": {},\n  \"validation_errors\": \"nope\",\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18349,7 +20028,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {},\n  \"valid\": true,\n  \"validation_errors\": [\n    {\n      \"m\": \"x\"\n    }\n  ]\n}"
+              "raw": "{\n  \"definition\": {},\n  \"valid\": true,\n  \"validation_errors\": [\n    {\n      \"m\": \"x\"\n    }\n  ],\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18394,7 +20073,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {},\n  \"valid\": false,\n  \"validation_errors\": [\n    0,\n    1,\n    2,\n    3,\n    4,\n    5,\n    6,\n    7,\n    8,\n    9,\n    10,\n    11,\n    12,\n    13,\n    14,\n    15,\n    16,\n    17,\n    18,\n    19,\n    20,\n    21,\n    22,\n    23,\n    24,\n    25,\n    26,\n    27,\n    28,\n    29,\n    30,\n    31,\n    32,\n    33,\n    34,\n    35,\n    36,\n    37,\n    38,\n    39,\n    40,\n    41,\n    42,\n    43,\n    44,\n    45,\n    46,\n    47,\n    48,\n    49,\n    50,\n    51,\n    52,\n    53,\n    54,\n    55,\n    56,\n    57,\n    58,\n    59,\n    60,\n    61,\n    62,\n    63,\n    64,\n    65,\n    66,\n    67,\n    68,\n    69,\n    70,\n    71,\n    72,\n    73,\n    74,\n    75,\n    76,\n    77,\n    78,\n    79,\n    80,\n    81,\n    82,\n    83,\n    84,\n    85,\n    86,\n    87,\n    88,\n    89,\n    90,\n    91,\n    92,\n    93,\n    94,\n    95,\n    96,\n    97,\n    98,\n    99,\n    100\n  ]\n}"
+              "raw": "{\n  \"definition\": {},\n  \"valid\": false,\n  \"validation_errors\": [\n    0,\n    1,\n    2,\n    3,\n    4,\n    5,\n    6,\n    7,\n    8,\n    9,\n    10,\n    11,\n    12,\n    13,\n    14,\n    15,\n    16,\n    17,\n    18,\n    19,\n    20,\n    21,\n    22,\n    23,\n    24,\n    25,\n    26,\n    27,\n    28,\n    29,\n    30,\n    31,\n    32,\n    33,\n    34,\n    35,\n    36,\n    37,\n    38,\n    39,\n    40,\n    41,\n    42,\n    43,\n    44,\n    45,\n    46,\n    47,\n    48,\n    49,\n    50,\n    51,\n    52,\n    53,\n    54,\n    55,\n    56,\n    57,\n    58,\n    59,\n    60,\n    61,\n    62,\n    63,\n    64,\n    65,\n    66,\n    67,\n    68,\n    69,\n    70,\n    71,\n    72,\n    73,\n    74,\n    75,\n    76,\n    77,\n    78,\n    79,\n    80,\n    81,\n    82,\n    83,\n    84,\n    85,\n    86,\n    87,\n    88,\n    89,\n    90,\n    91,\n    92,\n    93,\n    94,\n    95,\n    96,\n    97,\n    98,\n    99,\n    100\n  ],\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18439,7 +20118,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {},\n  \"rule_type\": \" \"\n}"
+              "raw": "{\n  \"definition\": {},\n  \"rule_type\": \" \",\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18529,7 +20208,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {}\n}"
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18574,7 +20253,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {}\n}"
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18619,7 +20298,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {}\n}"
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18665,7 +20344,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {}\n}"
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -18710,7 +20389,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definition\": {}\n}"
+              "raw": "{\n  \"definition\": {},\n  \"input_schema\": [\n    {\n      \"name\": \"amount\",\n      \"type\": \"number\"\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -19490,7 +21169,7 @@
               "  const slug = 'rn-' + stamp, noslug = 'rn2-' + stamp;",
               "  await call('POST', '/programs', {name: 'Rule negatives', slug, level: 'location', modules: [{key: 'catalog_pricing.products_rules.warranty', mode: 'rule'}, {key: 'catalog_pricing.products_rules.pre_enrollment', mode: 'rule'}, 'enrollment.stores.enrolled_stores_control_panel']});",
               "  await call('POST', '/programs', {name: 'No rules', slug: noslug, level: 'location', modules: []});",
-              "  await call('POST', '/programs/' + slug + '/rule-sets/catalog_pricing.products_rules.warranty/versions', {definition: {mode: 'rules', rules: []}});",
+              "  await call('POST', '/programs/' + slug + '/rule-sets/catalog_pricing.products_rules.warranty/versions', {definition: {mode: 'rules', rules: []}, input_schema: [{name: 'amount', type: 'number'}]});",
               "  Object.entries({vslug: slug, vnoslug: noslug}).forEach(([k, v]) => pm.collectionVariables.set(k, v));",
               "})();"
             ]

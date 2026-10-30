@@ -15,10 +15,30 @@ pub struct RuleVersionPresenter {
     pub compiled: Option<serde_json::Value>,
     pub valid: bool,
     pub validation_errors: serde_json::Value,
+    /// The input the rule reads; null when the version does not say.
+    pub input_schema: Option<serde_json::Value>,
     pub content_hash: String,
     pub size_bytes: i32,
     pub created_by: Option<String>,
     pub create_time: String,
+}
+
+/// The result of running a rule.
+#[derive(Debug, Serialize, Clone)]
+pub struct ExecuteRulePresenter {
+    /// programs/{program}
+    pub program: String,
+    pub module: String,
+    pub r#type: Option<String>,
+    /// The version that ran, and whether it was `published`, a `draft` or `superseded`.
+    pub version: i32,
+    pub status: String,
+    /// Whatever the rule outputs: dynamic JSON, not reshaped.
+    pub result: serde_json::Value,
+    pub duration_ms: f64,
+    /// The visited nodes; only when asked for.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Clone)]

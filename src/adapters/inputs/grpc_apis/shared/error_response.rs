@@ -26,6 +26,7 @@ impl GrpcErrorResponse {
             // AEP-122 `code` pattern) — still the client's fault, so it
             // collapses to the code that already means that.
             ApplicationErrorKind::UnprocessableEntity => ErrorCode::InvalidArgument,
+            ApplicationErrorKind::DeadlineExceeded => ErrorCode::DeadlineExceeded,
             ApplicationErrorKind::Internal => ErrorCode::Internal,
         };
         ConnectError::new(code, error.message())

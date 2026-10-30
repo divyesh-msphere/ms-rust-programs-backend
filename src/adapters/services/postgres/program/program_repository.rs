@@ -6,12 +6,15 @@ use crate::adapters::services::postgres::program_module::program_module_reposito
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::program::{NewProgram, Program, ProgramRepository, UpdateProgram};
+use crate::domain::program::{
+    LastActivity, NewProgram, Program, ProgramDomain, ProgramListStats, ProgramListSummary, ProgramRepository, UpdateProgram,
+};
 use crate::domain::program_module::ProgramModule;
 use async_trait::async_trait;
 use ms_telemetry_rs::tracing::error;
 use serde_json::{Value, json};
 use sqlx::PgConnection;
+use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -210,6 +213,92 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             next_page_token,
             total_size,
         ))
+    }
+
+    async fn list_stats(&self, ids: &[Uuid]) -> Result<HashMap<Uuid, ProgramListStats>, ApplicationError> {
+        let mut stats: HashMap<Uuid, ProgramListStats> = ids.iter().map(|id| (*id, ProgramListStats::default())).collect();
+        if ids.is_empty() {
+            return Ok(stats);
+        }
+        let pool = self.db_connection.get_pool();
+
+        let counters: Vec<(Uuid, i32, i32, i32)> = sqlx::query_as(
+            "SELECT program_id, active_enrollments, enrollments_total, pending_approvals \
+             FROM program_stats WHERE program_id = ANY($1)",
+        )
+        .bind(ids)
+        .fetch_all(pool)
+        .await
+        .map_err(db_error)?;
+        for (id, active, total, pending) in counters {
+            if let Some(row) = stats.get_mut(&id) {
+                row.active_enrollments = active;
+                row.total_enrollments = total;
+                row.pending_approvals = pending;
+            }
+        }
+
+        // Websites with a live enrollment, one row per website.
+        let domains: Vec<(Uuid, String, Option<String>)> = sqlx::query_as(
+            "SELECT program_id, website_id, max(website_name) FROM enrollments \
+             WHERE program_id = ANY($1) AND status IN ('pending', 'active', 'suspended') \
+             GROUP BY program_id, website_id ORDER BY program_id, website_id",
+        )
+        .bind(ids)
+        .fetch_all(pool)
+        .await
+        .map_err(db_error)?;
+        for (id, website_id, name) in domains {
+            if let Some(row) = stats.get_mut(&id) {
+                row.domains.push(ProgramDomain { website_id, name });
+            }
+        }
+
+        // Newest audit entry per program (the index is program_id, create_time DESC).
+        let last: Vec<(Uuid, String, String, String, chrono::DateTime<chrono::Utc>)> = sqlx::query_as(
+            "SELECT p.id, a.actor, a.action, a.target_type, a.create_time \
+             FROM unnest($1::uuid[]) AS p(id) \
+             CROSS JOIN LATERAL ( \
+                 SELECT actor, action, target_type, create_time FROM audit_log \
+                 WHERE program_id = p.id ORDER BY create_time DESC, id DESC LIMIT 1 \
+             ) a",
+        )
+        .bind(ids)
+        .fetch_all(pool)
+        .await
+        .map_err(db_error)?;
+        for (id, actor, action, target_type, time) in last {
+            if let Some(row) = stats.get_mut(&id) {
+                row.last_activity = Some(LastActivity { actor, action, target_type, time });
+            }
+        }
+        Ok(stats)
+    }
+
+    async fn list_summary(&self, show_deleted: bool, show_archived: bool) -> Result<ProgramListSummary, ApplicationError> {
+        let state = if show_deleted { "DELETED" } else { "ACTIVE" };
+        let archived = if show_archived { "p.archive_time IS NOT NULL" } else { "p.archive_time IS NULL" };
+        let (live, not_live, active, total, pending, with_pending): (i64, i64, i64, i64, i64, i64) = sqlx::query_as(&format!(
+            "SELECT COUNT(*) FILTER (WHERE p.active), \
+                    COUNT(*) FILTER (WHERE NOT p.active), \
+                    COALESCE(SUM(s.active_enrollments), 0)::bigint, \
+                    COALESCE(SUM(s.enrollments_total), 0)::bigint, \
+                    COALESCE(SUM(s.pending_approvals), 0)::bigint, \
+                    COUNT(*) FILTER (WHERE s.pending_approvals > 0) \
+             FROM programs p LEFT JOIN program_stats s ON s.program_id = p.id \
+             WHERE p.state = '{state}' AND {archived}"
+        ))
+        .fetch_one(self.db_connection.get_pool())
+        .await
+        .map_err(db_error)?;
+        Ok(ProgramListSummary {
+            live_programs: live,
+            not_live_programs: not_live,
+            active_enrollments: active,
+            total_enrollments: total,
+            pending_approvals: pending,
+            programs_with_pending_approvals: with_pending,
+        })
     }
 
     async fn create(&self, input: NewProgram) -> Result<(Program, Vec<ProgramModule>), ApplicationError> {

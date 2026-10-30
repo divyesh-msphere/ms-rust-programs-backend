@@ -376,6 +376,14 @@ service ProgramsService {
       resource_fields: [{field: "path" pattern: "programs/*/rule-sets/*"}]
     };
   }
+  // Runs a rule on the caller's input. Errors carry the required field list in the message.
+  rpc ExecuteRule(ExecuteRuleRequest) returns (ExecuteRuleResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "reader"
+      resource_fields: [{field: "path" pattern: "programs/*/rule-sets/*"}]
+    };
+  }
   rpc ListRuleVersions(ListRuleVersionsRequest) returns (ListRuleVersionsResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"

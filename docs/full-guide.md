@@ -170,7 +170,7 @@ a whole subtree is one query), `source`, `handler_key`, `api_base`, `ui_componen
 
 | API | Tables |
 |---|---|
-| `GET /programs` (`show_deleted`, paging, `total_size`) | R `programs` |
+| `GET /programs` (`show_deleted`, `show_archived`, paging, `total_size`) | R `programs`, `program_stats` (cards and per-row counts), `enrollments` (domains = distinct websites with a live enrollment), `audit_log` (last activity: the `X-User-Id` of the newest change). The response has a top-level `summary` (live / not live programs, active and total enrollments, pending approvals, programs with pending approvals, over the whole filter, not just the page) and each row adds `enrollments {active,total}`, `pending_approvals`, `domains {count,items}` and `last_activity {actor,action,summary,time}` |
 | `POST /programs` | W `programs`, `program_modules` (picked modules plus their parents, their children, and Overview), `program_stats`, `program_storage`, `document_folders` (4 system folders), and for settings or rule leaves `program_fields`, `field_options`, `rule_sets` |
 | `GET /programs/{p}` | R `programs` |
 | `PATCH /programs/{p}` | W `programs`; with `modules` also `program_modules` and the leaf tables |
@@ -406,13 +406,15 @@ A percentage cannot pass 100 (422), an amount has at most 2 decimals, and a mass
 | `POST .../rule-sets/{module_key}/versions` (save the draft) | W `rule_versions`, `rule_sets`, `programs` (version bump) |
 | `GET .../versions`, `GET .../versions/{n}` | R `rule_versions` |
 | `POST /programs/{p}/publications` (**Publish**) | W `rule_versions`, `rule_sets`, `publications`; R requirements, steps, modules, values, overrides, enrollments |
+| `POST /programs/{p}/rule-sets/{module_key}:execute` (run a rule on an input; read-only) | R `rule_sets`, `rule_versions`; runs the compiled graph with `zen-engine` |
 | `GET /programs/{p}/publications`, `GET .../publications/{id}` (with the bundle) | R `publications` |
 
 **Rules.** A save is an immutable numbered version; the same definition again creates nothing; an incomplete draft can be saved but blocks publishing. Publish runs in one transaction
 **under the program lock**: it refuses if nothing is new or a draft is invalid, promotes each leaf's draft (the old one becomes `superseded`), builds the **bundle** (program, enabled modules with
 settings and values, requirements, approval steps, the store → discount map of active stores, the published rules) and stores it append-only. It records the `config_version` it covers
 without changing it.
-**Tables:** `rule_sets` (`draft_version`, `published_version`), `rule_versions` (`definition`, `compiled`, `valid`, `status`, `content_hash`), `publications` (`config_version`, `bundle`).
+**Execute and the input contract.** A rule version carries `input_schema` (the fields it reads: name, type, required). **Publish refuses a rule without one**; Execute checks the caller's input against it and, when it does not fit, answers 422 `INPUT_MISMATCH` with `required_fields`, `missing` and `wrong_type`. The request and the result are dynamic JSON. Details: `modules-walkthrough.md` §13.
+**Tables:** `rule_sets` (`draft_version`, `published_version`), `rule_versions` (`definition`, `compiled`, `input_schema`, `valid`, `status`, `content_hash`), `publications` (`config_version`, `bundle`).
 **Code:** `domain/rule_set.rs`, `domain/publication.rs`, `postgres/rule_set/`, `postgres/publication/`.
 
 ### 5.14 Documents
@@ -483,7 +485,7 @@ change. Files are data: no `config_version` bump. The program must have the modu
 | Swagger | `docker compose up -d swagger`, then http://localhost:8082 |
 | Unit tests | `cargo test --lib` (86 tests) |
 | Proto | `buf lint proto`, then `buf generate proto --path proto/programs/v1`, then `buf build proto --path proto/programs/v1 -o src/adapters/generated/grpc_services/programs.binpb`. Never run a plain `buf generate`: it would read the remote repository. |
-| API tests | Import `postman/programs.postman_collection.json` and the environment file. `newman run` on the main collection runs 900 assertions with the parked modules off; with `APP__FEATURES__ENROLLMENT_REVIEW=true`, also run `postman/enrollment-review.postman_collection.json` (327 assertions). Each module has a folder and a "negative checks" folder; the negative folders set up their own data, so any request can be sent alone. |
+| API tests | Import `postman/programs.postman_collection.json` and the environment file. `newman run` on the main collection runs 967 assertions with the parked modules off; with `APP__FEATURES__ENROLLMENT_REVIEW=true`, also run `postman/enrollment-review.postman_collection.json` (327 assertions). Each module has a folder and a "negative checks" folder; the negative folders set up their own data, so any request can be sent alone. |
 | Parked modules | Requirements, Approval steps, Applications and Signoffs are off by default: `APP__FEATURES__ENROLLMENT_REVIEW=true` turns them on. See [parked-enrollment-review.md](parked-enrollment-review.md). |
 | OpenAPI | `spectral lint openapi.yaml` (one accepted false positive on the Overview's operation id) |
 

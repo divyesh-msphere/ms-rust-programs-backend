@@ -30,6 +30,8 @@ pub struct CreateRuleVersionInput {
     /// Defaults to "no validation errors were sent".
     pub valid: Option<bool>,
     pub validation_errors: Option<Value>,
+    /// The input the rule reads (see `RuleVersion::input_schema`).
+    pub input_schema: Option<Value>,
     pub actor: String,
 }
 
@@ -49,6 +51,7 @@ impl UseCase<SaveOutcome, CreateRuleVersionInput> for CreateRuleVersionUseCase {
             compiled: input.compiled,
             valid,
             validation_errors,
+            input_schema: input.input_schema,
             actor: input.actor,
         };
         validate_new(&new_version)?;

@@ -521,8 +521,36 @@ freezes the whole program configuration into one bundle. The rule engine is a fr
 **A rule page that starts with a rule.** **Fees** (Order & Transaction → Core Returns → Fees) is a Rule leaf from the moment a program selects it, with no Settings or Rules choice, and its rule set already holds a simple starter rule as draft 1 (a GoRules decision graph: request, one decision table with a single row that charges 0, response). It can be published as it is; the admin's first save becomes version 2. The starter comes from `module_definitions.default_rule`; see `seed_default_rules` in `postgres/program/module_changes.rs`.
 
 **Endpoints.** `GET /programs/{p}/rule-sets`, `GET .../rule-sets/{module_key}`, `POST|GET .../rule-sets/{module_key}/versions`, `GET .../versions/{version}`,
-`POST|GET /programs/{p}/publications`, `GET .../publications/{publication}`.
-gRPC: `ListRuleSets`, `GetRuleSet`, `CreateRuleVersion`, `ListRuleVersions`, `GetRuleVersion`, `ListPublications`, `CreatePublication`, `GetPublication`.
+`POST|GET /programs/{p}/publications`, `GET .../publications/{publication}`, and **`POST .../rule-sets/{module_key}:execute`** (below).
+gRPC: `ListRuleSets`, `GetRuleSet`, `CreateRuleVersion`, `ListRuleVersions`, `GetRuleVersion`, `ExecuteRule`, `ListPublications`, `CreatePublication`, `GetPublication`.
+
+**Execute rule.** `POST /programs/{p}/rule-sets/{module_key}:execute` runs one rule on the caller's input and returns what the rule outputs. Both sides are dynamic JSON.
+The rule's compiled decision graph (GoRules JDM) is run in this process by `zen-engine` (`adapters/services/zen/`, behind the `RuleEngine` trait in `domain/rule_engine.rs`).
+It is read-only: no version is made, `config_version` does not move.
+
+| | |
+|---|---|
+| Request | `{ "input": {...}, "type"?: "pre_enrollment", "version"?: "published" \| "draft" \| 3, "trace"?: true }` |
+| Response 200 | `{ "program", "module", "type", "version", "status", "result": {...}, "duration_ms", "trace"? }`; `result` is the rule's own output, never reshaped |
+
+*Which version.* `published` (default), `draft` (the newest save, for a "Test rule" button) or a number. A version that is not `valid`, or has no `compiled` graph, cannot run.
+*The input contract.* Each rule **version** carries an `input_schema`, a list of `{name, type, required, description?}` (`type`: string, number, boolean, object, array, any; `a.b` is a field inside an object).
+It is saved with the version (`POST .../versions`), is part of its `content_hash`, and is copied into the publication bundle. A draft may lack it, but **Publish refuses a rule that has none** (400, names the rules).
+The starter rule of a page (Fees) comes with its schema (`module_definitions.default_input_schema`). The input is checked **before** the engine runs; a version without a schema is not checked.
+
+| Error | Status | `code` | Extra fields (HTTP problem body) |
+|---|---|---|---|
+| `input` is not an object | 400 | `INVALID_BODY` | |
+| No such program / module / version, or nothing published yet | 404 | `NOT_FOUND` | |
+| Not a rule module of the program | 400 | | (as for the other rule calls) |
+| Input does not fit the schema | 422 | `INPUT_MISMATCH` | `required_fields`, `optional_fields`, `missing`, `wrong_type:[{field,expected,got}]` |
+| `type` is not the module's rule family | 422 | `TYPE_MISMATCH` | `expected_type` |
+| Version incomplete or no graph | 422 | `RULE_INVALID` | `validation_errors` |
+| The engine failed inside the rule | 422 | `RULE_EXECUTION_FAILED` | `node_id`, `message` |
+| Ran past 5 seconds | 504 | `RULE_TIMEOUT` | |
+
+gRPC has no place for the extra fields, so the **message** carries the same sentence, e.g. `input does not match the rule (missing: credit_score); required fields: store_id, credit_score`.
+The engine's values are not `Send`, so each run lives on one blocking thread. A rule that blocks that thread cannot be interrupted by the 5-second limit (not exercised).
 
 **Files.**
 - Domain: `src/domain/rule_set.rs` (the rule set, version, validation, `state()`), `src/domain/publication.rs`
@@ -553,7 +581,8 @@ gRPC: `ListRuleSets`, `GetRuleSet`, `CreateRuleVersion`, `ListRuleVersions`, `Ge
 | `definition` | JSON, the rule model the builder draws (up to 1 MB), kept as is |
 | `compiled` | JSON, the generated decision graph, when the rule engine made one |
 | `valid`, `validation_errors` | The rule engine's verdict. An invalid newest draft blocks publishing. |
-| `content_hash` | `md5` of the definition: saving the same definition again creates no new version |
+| `input_schema` | JSON list `{name, type, required, description?}`: the input the rule reads (see Execute rule). Optional on a draft, required to publish |
+| `content_hash` | `md5` of the definition (and of `input_schema` when there is one): saving the same again creates no new version |
 | `size_bytes`, `created_by`, `create_time` | Size, the saving user, when |
 
 **Table `publications`** (append-only): `id`, `program_id`, `config_version` (the program version it covers), `config_hash`, `bundle` (JSON, with a

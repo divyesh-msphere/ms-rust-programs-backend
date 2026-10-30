@@ -31,7 +31,9 @@ use crate::adapters::services::postgres::notifications::notifications_repository
 use crate::domain::program_overview::{AuditLogRepository, ProgramOverviewRepository};
 use crate::domain::publication::PublicationRepository;
 use crate::domain::requirement::RequirementRepository;
+use crate::domain::rule_engine::RuleEngine;
 use crate::domain::rule_set::RuleSetRepository;
+use crate::adapters::services::zen::zen_rule_engine::ZenRuleEngine;
 use crate::domain::signoff::SignoffRepository;
 use crate::domain::store_discount::StoreDiscountRepository;
 use std::sync::Arc;
@@ -52,6 +54,7 @@ pub struct Repositories {
     pub enrollment_repository: Arc<dyn EnrollmentRepository>,
     pub store_discount_repository: Arc<dyn StoreDiscountRepository>,
     pub rule_set_repository: Arc<dyn RuleSetRepository>,
+    pub rule_engine: Arc<dyn RuleEngine>,
     pub publication_repository: Arc<dyn PublicationRepository>,
     pub document_repository: Arc<dyn DocumentRepository>,
 }
@@ -82,6 +85,7 @@ impl Repositories {
             enrollment_repository: Arc::new(EnrollmentRepositoryPostgresImpl::new(postgres_connection.clone())),
             store_discount_repository: Arc::new(StoreDiscountRepositoryPostgresImpl::new(postgres_connection.clone())),
             rule_set_repository: Arc::new(RuleSetRepositoryPostgresImpl::new(postgres_connection.clone())),
+            rule_engine: Arc::new(ZenRuleEngine::new()),
             publication_repository: Arc::new(PublicationRepositoryPostgresImpl::new(postgres_connection.clone())),
             document_repository: Arc::new(DocumentRepositoryPostgresImpl::new(postgres_connection)),
         }

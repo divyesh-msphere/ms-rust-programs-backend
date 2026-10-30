@@ -11,8 +11,8 @@ use sqlx::{FromRow, PgConnection};
 use std::sync::Arc;
 use uuid::Uuid;
 
-const VERSION_FULL: &str = "id, version, status, definition, compiled, valid, validation_errors, content_hash, size_bytes, created_by, create_time";
-const VERSION_LIGHT: &str = "id, version, status, NULL::jsonb AS definition, NULL::jsonb AS compiled, valid, validation_errors, content_hash, size_bytes, created_by, create_time";
+const VERSION_FULL: &str = "id, version, status, definition, compiled, valid, validation_errors, input_schema, content_hash, size_bytes, created_by, create_time";
+const VERSION_LIGHT: &str = "id, version, status, NULL::jsonb AS definition, NULL::jsonb AS compiled, valid, validation_errors, input_schema, content_hash, size_bytes, created_by, create_time";
 
 #[derive(Debug, FromRow)]
 struct VersionRow {
@@ -23,6 +23,7 @@ struct VersionRow {
     compiled: Option<Value>,
     valid: bool,
     validation_errors: Value,
+    input_schema: Option<Value>,
     content_hash: String,
     size_bytes: i32,
     created_by: Option<String>,
@@ -40,6 +41,7 @@ fn to_version(row: VersionRow, program_id: Uuid, module_key: &str) -> RuleVersio
         compiled: row.compiled,
         valid: row.valid,
         validation_errors: row.validation_errors,
+        input_schema: row.input_schema,
         content_hash: row.content_hash,
         size_bytes: row.size_bytes,
         created_by: row.created_by,
@@ -215,8 +217,14 @@ impl RuleSetRepository for RuleSetRepositoryPostgresImpl {
         };
         let old_draft = existing.as_ref().and_then(|r| r.draft_version);
 
-        // The hash of the definition: saving what is already the newest version creates nothing.
-        let hash: String = sqlx::query_scalar("SELECT md5($1::jsonb::text)").bind(&input.definition).fetch_one(&mut *tx).await.map_err(db_error)?;
+        // The hash of the definition and the input it reads: saving what is already the newest version
+        // creates nothing. (Without a schema the hash is the definition's alone, as it always was.)
+        let hash: String = sqlx::query_scalar("SELECT md5($1::jsonb::text || COALESCE($2::jsonb::text, ''))")
+            .bind(&input.definition)
+            .bind(&input.input_schema)
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(db_error)?;
         if let Some(version) = old_draft
             && let Some(latest) = version_row(&mut tx, rule_set_id, version).await?
             && latest.content_hash == hash
@@ -233,8 +241,8 @@ impl RuleSetRepository for RuleSetRepositoryPostgresImpl {
             .map_err(db_error)?;
         let query = format!(
             "INSERT INTO rule_versions (id, rule_set_id, version, status, definition, compiled, valid, validation_errors, \
-                content_hash, size_bytes, created_by) \
-             VALUES ($1, $2, $3, 'draft', $4, $5, $6, $7, $8, octet_length($4::jsonb::text), $9) RETURNING {VERSION_FULL}"
+                content_hash, size_bytes, created_by, input_schema) \
+             VALUES ($1, $2, $3, 'draft', $4, $5, $6, $7, $8, octet_length($4::jsonb::text), $9, $10) RETURNING {VERSION_FULL}"
         );
         let created = sqlx::query_as::<_, VersionRow>(&query)
             .bind(Uuid::now_v7())
@@ -246,6 +254,7 @@ impl RuleSetRepository for RuleSetRepositoryPostgresImpl {
             .bind(&input.validation_errors)
             .bind(&hash)
             .bind(&input.actor)
+            .bind(&input.input_schema)
             .fetch_one(&mut *tx)
             .await
             .map_err(db_error)?;

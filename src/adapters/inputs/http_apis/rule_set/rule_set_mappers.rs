@@ -1,6 +1,7 @@
 use crate::adapters::inputs::shared::parse;
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::rule_set::create_rule_version::CreateRuleVersionInput;
+use crate::application::usecases::rule_set::execute_rule::{ExecuteRuleInput, ExecuteRuleOutput, VersionSelector};
 use crate::application::usecases::rule_set::get_rule_set::GetRuleSetInput;
 use crate::application::usecases::rule_set::get_rule_version::GetRuleVersionInput;
 use crate::application::usecases::rule_set::list_rule_sets::ListRuleSetsInput;
@@ -9,11 +10,11 @@ use crate::application::utils::datetime::format_datetime;
 use crate::domain::aep::ResourceIdentifier;
 use crate::domain::rule_set::{RuleSet, RuleVersion, SaveOutcome};
 use crate::dto::payloads::json::rule_set::{
-    CreateRuleVersionBodyPayload, CreateRuleVersionPathPayload, GetRuleSetPayload, GetRuleVersionPayload,
+    CreateRuleVersionBodyPayload, CreateRuleVersionPathPayload, ExecuteRuleBodyPayload, ExecuteRulePathPayload, GetRuleSetPayload, GetRuleVersionPayload,
     ListRuleSetsPayload, ListRuleVersionsPathPayload, ListRuleVersionsQueryPayload,
 };
 use crate::dto::presenters::json::rule_set::{
-    RuleSetPresenter, RuleSetsPresenter, RuleVersionPresenter, RuleVersionsPresenter, SaveRuleVersionPresenter,
+    ExecuteRulePresenter, RuleSetPresenter, RuleSetsPresenter, RuleVersionPresenter, RuleVersionsPresenter, SaveRuleVersionPresenter,
 };
 
 pub fn version_presenter(version: RuleVersion) -> RuleVersionPresenter {
@@ -26,6 +27,7 @@ pub fn version_presenter(version: RuleVersion) -> RuleVersionPresenter {
         compiled: version.compiled,
         valid: version.valid,
         validation_errors: version.validation_errors,
+        input_schema: version.input_schema,
         content_hash: version.content_hash,
         size_bytes: version.size_bytes,
         created_by: version.created_by,
@@ -92,12 +94,51 @@ impl CreateRuleVersionMapper {
             compiled: body.compiled,
             valid: body.valid,
             validation_errors: body.validation_errors,
+            input_schema: body.input_schema,
             actor,
         })
     }
 
     pub fn output_success(output: SaveOutcome) -> SaveRuleVersionPresenter {
         SaveRuleVersionPresenter { version: version_presenter(output.version), created: output.created }
+    }
+}
+
+pub struct ExecuteRuleMapper;
+
+impl ExecuteRuleMapper {
+    pub fn input(path: ExecuteRulePathPayload, body: ExecuteRuleBodyPayload) -> Result<ExecuteRuleInput, ApplicationError> {
+        let version = match &body.version {
+            None | Some(serde_json::Value::Null) => VersionSelector::Published,
+            Some(serde_json::Value::String(s)) => VersionSelector::parse(Some(s))?,
+            Some(serde_json::Value::Number(n)) => VersionSelector::parse(Some(&n.to_string()))?,
+            Some(_) => {
+                return Err(ApplicationError::validation_error(
+                    "version must be \"published\", \"draft\" or a version number",
+                ));
+            }
+        };
+        Ok(ExecuteRuleInput {
+            program: ResourceIdentifier::parse(&path.program),
+            rule_set: ResourceIdentifier::parse(&path.rule_set),
+            rule_type: body.r#type.map(|t| t.trim().to_string()).filter(|t| !t.is_empty()),
+            version,
+            input: body.input,
+            trace: body.trace.unwrap_or(false),
+        })
+    }
+
+    pub fn output_success(output: ExecuteRuleOutput) -> ExecuteRulePresenter {
+        ExecuteRulePresenter {
+            program: format!("programs/{}", output.program_id),
+            module: output.module_key,
+            r#type: output.rule_type,
+            version: output.version,
+            status: output.status,
+            result: output.run.result,
+            duration_ms: output.duration_ms,
+            trace: output.run.trace,
+        }
     }
 }
 

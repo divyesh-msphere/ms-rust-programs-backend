@@ -17,4 +17,5 @@ pub mod program_overview;
 pub mod program_setting;
 pub mod publication;
 pub mod requirement;
+pub mod rule_engine;
 pub mod rule_set;

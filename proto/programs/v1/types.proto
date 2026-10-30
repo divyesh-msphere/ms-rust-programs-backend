@@ -132,6 +132,42 @@ message Program {
   string create_time = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string update_time = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string state = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The numbers of the programs table. Set on ListPrograms rows only.
+  optional ProgramStats stats = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ProgramDomain {
+  string website_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// The newest change to a program.
+message ProgramLastActivity {
+  // The `x-user-id` of the caller ("system" when none was sent).
+  string actor = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string action = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // e.g. "Program updated".
+  string summary = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string time = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ProgramStats {
+  int32 active_enrollments = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 total_enrollments = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 pending_approvals = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Websites with a live enrollment.
+  repeated ProgramDomain domains = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional ProgramLastActivity last_activity = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// The cards above the programs table, over every program the filter matches.
+message ProgramListSummary {
+  int64 live_programs = 1 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 not_live_programs = 2 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 active_enrollments = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 total_enrollments = 4 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 pending_approvals = 5 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 programs_with_pending_approvals = 6 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // One entry of a program's module manifest. `source` tells the frontend how to
@@ -255,6 +291,7 @@ message ListProgramsResponse {
   repeated Program results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   int64 total_size = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  ProgramListSummary summary = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message GetProgramRequest {
@@ -1232,6 +1269,8 @@ message RuleVersion {
   int32 size_bytes = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string created_by = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string create_time = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The input the rule reads: a list of {name, type, required, description}. Unset when the version does not say.
+  optional google.protobuf.Value input_schema = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
 message RuleSet {
@@ -1291,11 +1330,43 @@ message CreateRuleVersionRequest {
   optional google.protobuf.Value validation_errors = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The input the rule reads: a list of {name, type, required, description} (up to 100). Publish refuses a rule that has none.
+  optional google.protobuf.Value input_schema = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message CreateRuleVersionResponse {
   RuleVersion version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // False when the save changed nothing, so no new version was made (this is the newest one).
   bool created = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+message ExecuteRuleRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The rule leaf's module key or the id of its rule set.
+  string rule_set = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The rule family the caller expects (for example pre_enrollment), checked against the module.
+  optional string type = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // "published" (the default), "draft" or a version number.
+  optional string version = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // What the rule reads: an object.
+  google.protobuf.Value input = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Also return the nodes that were visited.
+  bool trace = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message ExecuteRuleResponse {
+  // programs/{program}
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string module = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string type = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The version that ran, and whether it is "published", a "draft" or "superseded".
+  int32 version = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string status = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Whatever the rule outputs: dynamic JSON, not reshaped.
+  google.protobuf.Value result = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  double duration_ms = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The visited nodes; only when asked for.
+  optional google.protobuf.Value trace = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message ListRuleVersionsRequest {

@@ -1,12 +1,12 @@
 use crate::adapters::inputs::http_apis::rule_set::rule_set_mappers::{
-    CreateRuleVersionMapper, GetRuleSetMapper, GetRuleVersionMapper, ListRuleSetsMapper, ListRuleVersionsMapper,
+    CreateRuleVersionMapper, ExecuteRuleMapper, GetRuleSetMapper, GetRuleVersionMapper, ListRuleSetsMapper, ListRuleVersionsMapper,
 };
 use crate::adapters::inputs::http_apis::shared::actor::actor_from;
 use crate::adapters::inputs::http_apis::shared::error_response::ErrorResponse;
 use crate::adapters::inputs::shared::app_state::AppState;
 use crate::application::usecases::interface::UseCase;
 use crate::dto::payloads::json::rule_set::{
-    CreateRuleVersionBodyPayload, CreateRuleVersionPathPayload, GetRuleSetPayload, GetRuleVersionPayload,
+    CreateRuleVersionBodyPayload, CreateRuleVersionPathPayload, ExecuteRuleBodyPayload, ExecuteRulePathPayload, GetRuleSetPayload, GetRuleVersionPayload,
     ListRuleSetsPayload, ListRuleVersionsPathPayload, ListRuleVersionsQueryPayload,
 };
 use actix_web::{HttpRequest, HttpResponse, get, post, web};
@@ -17,7 +17,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         .service(get_rule_set)
         .service(create_rule_version)
         .service(list_rule_versions)
-        .service(get_rule_version);
+        .service(get_rule_version)
+        .service(execute_rule);
 }
 
 /// The program's rule leaves with their publish state (`empty`, `never`, `drifted`, `in_sync`).
@@ -126,4 +127,27 @@ pub async fn get_rule_version(
         .map_err(ErrorResponse::map_response_error)?;
 
     Ok(HttpResponse::Ok().json(GetRuleVersionMapper::output_success(result)))
+}
+
+/// Runs a rule on the caller's input and returns what it outputs. Read-only: no version is made or bumped.
+#[instrument(skip(data, body))]
+#[post("/{program}/rule-sets/{rule_set}:execute")]
+pub async fn execute_rule(
+    data: web::Data<AppState>,
+    path: web::Path<ExecuteRulePathPayload>,
+    body: web::Json<ExecuteRuleBodyPayload>,
+) -> Result<HttpResponse, ErrorResponse> {
+    info!("ExecuteRuleController called");
+
+    let usecase_input =
+        ExecuteRuleMapper::input(path.into_inner(), body.into_inner()).map_err(ErrorResponse::map_response_error)?;
+    let result = data
+        .use_cases
+        .rule_set
+        .execute_rule
+        .execute(Some(usecase_input))
+        .await
+        .map_err(ErrorResponse::map_response_error)?;
+
+    Ok(HttpResponse::Ok().json(ExecuteRuleMapper::output_success(result)))
 }

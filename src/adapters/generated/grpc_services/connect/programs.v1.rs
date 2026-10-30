@@ -592,6 +592,18 @@ pub type OwnedCreateRuleVersionResponseView = ::buffa::view::OwnedView<
         'static,
     >,
 >;
+///Shorthand for `OwnedView<ExecuteRuleRequestView<'static>>`.
+pub type OwnedExecuteRuleRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<ExecuteRuleResponseView<'static>>`.
+pub type OwnedExecuteRuleResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleResponseView<
+        'static,
+    >,
+>;
 ///Shorthand for `OwnedView<ListRuleVersionsRequestView<'static>>`.
 pub type OwnedListRuleVersionsRequestView = ::buffa::view::OwnedView<
     crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsRequestView<
@@ -2807,6 +2819,48 @@ for ::buffa::view::OwnedView<
     }
 }
 impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
     crate::adapters::generated::grpc_services::buffa::programs::v1::ListRuleVersionsResponse,
 >
 for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListRuleVersionsResponseView<
@@ -3909,6 +3963,12 @@ pub const PROGRAMS_SERVICE_GET_RULE_SET_SPEC: ::connectrpc::Spec = ::connectrpc:
 /// Static [`Spec`](::connectrpc::Spec) for the `CreateRuleVersion` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
 pub const PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
         "/programs.v1.ProgramsService/CreateRuleVersion",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `ExecuteRule` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_EXECUTE_RULE_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/ExecuteRule",
         ::connectrpc::StreamType::Unary,
     )
     .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
@@ -5259,6 +5319,29 @@ pub trait ProgramsService: Send + Sync + 'static {
         Output = ::connectrpc::ServiceResult<
             impl ::connectrpc::Encodable<
                 crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Runs a rule on the caller's input. Errors carry the required field list in the message.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn execute_rule<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleResponse,
             > + Send + use<'a, Self>,
         >,
     > + Send;
@@ -7250,6 +7333,35 @@ impl<S: ProgramsService> ProgramsServiceExt for S {
             .with_spec(PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC)
             .route_view(
                 PROGRAMS_SERVICE_SERVICE_NAME,
+                "ExecuteRule",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.execute_rule(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_EXECUTE_RULE_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
                 "ListRuleVersions",
                 {
                     let svc = ::std::sync::Arc::clone(&self);
@@ -8211,6 +8323,12 @@ impl<T: ProgramsService> ::connectrpc::Dispatcher for ProgramsServiceServer<T> {
                 Some(
                     ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
                         .with_spec(PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC),
+                )
+            }
+            "ExecuteRule" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_EXECUTE_RULE_SPEC),
                 )
             }
             "ListRuleVersions" => {
@@ -9465,6 +9583,28 @@ impl<T: ProgramsService> ::connectrpc::Dispatcher for ProgramsServiceServer<T> {
                         .await?
                         .encode::<
                             crate::adapters::generated::grpc_services::buffa::programs::v1::CreateRuleVersionResponse,
+                        >(format)
+                })
+            }
+            "ExecuteRule" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleRequest,
+                    >::from_parts(&req, &body);
+                    svc.execute_rule(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleResponse,
                         >(format)
                 })
             }
@@ -12327,6 +12467,51 @@ where
                 &self.transport,
                 &self.config,
                 PROGRAMS_SERVICE_CREATE_RULE_VERSION_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the ExecuteRule RPC. Sends a request to /programs.v1.ProgramsService/ExecuteRule.
+    pub async fn execute_rule(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.execute_rule_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the ExecuteRule RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn execute_rule_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::ExecuteRuleRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ExecuteRuleResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_EXECUTE_RULE_SPEC
                     .with_origin(::connectrpc::SpecOrigin::Client),
                 request,
                 options,

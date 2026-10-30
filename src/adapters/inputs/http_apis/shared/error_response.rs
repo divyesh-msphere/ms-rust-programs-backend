@@ -92,6 +92,11 @@ impl ErrorResponse {
                 "UNPROCESSABLE_ENTITY",
                 "Unprocessable Entity",
             ),
+            ApplicationErrorKind::DeadlineExceeded => (
+                StatusCode::GATEWAY_TIMEOUT,
+                "DEADLINE_EXCEEDED",
+                "Gateway Timeout",
+            ),
             ApplicationErrorKind::Internal => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "INTERNAL",

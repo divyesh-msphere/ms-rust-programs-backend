@@ -3,7 +3,7 @@ use crate::application::usecases::interface::UseCase;
 use std::sync::Arc;
 use tracing::{Instrument, info_span, instrument};
 use uuid::Uuid;
-use crate::domain::program::{Program, ProgramRepository};
+use crate::domain::program::{ProgramListItem, ProgramListSummary, ProgramRepository};
 
 const DEFAULT_PAGE_SIZE: i64 = 50;
 const MAX_PAGE_SIZE: i64 = 200;
@@ -28,7 +28,8 @@ pub struct ListProgramsInput {
 
 #[derive(Debug)]
 pub struct ListProgramsOutput {
-    pub programs: Vec<Program>,
+    pub programs: Vec<ProgramListItem>,
+    pub summary: ProgramListSummary,
     pub next_page_token: Option<Uuid>,
     pub total_size: i64,
 }
@@ -52,6 +53,19 @@ impl UseCase<ListProgramsOutput, ListProgramsInput> for ListProgramsUseCase {
             .instrument(info_span!("ListProgramsUseCase::list"))
             .await?;
 
-        Ok(ListProgramsOutput { programs, next_page_token, total_size })
+        let ids: Vec<Uuid> = programs.iter().map(|p| p.id).collect();
+        let (mut stats, summary) = tokio::try_join!(
+            self.program_repository.list_stats(&ids),
+            self.program_repository.list_summary(input.show_deleted, input.show_archived),
+        )?;
+        let programs = programs
+            .into_iter()
+            .map(|program| {
+                let stats = stats.remove(&program.id).unwrap_or_default();
+                ProgramListItem { program, stats }
+            })
+            .collect();
+
+        Ok(ListProgramsOutput { programs, summary, next_page_token, total_size })
     }
 }

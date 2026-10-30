@@ -1,5 +1,5 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
-    CreateRuleVersionRequest, CreateRuleVersionResponse, GetRuleSetRequest, GetRuleSetResponse, GetRuleVersionRequest,
+    CreateRuleVersionRequest, CreateRuleVersionResponse, ExecuteRuleRequest, ExecuteRuleResponse, GetRuleSetRequest, GetRuleSetResponse, GetRuleVersionRequest,
     GetRuleVersionResponse, ListRuleSetsRequest, ListRuleSetsResponse, ListRuleVersionsRequest, ListRuleVersionsResponse,
     RuleSet as GrpcRuleSet, RuleVersion as GrpcRuleVersion,
 };
@@ -7,6 +7,7 @@ use crate::adapters::inputs::grpc_apis::shared::json_struct::{buffa_value_to_jso
 use crate::adapters::inputs::shared::parse;
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::rule_set::create_rule_version::CreateRuleVersionInput;
+use crate::application::usecases::rule_set::execute_rule::{ExecuteRuleInput, ExecuteRuleOutput, VersionSelector};
 use crate::application::usecases::rule_set::get_rule_set::GetRuleSetInput;
 use crate::application::usecases::rule_set::get_rule_version::GetRuleVersionInput;
 use crate::application::usecases::rule_set::list_rule_sets::ListRuleSetsInput;
@@ -25,6 +26,7 @@ fn to_grpc_version(version: RuleVersion) -> GrpcRuleVersion {
         compiled: version.compiled.map(json_to_buffa_value).into(),
         valid: version.valid,
         validation_errors: Some(json_to_buffa_value(version.validation_errors)).into(),
+        input_schema: version.input_schema.map(json_to_buffa_value).into(),
         content_hash: version.content_hash,
         size_bytes: version.size_bytes,
         created_by: version.created_by,
@@ -93,12 +95,46 @@ impl CreateRuleVersionGrpcMapper {
             compiled: request.compiled.into_option().map(buffa_value_to_json),
             valid: request.valid,
             validation_errors: request.validation_errors.into_option().map(buffa_value_to_json),
+            input_schema: request.input_schema.into_option().map(buffa_value_to_json),
             actor,
         })
     }
 
     pub fn output_success(output: SaveOutcome) -> CreateRuleVersionResponse {
         CreateRuleVersionResponse { version: Some(to_grpc_version(output.version)).into(), created: output.created, ..Default::default() }
+    }
+}
+
+pub struct ExecuteRuleGrpcMapper;
+
+impl ExecuteRuleGrpcMapper {
+    pub fn input(request: ExecuteRuleRequest) -> Result<ExecuteRuleInput, ApplicationError> {
+        Ok(ExecuteRuleInput {
+            program: ResourceIdentifier::parse(&request.program),
+            rule_set: ResourceIdentifier::parse(&request.rule_set),
+            rule_type: request.r#type.map(|t| t.trim().to_string()).filter(|t| !t.is_empty()),
+            version: VersionSelector::parse(request.version.as_deref())?,
+            input: request
+                .input
+                .into_option()
+                .map(buffa_value_to_json)
+                .ok_or_else(|| ApplicationError::validation_error("input is required"))?,
+            trace: request.trace,
+        })
+    }
+
+    pub fn output_success(output: ExecuteRuleOutput) -> ExecuteRuleResponse {
+        ExecuteRuleResponse {
+            program: format!("programs/{}", output.program_id),
+            module: output.module_key,
+            r#type: output.rule_type,
+            version: output.version,
+            status: output.status,
+            result: Some(json_to_buffa_value(output.run.result)).into(),
+            duration_ms: output.duration_ms,
+            trace: output.run.trace.map(json_to_buffa_value).into(),
+            ..Default::default()
+        }
     }
 }
 

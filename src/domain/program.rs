@@ -30,6 +30,68 @@ pub struct Program {
     pub update_time: DateTime<Utc>, // OUTPUT_ONLY
 }
 
+/// A website (domain) a program has enrollments on.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProgramDomain {
+    pub website_id: String,
+    pub name: Option<String>,
+}
+
+/// The newest audit entry of a program: who changed it last, and what.
+#[derive(Debug, Clone)]
+pub struct LastActivity {
+    pub actor: String,
+    pub action: String,
+    pub target_type: String,
+    pub time: DateTime<Utc>,
+}
+
+impl LastActivity {
+    /// The line the table shows, e.g. "Program updated" or "Document created".
+    pub fn summary(&self) -> String {
+        let what = match self.target_type.as_str() {
+            "program" => "Program".to_string(),
+            "document_folder" => "Folder".to_string(),
+            other => {
+                let mut chars = other.replace('_', " ").chars().collect::<Vec<_>>();
+                if let Some(first) = chars.first_mut() {
+                    *first = first.to_ascii_uppercase();
+                }
+                chars.into_iter().collect()
+            }
+        };
+        format!("{what} {}", self.action.replace('_', " "))
+    }
+}
+
+/// The per-row numbers of the programs table.
+#[derive(Debug, Clone, Default)]
+pub struct ProgramListStats {
+    pub active_enrollments: i32,
+    pub total_enrollments: i32,
+    pub pending_approvals: i32,
+    pub domains: Vec<ProgramDomain>,
+    pub last_activity: Option<LastActivity>,
+}
+
+/// One row of the list: the program and its numbers.
+#[derive(Debug, Clone)]
+pub struct ProgramListItem {
+    pub program: Program,
+    pub stats: ProgramListStats,
+}
+
+/// The cards above the table, over every program the filter matches (not just the page).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ProgramListSummary {
+    pub live_programs: i64,
+    pub not_live_programs: i64,
+    pub active_enrollments: i64,
+    pub total_enrollments: i64,
+    pub pending_approvals: i64,
+    pub programs_with_pending_approvals: i64,
+}
+
 #[derive(Debug, Clone)]
 pub struct NewProgram {
     /// Optional client-specified ID (AEP-133); server generates a UUID v7 if omitted.
@@ -112,6 +174,12 @@ pub trait ProgramRepository: Send + Sync {
         show_deleted: bool,
         show_archived: bool,
     ) -> Result<(Vec<Program>, Option<Uuid>, i64), ApplicationError>;
+
+    /// The numbers of the given programs, for the list rows.
+    async fn list_stats(&self, ids: &[Uuid]) -> Result<std::collections::HashMap<Uuid, ProgramListStats>, ApplicationError>;
+
+    /// The cards above the table, for the same filter as `list`.
+    async fn list_summary(&self, show_deleted: bool, show_archived: bool) -> Result<ProgramListSummary, ApplicationError>;
 
     /// ONE transaction: the program, its modules, the Overview counters row,
     /// the audit entry and the outbox event.

@@ -1,6 +1,6 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
     CreateProgramRequest, CreateProgramResponse, DeleteProgramRequest, GetProgramRequest, GetProgramResponse,
-    ListProgramsRequest, ListProgramsResponse, ModuleConfig, OptionConfig, Program as GrpcProgram, SettingConfig, UndeleteProgramRequest,
+    ListProgramsRequest, ListProgramsResponse, ModuleConfig, ProgramDomain, ProgramLastActivity, ProgramListSummary, ProgramStats, OptionConfig, Program as GrpcProgram, SettingConfig, UndeleteProgramRequest,
     UndeleteProgramResponse, UpdateProgramRequest, UpdateProgramResponse,
 };
 use crate::adapters::inputs::grpc_apis::program_module::program_module_mappers::to_grpc_program_module;
@@ -16,7 +16,7 @@ use crate::application::usecases::program::undelete_program::{UndeleteProgramInp
 use crate::application::usecases::program::update_program::{UpdateProgramInput, UpdateProgramOutput};
 use crate::application::utils::datetime::format_datetime;
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::program::Program;
+use crate::domain::program::{Program, ProgramListItem};
 use crate::domain::program_setting::{ModuleChange, ModuleMode, OptionInput, SettingInput, SettingType};
 
 fn to_option(config: OptionConfig) -> OptionInput {
@@ -73,6 +73,23 @@ pub fn to_grpc_program(program: Program) -> GrpcProgram {
     }
 }
 
+fn to_grpc_list_row(item: ProgramListItem) -> GrpcProgram {
+    let stats = item.stats;
+    let mut program = to_grpc_program(item.program);
+    program.stats = Some(ProgramStats {
+        active_enrollments: stats.active_enrollments,
+        total_enrollments: stats.total_enrollments,
+        pending_approvals: stats.pending_approvals,
+        domains: stats.domains.into_iter().map(|d| ProgramDomain { website_id: d.website_id, name: d.name, ..Default::default() }).collect(),
+        last_activity: stats
+            .last_activity
+            .map(|a| ProgramLastActivity { summary: a.summary(), time: format_datetime(a.time), actor: a.actor, action: a.action, ..Default::default() })
+            .into(),
+        ..Default::default()
+    }).into();
+    program
+}
+
 /// The caller of a mapper that needs the actor passes it in separately, since
 /// the `GrpcApiMapper` trait only sees the request message.
 pub struct ListProgramsGrpcMapper;
@@ -91,9 +108,18 @@ impl GrpcApiMapper<ListProgramsOutput, ListProgramsInput, ListProgramsResponse, 
 
     fn output_success(output: ListProgramsOutput) -> ListProgramsResponse {
         ListProgramsResponse {
-            results: output.programs.into_iter().map(to_grpc_program).collect(),
+            results: output.programs.into_iter().map(to_grpc_list_row).collect(),
             next_page_token: output.next_page_token.map(|id| id.to_string()),
             total_size: output.total_size,
+            summary: Some(ProgramListSummary {
+                live_programs: output.summary.live_programs,
+                not_live_programs: output.summary.not_live_programs,
+                active_enrollments: output.summary.active_enrollments,
+                total_enrollments: output.summary.total_enrollments,
+                pending_approvals: output.summary.pending_approvals,
+                programs_with_pending_approvals: output.summary.programs_with_pending_approvals,
+                ..Default::default()
+            }).into(),
             ..Default::default()
         }
     }

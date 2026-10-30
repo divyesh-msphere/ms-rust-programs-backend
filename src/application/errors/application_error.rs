@@ -20,6 +20,8 @@ pub enum ApplicationErrorKind {
     /// (e.g. AEP-122 `code` pattern) — distinct from `InvalidArgument`
     /// (400) so this class of validation can map to 422 instead.
     UnprocessableEntity,
+    /// The work ran past its time limit. HTTP 504, gRPC `DeadlineExceeded`.
+    DeadlineExceeded,
     Internal,
 }
 
@@ -81,6 +83,18 @@ impl ApplicationError {
             Some(msg.to_string()),
             None,
         )
+    }
+
+    /// An error with a stable machine-readable `code` and extra details. On HTTP they are added to the
+    /// problem body (`{"code": ..., ...details}`); gRPC carries the message only, so put what the
+    /// caller needs in it too.
+    pub fn coded(kind: ApplicationErrorKind, code: &str, msg: &str, details: serde_json::Value) -> Self {
+        let mut metadata = match details {
+            serde_json::Value::Object(map) => map,
+            _ => serde_json::Map::new(),
+        };
+        metadata.insert("code".to_string(), serde_json::Value::String(code.to_string()));
+        Self::into::<std::io::Error>(None, kind, Some(msg.to_string()), Some(serde_json::Value::Object(metadata)))
     }
 
     pub fn not_found<T: ToString>(resource: &str, id: T) -> Self {

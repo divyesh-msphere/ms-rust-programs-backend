@@ -30,9 +30,9 @@ pub struct WithdrawApplicationInput {
 impl UseCase<Application, WithdrawApplicationInput> for WithdrawApplicationUseCase {
     #[instrument(skip(self))]
     async fn execute(&self, input: Option<WithdrawApplicationInput>) -> Result<Application, ApplicationError> {
-        let input = input.ok_or_else(|| ApplicationError::validation_error("Input is required in WithdrawApplicationUseCase"))?;
+        let input: WithdrawApplicationInput = input.ok_or_else(|| ApplicationError::validation_error("Input is required in WithdrawApplicationUseCase"))?;
 
-        let program = self
+        let program: crate::domain::program::Program = self
             .program_repository
             .get(&input.program, false)
             .instrument(info_span!("WithdrawApplicationUseCase::get_program"))

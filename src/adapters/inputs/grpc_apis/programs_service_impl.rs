@@ -262,6 +262,9 @@ impl ProgramsService for ProgramsServiceImpl {
     async fn create_rule_version(&self, ctx: RequestContext, request: ServiceRequest<'_, CreateRuleVersionRequest>) -> ServiceResult<CreateRuleVersionResponse> {
         self.rule_set.create_rule_version(actor_from(&ctx), request).await
     }
+    async fn execute_rule(&self, _ctx: RequestContext, request: ServiceRequest<'_, ExecuteRuleRequest>) -> ServiceResult<ExecuteRuleResponse> {
+        self.rule_set.execute_rule(request).await
+    }
     async fn list_rule_versions(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListRuleVersionsRequest>) -> ServiceResult<ListRuleVersionsResponse> {
         self.rule_set.list_rule_versions(request).await
     }

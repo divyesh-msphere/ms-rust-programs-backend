@@ -32,6 +32,28 @@ pub struct CreateRuleVersionBodyPayload {
     pub valid: Option<bool>,
     /// The rule engine's complaints (a list, up to 100). A version with errors cannot be `valid`.
     pub validation_errors: Option<Value>,
+    /// The input the rule reads: a list of `{name, type, required, description?}` (up to 100 fields).
+    /// Execute checks the caller's input against it; Publish refuses a rule that has none.
+    pub input_schema: Option<Value>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ExecuteRulePathPayload {
+    pub program: String,
+    /// The rule leaf's module key (for example `catalog_pricing.products_rules.pre_enrollment`) or the id of its rule set.
+    pub rule_set: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ExecuteRuleBodyPayload {
+    /// The rule family the caller expects (for example `pre_enrollment`), checked against the module.
+    pub r#type: Option<String>,
+    /// `published` (the default), `draft` or a version number, as a string or a number.
+    pub version: Option<Value>,
+    /// What the rule reads: a JSON object. Required.
+    pub input: Value,
+    /// Also return the nodes that were visited.
+    pub trace: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

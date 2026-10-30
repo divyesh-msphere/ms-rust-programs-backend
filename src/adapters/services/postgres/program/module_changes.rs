@@ -112,6 +112,7 @@ struct DefaultRuleRow {
     module_id: Uuid,
     rule_family: Option<String>,
     default_rule: serde_json::Value,
+    default_input_schema: Option<serde_json::Value>,
 }
 
 /// A rule page that has a starter rule (`module_definitions.default_rule`) and nothing saved yet gets
@@ -121,7 +122,7 @@ struct DefaultRuleRow {
 /// written for a page whose rule set already has a version.
 async fn seed_default_rules(conn: &mut PgConnection, program_id: Uuid) -> Result<(), ApplicationError> {
     let pending = sqlx::query_as::<_, DefaultRuleRow>(
-        "SELECT pm.module_id, md.rule_family, md.default_rule FROM program_modules pm \
+        "SELECT pm.module_id, md.rule_family, md.default_rule, md.default_input_schema FROM program_modules pm \
          JOIN module_definitions md ON md.id = pm.module_id \
          LEFT JOIN rule_sets rs ON rs.program_id = pm.program_id AND rs.module_id = pm.module_id \
          WHERE pm.program_id = $1 AND pm.mode = 'rule' AND md.default_rule IS NOT NULL \
@@ -147,12 +148,14 @@ async fn seed_default_rules(conn: &mut PgConnection, program_id: Uuid) -> Result
         // The starter rule is both the model and the graph: it is already a decision graph, and it is complete.
         sqlx::query(
             "INSERT INTO rule_versions (id, rule_set_id, version, status, definition, compiled, valid, validation_errors, \
-                content_hash, size_bytes, created_by) \
-             VALUES ($1, $2, 1, 'draft', $3, $3, true, '[]'::jsonb, md5($3::jsonb::text), octet_length($3::jsonb::text), 'system')",
+                input_schema, content_hash, size_bytes, created_by) \
+             VALUES ($1, $2, 1, 'draft', $3, $3, true, '[]'::jsonb, $4, md5($3::jsonb::text || COALESCE($4::jsonb::text, '')), \
+                octet_length($3::jsonb::text), 'system')",
         )
         .bind(Uuid::now_v7())
         .bind(rule_set_id)
         .bind(&rule.default_rule)
+        .bind(&rule.default_input_schema)
         .execute(&mut *conn)
         .await
         .map_err(db_error)?;

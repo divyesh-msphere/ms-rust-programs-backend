@@ -15,7 +15,11 @@ use crate::dto::payloads::json::program::{
     CreateProgramBodyPayload, CreateProgramQueryPayload, DeleteProgramPayload, GetProgramPayload,
     ListProgramsPayload, ModulePayload, OptionPayload, SettingPayload, UndeleteProgramPayload, UpdateProgramBodyPayload, UpdateProgramPathPayload,
 };
-use crate::dto::presenters::json::program::{ListProgramsPresenter, ProgramPresenter, ProgramWithModulesPresenter};
+use crate::domain::program::ProgramListItem;
+use crate::dto::presenters::json::program::{
+    DomainPresenter, DomainsPresenter, EnrollmentCountsPresenter, LastActivityPresenter, ListProgramsPresenter,
+    ProgramListSummaryPresenter, ProgramPresenter, ProgramStatsPresenter, ProgramWithModulesPresenter,
+};
 
 pub fn to_presenter(program: Program) -> ProgramPresenter {
     ProgramPresenter {
@@ -31,7 +35,32 @@ pub fn to_presenter(program: Program) -> ProgramPresenter {
         create_time: format_datetime(program.create_time),
         update_time: format_datetime(program.update_time),
         state: program.state.as_str().to_string(),
+        stats: None,
     }
+}
+
+fn to_list_row(item: ProgramListItem) -> ProgramPresenter {
+    let stats = item.stats;
+    let mut presenter = to_presenter(item.program);
+    presenter.stats = Some(ProgramStatsPresenter {
+        enrollments: EnrollmentCountsPresenter { active: stats.active_enrollments, total: stats.total_enrollments },
+        pending_approvals: stats.pending_approvals,
+        domains: DomainsPresenter {
+            count: stats.domains.len(),
+            items: stats
+                .domains
+                .into_iter()
+                .map(|d| DomainPresenter { website_id: d.website_id, name: d.name })
+                .collect(),
+        },
+        last_activity: stats.last_activity.map(|a| LastActivityPresenter {
+            summary: a.summary(),
+            time: format_datetime(a.time),
+            actor: a.actor,
+            action: a.action,
+        }),
+    });
+    presenter
 }
 
 fn to_option(payload: OptionPayload) -> OptionInput {
@@ -88,7 +117,15 @@ impl ListProgramsMapper {
 
     pub fn output_success(output: ListProgramsOutput) -> ListProgramsPresenter {
         ListProgramsPresenter {
-            results: output.programs.into_iter().map(to_presenter).collect(),
+            summary: ProgramListSummaryPresenter {
+                live_programs: output.summary.live_programs,
+                not_live_programs: output.summary.not_live_programs,
+                active_enrollments: output.summary.active_enrollments,
+                total_enrollments: output.summary.total_enrollments,
+                pending_approvals: output.summary.pending_approvals,
+                programs_with_pending_approvals: output.summary.programs_with_pending_approvals,
+            },
+            results: output.programs.into_iter().map(to_list_row).collect(),
             next_page_token: output.next_page_token.map(|id| id.to_string()),
             total_size: output.total_size,
         }

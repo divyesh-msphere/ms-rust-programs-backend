@@ -108,6 +108,7 @@ impl UseCases {
             rule_set: rule_set::RuleSetUseCases::new(
                 repositories.program_repository.clone(),
                 repositories.rule_set_repository.clone(),
+                repositories.rule_engine.clone(),
             ),
             publication: publication::PublicationUseCases::new(
                 repositories.program_repository.clone(),

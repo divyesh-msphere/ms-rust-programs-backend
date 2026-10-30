@@ -47,6 +47,7 @@ struct PendingRule {
     draft_version: i32,
     published_version: Option<i32>,
     valid: bool,
+    has_input_schema: bool,
 }
 
 pub struct PublicationRepositoryPostgresImpl {
@@ -150,7 +151,8 @@ async fn build_bundle(conn: &mut PgConnection, program_id: Uuid, config_version:
     // The PUBLISHED version of every rule leaf (the ones just promoted included).
     let rules: Value = sqlx::query_scalar(
         "SELECT COALESCE(jsonb_agg(jsonb_build_object('module_key', md.key, 'rule_type', COALESCE(rs.rule_type, md.rule_family), \
-                'version', rv.version, 'definition', rv.definition, 'compiled', rv.compiled) ORDER BY pm.position, md.key), '[]'::jsonb) \
+                'version', rv.version, 'definition', rv.definition, 'compiled', rv.compiled, \
+                'input_schema', rv.input_schema) ORDER BY pm.position, md.key), '[]'::jsonb) \
          FROM rule_sets rs \
          JOIN program_modules pm ON pm.program_id = rs.program_id AND pm.module_id = rs.module_id \
          JOIN module_definitions md ON md.id = rs.module_id \
@@ -207,7 +209,7 @@ impl PublicationRepository for PublicationRepositoryPostgresImpl {
                 .map_err(db_error)?;
 
         let rules: Vec<PendingRule> = sqlx::query_as(
-            "SELECT rs.id, md.key, rs.draft_version, rs.published_version, rv.valid \
+            "SELECT rs.id, md.key, rs.draft_version, rs.published_version, rv.valid, (rv.input_schema IS NOT NULL) AS has_input_schema \
              FROM rule_sets rs \
              JOIN program_modules pm ON pm.program_id = rs.program_id AND pm.module_id = rs.module_id \
              JOIN module_definitions md ON md.id = rs.module_id \
@@ -227,6 +229,14 @@ impl PublicationRepository for PublicationRepositoryPostgresImpl {
             )));
         }
         let changed: Vec<&PendingRule> = rules.iter().filter(|r| r.published_version != Some(r.draft_version)).collect();
+        // A rule goes live with the input it reads, so Execute can tell a caller what to send.
+        let no_schema: Vec<&str> = changed.iter().filter(|r| !r.has_input_schema).map(|r| r.key.as_str()).collect();
+        if !no_schema.is_empty() {
+            return Err(ApplicationError::failed_precondition(&format!(
+                "cannot publish: these rules do not say what input they read (input_schema); save a new version with it first: {}",
+                no_schema.join(", ")
+            )));
+        }
         if last_published == Some(config_version) && changed.is_empty() {
             return Err(ApplicationError::failed_precondition(&format!(
                 "there is nothing new to publish: the program has not changed since version {config_version} was published"
