@@ -3,7 +3,8 @@ use crate::application::usecases::interface::UseCase;
 use std::sync::Arc;
 use tracing::{Instrument, info_span, instrument};
 use uuid::Uuid;
-use crate::domain::program::{ProgramListItem, ProgramListSummary, ProgramRepository};
+use crate::domain::program_query::{parse_filter, parse_search};
+use crate::domain::program::{ProgramFilter, ProgramListItem, ProgramListSummary, ProgramRepository};
 
 const DEFAULT_PAGE_SIZE: i64 = 50;
 const MAX_PAGE_SIZE: i64 = 200;
@@ -24,6 +25,10 @@ pub struct ListProgramsInput {
     pub page_token: Option<Uuid>,
     pub show_deleted: bool,
     pub show_archived: bool,
+    /// The search box: `program=abc` (see `program_query`).
+    pub search: Option<String>,
+    /// `program.not_contains=abc,description.is_empty,domain=[a,b],status=active,level=organization`.
+    pub filter: Option<String>,
 }
 
 #[derive(Debug)]
@@ -47,9 +52,16 @@ impl UseCase<ListProgramsOutput, ListProgramsInput> for ListProgramsUseCase {
             return Err(ApplicationError::validation_error("max_page_size must be at least 1"));
         }
 
+        let list = parse_filter(input.filter.as_deref())?;
+        let filter = ProgramFilter {
+            show_deleted: input.show_deleted,
+            show_archived: input.show_archived,
+            search: parse_search(input.search.as_deref())?.into_iter().chain(list.text.clone()).collect(),
+            list,
+        };
         let (programs, next_page_token, total_size) = self
             .program_repository
-            .list(page_size.min(MAX_PAGE_SIZE), input.page_token, input.show_deleted, input.show_archived)
+            .list(page_size.min(MAX_PAGE_SIZE), input.page_token, &filter)
             .instrument(info_span!("ListProgramsUseCase::list"))
             .await?;
 

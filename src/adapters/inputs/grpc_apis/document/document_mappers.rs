@@ -66,7 +66,7 @@ fn to_grpc_document(document: Document) -> GrpcDocument {
 
 fn to_grpc_request(request: PresignedRequest) -> StorageRequest {
     StorageRequest {
-        url: request.url,
+        uri: request.url,
         method: request.method,
         headers: request.headers.into_iter().collect(),
         expires_time: format_datetime(request.expires_time),

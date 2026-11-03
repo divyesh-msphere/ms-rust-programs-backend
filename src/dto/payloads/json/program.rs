@@ -45,6 +45,12 @@ pub struct ListProgramsPayload {
     pub show_deleted: Option<bool>,
     /// Only archived programs; the default lists the working catalog.
     pub show_archived: Option<bool>,
+    /// The search box: `program=abc` (the name or slug contains it).
+    pub search: Option<String>,
+    /// Operators and lists, e.g. `program.not_contains=abc,domain=[w1,w2],status=active`. Text
+    /// operators: contains (default), not_contains, equals, not_equals, starts_with, ends_with,
+    /// is_empty, is_not_empty; keys: program, description, domain, status, level.
+    pub filter: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

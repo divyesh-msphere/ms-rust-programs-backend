@@ -68,7 +68,7 @@ pub struct StorageConfig {
     /// The content types accepted.
     #[serde(default = "default_storage_allowed_content_types")]
     pub allowed_content_types: Vec<String>,
-    /// When set, `POST /webhooks/document-scan` requires this value in the `X-Webhook-Secret` header.
+    /// When set, `POST /webhooks/document-scan:receive` requires this value in the `X-Webhook-Secret` header.
     /// Empty = no check.
     #[serde(default)]
     pub scan_webhook_secret: String,

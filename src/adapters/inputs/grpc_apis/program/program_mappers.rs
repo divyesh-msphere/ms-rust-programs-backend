@@ -16,6 +16,7 @@ use crate::application::usecases::program::undelete_program::{UndeleteProgramInp
 use crate::application::usecases::program::update_program::{UpdateProgramInput, UpdateProgramOutput};
 use crate::application::utils::datetime::format_datetime;
 use crate::domain::aep::ResourceIdentifier;
+use crate::adapters::inputs::http_apis::program::program_mappers::shown_state;
 use crate::domain::program::{Program, ProgramListItem};
 use crate::domain::program_setting::{ModuleChange, ModuleMode, OptionInput, SettingInput, SettingType};
 
@@ -68,7 +69,7 @@ pub fn to_grpc_program(program: Program) -> GrpcProgram {
         config_hash: program.config_hash,
         create_time: format_datetime(program.create_time),
         update_time: format_datetime(program.update_time),
-        state: program.state.as_str().to_string(),
+        state: shown_state(program.state, program.active).to_string(),
         ..Default::default()
     }
 }
@@ -83,7 +84,7 @@ fn to_grpc_list_row(item: ProgramListItem) -> GrpcProgram {
         domains: stats.domains.into_iter().map(|d| ProgramDomain { website_id: d.website_id, name: d.name, ..Default::default() }).collect(),
         last_activity: stats
             .last_activity
-            .map(|a| ProgramLastActivity { summary: a.summary(), time: format_datetime(a.time), actor: a.actor, action: a.action, ..Default::default() })
+            .map(|a| ProgramLastActivity { summary: a.summary(), update_time: format_datetime(a.time), actor: a.actor, action: a.action, ..Default::default() })
             .into(),
         ..Default::default()
     }).into();
@@ -103,6 +104,8 @@ impl GrpcApiMapper<ListProgramsOutput, ListProgramsInput, ListProgramsResponse, 
             page_token: parse::optional_uuid("page_token", request.page_token.as_deref())?,
             show_deleted: request.show_deleted.unwrap_or(false),
             show_archived: request.show_archived.unwrap_or(false),
+            search: request.search,
+            filter: request.filter,
         })
     }
 
@@ -112,6 +115,7 @@ impl GrpcApiMapper<ListProgramsOutput, ListProgramsInput, ListProgramsResponse, 
             next_page_token: output.next_page_token.map(|id| id.to_string()),
             total_size: output.total_size,
             summary: Some(ProgramListSummary {
+                total_programs: output.summary.total_programs,
                 live_programs: output.summary.live_programs,
                 not_live_programs: output.summary.not_live_programs,
                 active_enrollments: output.summary.active_enrollments,

@@ -2319,6 +2319,8 @@ pub struct Program {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub update_time: ::buffa::alloc::string::String,
+    /// "ACTIVE", "INACTIVE" (not live: `active` is false) or "DELETED" (soft delete).
+    ///
     /// Field 12: `state`
     #[serde(
         rename = "state",
@@ -2850,13 +2852,14 @@ pub struct ProgramLastActivity {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub summary: ::buffa::alloc::string::String,
-    /// Field 4: `time`
+    /// Field 4: `update_time`
     #[serde(
-        rename = "time",
+        rename = "updateTime",
+        alias = "update_time",
         with = "::buffa::json_helpers::proto_string",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
-    pub time: ::buffa::alloc::string::String,
+    pub update_time: ::buffa::alloc::string::String,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -2867,7 +2870,7 @@ impl ::core::fmt::Debug for ProgramLastActivity {
             .field("actor", &self.actor)
             .field("action", &self.action)
             .field("summary", &self.summary)
-            .field("time", &self.time)
+            .field("update_time", &self.update_time)
             .finish()
     }
 }
@@ -2907,8 +2910,8 @@ impl ::buffa::Message for ProgramLastActivity {
         if !self.summary.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.summary) as u64;
         }
-        if !self.time.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.time) as u64;
+        if !self.update_time.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.update_time) as u64;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
@@ -2929,8 +2932,8 @@ impl ::buffa::Message for ProgramLastActivity {
         if !self.summary.is_empty() {
             ::buffa::types::put_string_field(3u32, &self.summary, buf);
         }
-        if !self.time.is_empty() {
-            ::buffa::types::put_string_field(4u32, &self.time, buf);
+        if !self.update_time.is_empty() {
+            ::buffa::types::put_string_field(4u32, &self.update_time, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -2971,7 +2974,7 @@ impl ::buffa::Message for ProgramLastActivity {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.time, buf)?;
+                ::buffa::types::merge_string(&mut self.update_time, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -2984,7 +2987,7 @@ impl ::buffa::Message for ProgramLastActivity {
         self.actor.clear();
         self.action.clear();
         self.summary.clear();
-        self.time.clear();
+        self.update_time.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -3279,6 +3282,16 @@ pub const __PROGRAM_STATS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buf
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
 pub struct ProgramListSummary {
+    /// Every program in the view: live + not live.
+    ///
+    /// Field 7: `total_programs`
+    #[serde(
+        rename = "totalPrograms",
+        alias = "total_programs",
+        with = "::buffa::json_helpers::int64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_i64"
+    )]
+    pub total_programs: i64,
     /// Field 1: `live_programs`
     #[serde(
         rename = "livePrograms",
@@ -3334,6 +3347,7 @@ pub struct ProgramListSummary {
 impl ::core::fmt::Debug for ProgramListSummary {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
         f.debug_struct("ProgramListSummary")
+            .field("total_programs", &self.total_programs)
             .field("live_programs", &self.live_programs)
             .field("not_live_programs", &self.not_live_programs)
             .field("active_enrollments", &self.active_enrollments)
@@ -3403,6 +3417,9 @@ impl ::buffa::Message for ProgramListSummary {
                         self.programs_with_pending_approvals,
                     ) as u64;
         }
+        if self.total_programs != 0i64 {
+            size += 1u64 + ::buffa::types::int64_encoded_len(self.total_programs) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -3434,6 +3451,9 @@ impl ::buffa::Message for ProgramListSummary {
                 self.programs_with_pending_approvals,
                 buf,
             );
+        }
+        if self.total_programs != 0i64 {
+            ::buffa::types::put_int64_field(7u32, self.total_programs, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -3492,6 +3512,13 @@ impl ::buffa::Message for ProgramListSummary {
                     buf,
                 )?;
             }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.total_programs = ::buffa::types::decode_int64(buf)?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -3506,6 +3533,7 @@ impl ::buffa::Message for ProgramListSummary {
         self.total_enrollments = 0i64;
         self.pending_approvals = 0i64;
         self.programs_with_pending_approvals = 0i64;
+        self.total_programs = 0i64;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -6054,6 +6082,18 @@ pub struct ListProgramsRequest {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub show_archived: ::core::option::Option<bool>,
+    /// The search box: `program=abc` (the name or slug contains it).
+    ///
+    /// Field 5: `search`
+    #[serde(rename = "search", skip_serializing_if = "::core::option::Option::is_none")]
+    pub search: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Operators and lists: `program.not_contains=abc,domain=[w1,w2],status=active,level=organization`. Text
+    /// operators (program, description): contains (default), not_contains, equals, not_equals, starts_with,
+    /// ends_with, is_empty, is_not_empty. `domain`, `status` and `level` also take `!=` to exclude, e.g. `status!=active`.
+    ///
+    /// Field 6: `filter`
+    #[serde(rename = "filter", skip_serializing_if = "::core::option::Option::is_none")]
+    pub filter: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -6065,6 +6105,8 @@ impl ::core::fmt::Debug for ListProgramsRequest {
             .field("page_token", &self.page_token)
             .field("show_deleted", &self.show_deleted)
             .field("show_archived", &self.show_archived)
+            .field("search", &self.search)
+            .field("filter", &self.filter)
             .finish()
     }
 }
@@ -6107,6 +6149,26 @@ impl ListProgramsRequest {
         self.show_archived = Some(value);
         self
     }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::search`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_search(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.search = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::filter`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_filter(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.filter = Some(value.into());
+        self
+    }
 }
 ::buffa::impl_default_instance!(ListProgramsRequest);
 impl ::buffa::MessageName for ListProgramsRequest {
@@ -6140,6 +6202,12 @@ impl ::buffa::Message for ListProgramsRequest {
         if self.show_archived.is_some() {
             size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
         }
+        if let Some(ref v) = self.search {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.filter {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -6161,6 +6229,12 @@ impl ::buffa::Message for ListProgramsRequest {
         }
         if let Some(v) = self.show_archived {
             ::buffa::types::put_bool_field(4u32, v, buf);
+        }
+        if let Some(ref v) = self.search {
+            ::buffa::types::put_string_field(5u32, v, buf);
+        }
+        if let Some(ref v) = self.filter {
+            ::buffa::types::put_string_field(6u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -6214,6 +6288,26 @@ impl ::buffa::Message for ListProgramsRequest {
                     ::buffa::types::decode_bool(buf)?,
                 );
             }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.search.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.filter.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -6226,6 +6320,8 @@ impl ::buffa::Message for ListProgramsRequest {
         self.page_token = ::core::option::Option::None;
         self.show_deleted = ::core::option::Option::None;
         self.show_archived = ::core::option::Option::None;
+        self.search = ::core::option::Option::None;
+        self.filter = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -36608,13 +36704,13 @@ pub const __DOCUMENT_LOCATIONS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = 
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
 pub struct StorageRequest {
-    /// Field 1: `url`
+    /// Field 1: `uri`
     #[serde(
-        rename = "url",
+        rename = "uri",
         with = "::buffa::json_helpers::proto_string",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
-    pub url: ::buffa::alloc::string::String,
+    pub uri: ::buffa::alloc::string::String,
     /// Field 2: `method`
     #[serde(
         rename = "method",
@@ -36647,7 +36743,7 @@ pub struct StorageRequest {
 impl ::core::fmt::Debug for StorageRequest {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
         f.debug_struct("StorageRequest")
-            .field("url", &self.url)
+            .field("uri", &self.uri)
             .field("method", &self.method)
             .field("headers", &self.headers)
             .field("expires_time", &self.expires_time)
@@ -36681,8 +36777,8 @@ impl ::buffa::Message for StorageRequest {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
-        if !self.url.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.url) as u64;
+        if !self.uri.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.uri) as u64;
         }
         if !self.method.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.method) as u64;
@@ -36706,8 +36802,8 @@ impl ::buffa::Message for StorageRequest {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
-        if !self.url.is_empty() {
-            ::buffa::types::put_string_field(1u32, &self.url, buf);
+        if !self.uri.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.uri, buf);
         }
         if !self.method.is_empty() {
             ::buffa::types::put_string_field(2u32, &self.method, buf);
@@ -36738,7 +36834,7 @@ impl ::buffa::Message for StorageRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.url, buf)?;
+                ::buffa::types::merge_string(&mut self.uri, buf)?;
             }
             2u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -36773,7 +36869,7 @@ impl ::buffa::Message for StorageRequest {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
-        self.url.clear();
+        self.uri.clear();
         self.method.clear();
         self.headers.clear();
         self.expires_time.clear();
@@ -44343,6 +44439,8 @@ pub mod __buffa {
             pub create_time: &'a str,
             /// Field 11: `update_time`
             pub update_time: &'a str,
+            /// "ACTIVE", "INACTIVE" (not live: `active` is false) or "DELETED" (soft delete).
+            ///
             /// Field 12: `state`
             pub state: &'a str,
             /// The numbers of the programs table. Set on ListPrograms rows only.
@@ -44889,6 +44987,8 @@ pub mod __buffa {
             pub fn update_time(&self) -> &'_ str {
                 self.0.reborrow().update_time
             }
+            /// "ACTIVE", "INACTIVE" (not live: `active` is false) or "DELETED" (soft delete).
+            ///
             /// Field 12: `state`
             #[must_use]
             pub fn state(&self) -> &'_ str {
@@ -45241,8 +45341,8 @@ pub mod __buffa {
             ///
             /// Field 3: `summary`
             pub summary: &'a str,
-            /// Field 4: `time`
-            pub time: &'a str,
+            /// Field 4: `update_time`
+            pub update_time: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ProgramLastActivityView<'a> {
@@ -45307,7 +45407,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.time = ::buffa::types::borrow_str(&mut cur)?;
+                        view.update_time = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
@@ -45341,7 +45441,7 @@ pub mod __buffa {
                     actor: self.actor.to_string(),
                     action: self.action.to_string(),
                     summary: self.summary.to_string(),
-                    time: self.time.to_string(),
+                    update_time: self.update_time.to_string(),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -45370,8 +45470,11 @@ pub mod __buffa {
                         += 1u64
                             + ::buffa::types::string_encoded_len(&self.summary) as u64;
                 }
-                if !self.time.is_empty() {
-                    size += 1u64 + ::buffa::types::string_encoded_len(&self.time) as u64;
+                if !self.update_time.is_empty() {
+                    size
+                        += 1u64
+                            + ::buffa::types::string_encoded_len(&self.update_time)
+                                as u64;
                 }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
@@ -45393,8 +45496,8 @@ pub mod __buffa {
                 if !self.summary.is_empty() {
                     ::buffa::types::put_string_field(3u32, &self.summary, buf);
                 }
-                if !self.time.is_empty() {
-                    ::buffa::types::put_string_field(4u32, &self.time, buf);
+                if !self.update_time.is_empty() {
+                    ::buffa::types::put_string_field(4u32, &self.update_time, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -45426,8 +45529,8 @@ pub mod __buffa {
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.summary) {
                     __map.serialize_entry("summary", self.summary)?;
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.time) {
-                    __map.serialize_entry("time", self.time)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.update_time) {
+                    __map.serialize_entry("updateTime", self.update_time)?;
                 }
                 __map.end()
             }
@@ -45543,10 +45646,10 @@ pub mod __buffa {
             pub fn summary(&self) -> &'_ str {
                 self.0.reborrow().summary
             }
-            /// Field 4: `time`
+            /// Field 4: `update_time`
             #[must_use]
-            pub fn time(&self) -> &'_ str {
-                self.0.reborrow().time
+            pub fn update_time(&self) -> &'_ str {
+                self.0.reborrow().update_time
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<ProgramLastActivityView<'static>>>
@@ -46058,6 +46161,10 @@ pub mod __buffa {
         /// The cards above the programs table, over every program the filter matches.
         #[derive(Clone, Debug, Default)]
         pub struct ProgramListSummaryView<'a> {
+            /// Every program in the view: live + not live.
+            ///
+            /// Field 7: `total_programs`
+            pub total_programs: i64,
             /// Field 1: `live_programs`
             pub live_programs: i64,
             /// Field 2: `not_live_programs`
@@ -46108,6 +46215,13 @@ pub mod __buffa {
                 let view = self;
                 let mut cur = cur;
                 match tag.field_number() {
+                    7u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.total_programs = ::buffa::types::decode_int64(&mut cur)?;
+                    }
                     1u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -46183,6 +46297,7 @@ pub mod __buffa {
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
                 ::core::result::Result::Ok(super::super::ProgramListSummary {
+                    total_programs: self.total_programs,
                     live_programs: self.live_programs,
                     not_live_programs: self.not_live_programs,
                     active_enrollments: self.active_enrollments,
@@ -46241,6 +46356,12 @@ pub mod __buffa {
                                 self.programs_with_pending_approvals,
                             ) as u64;
                 }
+                if self.total_programs != 0i64 {
+                    size
+                        += 1u64
+                            + ::buffa::types::int64_encoded_len(self.total_programs)
+                                as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -46274,6 +46395,9 @@ pub mod __buffa {
                         buf,
                     );
                 }
+                if self.total_programs != 0i64 {
+                    ::buffa::types::put_int64_field(7u32, self.total_programs, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -46295,6 +46419,13 @@ pub mod __buffa {
             ) -> ::core::result::Result<__S::Ok, __S::Error> {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !::buffa::json_helpers::skip_if::is_zero_i64(&self.total_programs) {
+                    __map
+                        .serialize_entry(
+                            "totalPrograms",
+                            &::buffa::json_helpers::ProtoJson(&self.total_programs),
+                        )?;
+                }
                 if !::buffa::json_helpers::skip_if::is_zero_i64(&self.live_programs) {
                     __map
                         .serialize_entry(
@@ -46443,6 +46574,13 @@ pub mod __buffa {
             #[must_use]
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
+            }
+            /// Every program in the view: live + not live.
+            ///
+            /// Field 7: `total_programs`
+            #[must_use]
+            pub fn total_programs(&self) -> i64 {
+                self.0.reborrow().total_programs
             }
             /// Field 1: `live_programs`
             #[must_use]
@@ -50300,6 +50438,16 @@ pub mod __buffa {
             ///
             /// Field 4: `show_archived`
             pub show_archived: ::core::option::Option<bool>,
+            /// The search box: `program=abc` (the name or slug contains it).
+            ///
+            /// Field 5: `search`
+            pub search: ::core::option::Option<&'a str>,
+            /// Operators and lists: `program.not_contains=abc,domain=[w1,w2],status=active,level=organization`. Text
+            /// operators (program, description): contains (default), not_contains, equals, not_equals, starts_with,
+            /// ends_with, is_empty, is_not_empty. `domain`, `status` and `level` also take `!=` to exclude, e.g. `status!=active`.
+            ///
+            /// Field 6: `filter`
+            pub filter: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ListProgramsRequestView<'a> {
@@ -50370,6 +50518,20 @@ pub mod __buffa {
                             ::buffa::types::decode_bool(&mut cur)?,
                         );
                     }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.search = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    6u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.filter = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -50403,6 +50565,8 @@ pub mod __buffa {
                     page_token: self.page_token.map(|s| s.to_string()),
                     show_deleted: self.show_deleted,
                     show_archived: self.show_archived,
+                    search: self.search.map(|s| s.to_string()),
+                    filter: self.filter.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -50429,6 +50593,12 @@ pub mod __buffa {
                 if self.show_archived.is_some() {
                     size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
                 }
+                if let Some(ref v) = self.search {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if let Some(ref v) = self.filter {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -50451,6 +50621,12 @@ pub mod __buffa {
                 }
                 if let Some(v) = self.show_archived {
                     ::buffa::types::put_bool_field(4u32, v, buf);
+                }
+                if let Some(ref v) = self.search {
+                    ::buffa::types::put_string_field(5u32, v, buf);
+                }
+                if let Some(ref v) = self.filter {
+                    ::buffa::types::put_string_field(6u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -50488,6 +50664,12 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.show_archived {
                     __map.serialize_entry("showArchived", &__v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.search {
+                    __map.serialize_entry("search", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.filter {
+                    __map.serialize_entry("filter", __v)?;
                 }
                 __map.end()
             }
@@ -50605,6 +50787,22 @@ pub mod __buffa {
             #[must_use]
             pub fn show_archived(&self) -> ::core::option::Option<bool> {
                 self.0.reborrow().show_archived
+            }
+            /// The search box: `program=abc` (the name or slug contains it).
+            ///
+            /// Field 5: `search`
+            #[must_use]
+            pub fn search(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().search
+            }
+            /// Operators and lists: `program.not_contains=abc,domain=[w1,w2],status=active,level=organization`. Text
+            /// operators (program, description): contains (default), not_contains, equals, not_equals, starts_with,
+            /// ends_with, is_empty, is_not_empty. `domain`, `status` and `level` also take `!=` to exclude, e.g. `status!=active`.
+            ///
+            /// Field 6: `filter`
+            #[must_use]
+            pub fn filter(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().filter
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<ListProgramsRequestView<'static>>>
@@ -104634,8 +104832,8 @@ pub mod __buffa {
         /// of the signature. The file bytes never travel over gRPC or through this service.
         #[derive(Clone, Debug, Default)]
         pub struct StorageRequestView<'a> {
-            /// Field 1: `url`
-            pub url: &'a str,
+            /// Field 1: `uri`
+            pub uri: &'a str,
             /// Field 2: `method`
             pub method: &'a str,
             /// Field 3: `headers` (map)
@@ -104685,7 +104883,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.url = ::buffa::types::borrow_str(&mut cur)?;
+                        view.uri = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     2u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -104773,7 +104971,7 @@ pub mod __buffa {
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
                 ::core::result::Result::Ok(super::super::StorageRequest {
-                    url: self.url.to_string(),
+                    uri: self.uri.to_string(),
                     method: self.method.to_string(),
                     headers: self
                         .headers
@@ -104795,8 +104993,8 @@ pub mod __buffa {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
-                if !self.url.is_empty() {
-                    size += 1u64 + ::buffa::types::string_encoded_len(&self.url) as u64;
+                if !self.uri.is_empty() {
+                    size += 1u64 + ::buffa::types::string_encoded_len(&self.uri) as u64;
                 }
                 if !self.method.is_empty() {
                     size
@@ -104829,8 +105027,8 @@ pub mod __buffa {
             ) {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
-                if !self.url.is_empty() {
-                    ::buffa::types::put_string_field(1u32, &self.url, buf);
+                if !self.uri.is_empty() {
+                    ::buffa::types::put_string_field(1u32, &self.uri, buf);
                 }
                 if !self.method.is_empty() {
                     ::buffa::types::put_string_field(2u32, &self.method, buf);
@@ -104882,8 +105080,8 @@ pub mod __buffa {
             ) -> ::core::result::Result<__S::Ok, __S::Error> {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.url) {
-                    __map.serialize_entry("url", self.url)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.uri) {
+                    __map.serialize_entry("uri", self.uri)?;
                 }
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.method) {
                     __map.serialize_entry("method", self.method)?;
@@ -105006,10 +105204,10 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// Field 1: `url`
+            /// Field 1: `uri`
             #[must_use]
-            pub fn url(&self) -> &'_ str {
-                self.0.reborrow().url
+            pub fn uri(&self) -> &'_ str {
+                self.0.reborrow().uri
             }
             /// Field 2: `method`
             #[must_use]

@@ -117,7 +117,7 @@ message Program {
     pattern: "programs/{program}"
   };
 
-  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string path =z 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Lowercase letters, digits and single hyphens. IMMUTABLE after create.
@@ -131,7 +131,9 @@ message Program {
   string config_hash = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string create_time = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string update_time = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // "ACTIVE", "INACTIVE" (not live: `active` is false) or "DELETED" (soft delete).
   string state = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  reserved 14;
   // The numbers of the programs table. Set on ListPrograms rows only.
   optional ProgramStats stats = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
@@ -148,7 +150,7 @@ message ProgramLastActivity {
   string action = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // e.g. "Program updated".
   string summary = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  string time = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message ProgramStats {
@@ -162,6 +164,8 @@ message ProgramStats {
 
 // The cards above the programs table, over every program the filter matches.
 message ProgramListSummary {
+  // Every program in the view: live + not live.
+  int64 total_programs = 7 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   int64 live_programs = 1 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   int64 not_live_programs = 2 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   int64 active_enrollments = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -286,6 +290,13 @@ message ListProgramsRequest {
   optional bool show_deleted = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // Only archived programs (the default lists the working catalog, which leaves them out).
   optional bool show_archived = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The search box: `program=abc` (the name or slug contains it).
+  optional string search = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Operators and lists: `program.not_contains=abc,domain=[w1,w2],status=active,level=organization`. Text
+  // operators (program, description): contains (default), not_contains, equals, not_equals, starts_with,
+  // ends_with, is_empty, is_not_empty. `domain`, `status` and `level` also take `!=` to exclude, e.g. `status!=active`.
+  optional string filter = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  reserved 7;
 }
 message ListProgramsResponse {
   repeated Program results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -1509,7 +1520,7 @@ message DocumentLocations {
 // A request the BROWSER makes straight to the object storage. Send the headers exactly as given: they are part
 // of the signature. The file bytes never travel over gRPC or through this service.
 message StorageRequest {
-  string url = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string uri = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string method = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   map<string, string> headers = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string expires_time = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];

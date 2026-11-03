@@ -1,5 +1,6 @@
 // domain/program.rs
 use async_trait::async_trait;
+use crate::domain::program_query::{ListFilter, SearchTerm};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -28,6 +29,17 @@ pub struct Program {
     pub state: ResourceState,       // OUTPUT_ONLY (AEP-216)
     pub create_time: DateTime<Utc>, // OUTPUT_ONLY
     pub update_time: DateTime<Utc>, // OUTPUT_ONLY
+}
+
+/// What the programs list narrows to. The cards above the table ignore it.
+#[derive(Debug, Clone, Default)]
+pub struct ProgramFilter {
+    pub show_deleted: bool,
+    pub show_archived: bool,
+    /// ANDed text conditions (`search=`).
+    pub search: Vec<SearchTerm>,
+    /// Keyed value lists (`filter=`).
+    pub list: ListFilter,
 }
 
 /// A website (domain) a program has enrollments on.
@@ -84,6 +96,8 @@ pub struct ProgramListItem {
 /// The cards above the table, over every program the filter matches (not just the page).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ProgramListSummary {
+    /// Every program in the view: `live_programs + not_live_programs`.
+    pub total_programs: i64,
     pub live_programs: i64,
     pub not_live_programs: i64,
     pub active_enrollments: i64,
@@ -171,8 +185,7 @@ pub trait ProgramRepository: Send + Sync {
         &self,
         page_size: i64,
         page_token: Option<Uuid>,
-        show_deleted: bool,
-        show_archived: bool,
+        filter: &ProgramFilter,
     ) -> Result<(Vec<Program>, Option<Uuid>, i64), ApplicationError>;
 
     /// The numbers of the given programs, for the list rows.

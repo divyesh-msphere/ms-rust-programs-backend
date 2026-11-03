@@ -31,10 +31,14 @@ pub fn root_routes(cfg: &mut web::ServiceConfig) {
 pub async fn list_programs(
     data: web::Data<AppState>,
     query: web::Query<ListProgramsPayload>,
+    // The same query string as raw pairs: filter terms can arrive as plain parameters
+    // (`?status=active&domain=[a,b]`), not only inside `filter=`.
+    pairs: web::Query<Vec<(String, String)>>,
 ) -> Result<HttpResponse, ErrorResponse> {
     info!("ListProgramsController called");
 
-    let usecase_input = ListProgramsMapper::input(query.into_inner()).map_err(ErrorResponse::map_response_error)?;
+    let usecase_input = ListProgramsMapper::input(query.into_inner(), pairs.into_inner())
+        .map_err(ErrorResponse::map_response_error)?;
     let result = data
         .use_cases
         .program

@@ -70,7 +70,7 @@ pub struct DocumentSummaryPresenter {
 /// A request the BROWSER makes straight to the storage.
 #[derive(Debug, Serialize, Clone)]
 pub struct StorageRequestPresenter {
-    pub url: String,
+    pub uri: String,
     pub method: String,
     /// Send these headers exactly as given: they are part of the signature.
     pub headers: BTreeMap<String, String>,

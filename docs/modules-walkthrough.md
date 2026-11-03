@@ -607,7 +607,7 @@ review and download. The module is `document_agreement.documents.documents_panel
 browser uploads or downloads directly, and the service later asks the storage what arrived.
 
 **Endpoints.** `GET /programs/{p}/documents:summary`; `GET|POST .../documents`; `GET|PATCH|DELETE .../documents/{d}`; `POST .../documents/{d}:complete`, `:download`, `:review`;
-`GET|POST .../document-folders`; `PATCH|DELETE .../document-folders/{f}`; `POST /webhooks/document-scan`. gRPC: 13 methods, no bytes.
+`GET|POST .../document-folders`; `PATCH|DELETE .../document-folders/{f}`; `POST /webhooks/document-scan:receive`. gRPC: 13 methods, no bytes.
 
 **Files.**
 - Domain: `src/domain/document.rs` (statuses, name cleaning, the upload policy with its 413 / 415, scan and review rules, the repository trait), `src/domain/object_storage.rs` (the storage trait)

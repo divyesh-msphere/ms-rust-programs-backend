@@ -27,11 +27,14 @@ services:
       TRY_IT_OUT_ENABLED: "true"
       # A drop-down lists both specs. The second one (Requirements, Approval steps, Applications, Signoffs) is
       # switched off in the service by default: see docs/parked-enrollment-review.md.
-      URLS: '[{"url":"/openapi.yaml","name":"Programs"},{"url":"/openapi.enrollment-review.yaml","name":"Enrollment review (off by default)"}]'
+      URLS: '[{"url":"/openapi.yaml","name":"Programs"},{"url":"/openapi.enrollment-review.yaml","name":"Enrollment review (off by default)"},{"url":"/global-settings.openapi.yaml","name":"Global settings"}]'
       URLS_PRIMARY_NAME: "Programs"
     volumes:
       - ./openapi.yaml:/spec/openapi.yaml:ro
       - ./openapi.enrollment-review.yaml:/spec/openapi.enrollment-review.yaml:ro
+      # The global-settings service's own spec (read only, from its repo). Its servers list is the
+      # remote dev environment, so "Try it out" there calls that, not a local :8000.
+      - /home/divyesh/Desktop/rust/ms-rust-global-settings/openapi.yaml:/spec/global-settings.openapi.yaml:ro
 
   # S3-compatible object storage for the Documents module (file bytes; Postgres keeps only the metadata).
   #

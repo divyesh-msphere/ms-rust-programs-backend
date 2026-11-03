@@ -192,7 +192,7 @@ pub async fn delete_document(req: HttpRequest, data: web::Data<AppState>, path: 
 /// The scanner's callback: `{document_id, result: clean|suspicious|infected, scanner}`. Answers 204. A file
 /// that is not waiting for a scan is left as it is, so a repeated callback is harmless.
 #[instrument(skip(data, req, body))]
-#[post("/document-scan")]
+#[post("/document-scan:receive")]
 pub async fn document_scan(
     req: HttpRequest,
     data: web::Data<AppState>,

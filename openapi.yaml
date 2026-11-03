@@ -1,4 +1,5 @@
 openapi: 3.0.3
+x-api-service-name: msrestapi.com/programs
 info:
   title: Programs API
   description: |
@@ -18,8 +19,8 @@ servers:
 - url: http://localhost:8090
   description: Local (Swagger UI on :8082 needs APP__CORS_ALLOWED_ORIGIN=http://localhost:8082)
   x-name: local
-- url: http://10.10.29.38:8090
-  description: LAN (Swagger UI on http://10.10.29.38:8082 needs APP__CORS_ALLOWED_ORIGIN to include it)
+- url: http://10.10.29.50:8090
+  description: LAN (Swagger UI on http://10.10.29.50:8082 needs APP__CORS_ALLOWED_ORIGIN to include it)
   x-name: lan
 - url: https://api.dev.mobilesentrix.com/programs
   description: Development environment
@@ -116,12 +117,48 @@ paths:
       tags:
       - programs
       description: 'Returns the working catalog in creation order: archived programs are left out (see
-        `show_archived`).'
+        `show_archived`). `search` and `filter` narrow the rows and `total_size`; the `summary`
+        cards always cover the whole catalog (the same `show_deleted` / `show_archived` view), so they
+        do not change while searching.'
       parameters:
       - $ref: '#/components/parameters/maxPageSize'
       - $ref: '#/components/parameters/pageToken'
       - $ref: '#/components/parameters/showDeleted'
       - $ref: '#/components/parameters/showArchived'
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        examples:
+          program:
+            value: program=abc
+        description: 'The search box: `program=abc` matches programs whose name or slug contains the
+          text (case-insensitive; `%` and `_` are literal). Quote a value with a comma or spaces:
+          `program="abc def"`. An empty value is ignored. Operators such as not-contains live in `filter`.'
+      - name: filter
+        in: query
+        required: false
+        schema:
+          type: string
+        examples:
+          lists:
+            value: domain=[w-ifix,TechyParts]&status=active&level=[organization,location]
+          text:
+            value: program.not_contains=cl&description.is_not_empty
+          exclude:
+            value: status!=active&domain!=[w-ifix]
+        description: 'Terms joined with `&`, all ANDed. Each term can also be sent as its own query
+          parameter, so `?filter=domain=[a,b]&status=active` and `?domain=[a,b]&status=active` are the
+          same (inside one `filter` value, URL-encode the `&` as `%26`). Text terms `program` (name or
+          slug) and `description` take an operator, `field.operator=value` (default `contains`):
+          `contains`, `not_contains`, `equals`, `not_equals`, `starts_with`, `ends_with`, `is_empty`,
+          `is_not_empty` (the last two take no value and only apply to `description`). List terms take
+          one value or `[a,b]` (ORed; the comma only separates list items): `domain` (website ids or
+          names with a live - pending, active or suspended - enrollment), `state` (`active` or
+          `inactive`, the live switch; `status` is accepted as an alias) and `level` (`user`, `organization`, `location`).
+          Write `!=` instead of `=` to exclude: `status!=active`, `domain!=[a,b]`, `level!=user`. An empty value
+          (`domain=`, `domain=[]`) is ignored.'
       responses:
         '200':
           $ref: '#/components/responses/ProgramsResponse'
@@ -324,13 +361,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}:undelete:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :UndeleteProgram
       summary: Undelete a program
@@ -339,6 +369,12 @@ paths:
       description: Reverses a soft delete (AEP-164). Fails with 400 if the program is not deleted, and
         409 if another live program now uses its slug.
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -449,6 +485,8 @@ paths:
         leaf, its `settings` (each with a `render` hint and its options) or, for a `rule` leaf, its `rule`
         summary.'
       parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
       - name: enabled_only
         in: query
         required: false
@@ -529,6 +567,8 @@ paths:
         on a save. Settings that have no value yet are not listed (the manifest shows every setting, each
         with its value).
       parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
       - name: module
         in: query
         required: false
@@ -553,13 +593,6 @@ paths:
       - rule: aep-158-page-token-parameter
         reason: 'Same: never paginated.'
   /programs/{program}/setting-values:batchUpdate:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :BatchUpdateSettingValues
       summary: Save setting values
@@ -572,6 +605,12 @@ paths:
 
         `version` is the `config_version` you last read: if the program changed since, the save is rejected with 409 and nothing is written. Omit it to skip the check (last write wins).
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -784,13 +823,6 @@ paths:
       - rule: aep-158-page-token-parameter
         reason: A singleton, not paginated.
   /programs/{program}/danger-zone:archive:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :ArchiveProgram
       summary: Archive a program
@@ -800,6 +832,12 @@ paths:
         is lost: the program stays readable and keeps its data; `state` does not change. Fails with 400
         if it is already archived.'
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -829,13 +867,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/danger-zone:unarchive:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :UnarchiveProgram
       summary: Unarchive a program
@@ -844,6 +875,12 @@ paths:
       description: Puts an archived program back in the working catalog. Fails with 400 if it is not
         archived.
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -873,13 +910,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/danger-zone:deletePermanently:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :DeleteProgramPermanently
       summary: Delete a program permanently
@@ -891,6 +921,12 @@ paths:
         enrollments, applications, publications or documents (see `delete_blockers` on the page); archive
         it instead. The audit entry stays.'
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -1006,13 +1042,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/enrollments:batchCreate:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :BatchCreateEnrollments
       summary: Bulk enroll stores
@@ -1024,6 +1053,12 @@ paths:
         one outbox event cover the whole batch. The Overview counters (`active_enrollments`, `enrollments_total`)
         move in the same transaction, together with an audit entry and an outbox event.'
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -1137,6 +1172,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Enrollment'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
       responses:
         '200':
           description: Successful response
@@ -1197,13 +1235,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/store-discounts:batchUpdate:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     post:
       operationId: :BatchUpdateStoreDiscounts
       summary: Mass edit store discounts
@@ -1218,6 +1249,12 @@ paths:
         requires publish, so the Overview shows "unpublished changes"), writes an audit entry and an outbox
         event, in one transaction. A request that changes nothing writes nothing.'
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       - name: X-User-Id
         in: header
         required: false
@@ -1326,6 +1363,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateStoreDiscountBody'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UpdateStoreDiscountBody'
       responses:
         '200':
           description: Successful response
@@ -1350,7 +1390,7 @@ paths:
         type: string
       description: The program's ID (UUID) or its slug.
     get:
-      operationId: ListDiscountLevels
+      operationId: GetDiscountLevels
       summary: The levels above the stores
       tags:
       - store-discount-levels
@@ -1410,6 +1450,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateProgramDiscountLevelBody'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UpdateProgramDiscountLevelBody'
       responses:
         '200':
           description: Successful response
@@ -1466,6 +1509,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateDomainDiscountLevelBody'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UpdateDomainDiscountLevelBody'
       responses:
         '200':
           description: Successful response
@@ -1490,6 +1536,9 @@ paths:
         type: string
       description: The program's ID (UUID) or its slug.
     get:
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
       operationId: ListRuleSets
       summary: List a program's rule leaves
       tags:
@@ -1546,21 +1595,21 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/rule-sets/{rule_set}:execute:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
-    - name: rule_set
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The rule leaf's module key (for example `catalog_pricing.products_rules.pre_enrollment`)
-        or the id of its rule set.
     post:
+      parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
+      - name: rule_set
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The rule leaf's module key (for example `catalog_pricing.products_rules.pre_enrollment`)
+          or the id of its rule set.
       operationId: :ExecuteRule
       summary: Run a rule on an input
       tags:
@@ -1660,6 +1709,7 @@ paths:
         program then shows "unpublished changes" until it is published), writes an audit entry and an
         outbox event, in one transaction.'
       parameters:
+      - $ref: '#/components/parameters/clientId'
       - name: X-User-Id
         in: header
         required: false
@@ -1766,6 +1816,7 @@ paths:
 
         400 when there is nothing new to publish (the program has not changed since the last publication), or when a rule's newest draft is invalid (naming the rules). It does not change `config_version`.
       parameters:
+      - $ref: '#/components/parameters/clientId'
       - name: X-User-Id
         in: header
         required: false
@@ -1828,14 +1879,14 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/documents:summary:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
     get:
+      parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
       operationId: :GetDocumentSummary
       summary: The page header, left panel and footer in one call
       tags:
@@ -1866,6 +1917,9 @@ paths:
         type: string
       description: The program's ID (UUID) or its slug.
     get:
+      parameters:
+      - $ref: '#/components/parameters/maxPageSize'
+      - $ref: '#/components/parameters/pageToken'
       operationId: ListDocumentFolders
       summary: List the folders
       tags:
@@ -1897,6 +1951,7 @@ paths:
         not configuration: this does not change `config_version`. It writes an audit entry and an outbox
         event in the same transaction.'
       parameters:
+      - $ref: '#/components/parameters/clientId'
       - name: X-User-Id
         in: header
         required: false
@@ -1962,6 +2017,9 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentFolder'
+          application/merge-patch+json:
             schema:
               $ref: '#/components/schemas/DocumentFolder'
       responses:
@@ -2073,6 +2131,7 @@ paths:
         Panel module switched on (400 otherwise). Files are data, not configuration: this does not change
         `config_version`.'
       parameters:
+      - $ref: '#/components/parameters/clientId'
       - name: X-User-Id
         in: header
         required: false
@@ -2164,6 +2223,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Document'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/Document'
       responses:
         '200':
           description: Successful response
@@ -2208,20 +2270,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/documents/{document}:complete:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
-    - name: document
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the document.
     post:
       operationId: :CompleteDocument
       summary: Finish an upload
@@ -2234,6 +2282,19 @@ paths:
         returns it unchanged. The program must have the Documents Panel module switched on (400 otherwise).
         Files are data, not configuration: this does not change `config_version`.'
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
+      - name: document
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the document.
       - name: X-User-Id
         in: header
         required: false
@@ -2259,21 +2320,21 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/documents/{document}:download:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
-    - name: document
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the document.
     post:
+      parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
+      - name: document
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the document.
       operationId: :DownloadDocument
       summary: Get a download link
       tags:
@@ -2298,20 +2359,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /programs/{program}/documents/{document}:review:
-    parameters:
-    - name: program
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The program's ID (UUID) or its slug.
-    - name: document
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-      description: ID of the document.
     post:
       operationId: :ReviewDocument
       summary: Review a file that needs review
@@ -2322,6 +2369,19 @@ paths:
         Panel module switched on (400 otherwise). Files are data, not configuration: this does not change
         `config_version`. It writes an audit entry and an outbox event in the same transaction.'
       parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
+      - name: document
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the document.
       - name: X-User-Id
         in: header
         required: false
@@ -2363,9 +2423,9 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /webhooks/document-scan:
+  /webhooks/document-scan:receive:
     post:
-      operationId: ReceiveDocumentScanEvent
+      operationId: :ReceiveDocumentScanEvent
       summary: The scanner's verdict on a file
       tags:
       - documents
@@ -2374,9 +2434,6 @@ paths:
         follow. A file that is not waiting for a scan is left as it is, so a repeated callback is harmless.
         When a scan webhook secret is configured, the `X-Webhook-Secret` header must carry it. Answers
         204.
-      x-ignore-rules:
-      - rule: aep-133-id-parameter
-        reason: An internal event receiver, not an AEP resource.
       parameters:
       - name: X-Webhook-Secret
         in: header
@@ -2558,6 +2615,10 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProgramModule'
+              next_page_token:
+                type: string
+                nullable: true
+                description: Reserved. The whole set comes back in one page, so this is always empty.
     AuditLogsResponse:
       description: Successful response
       content:
@@ -2653,6 +2714,10 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/RuleSet'
+              next_page_token:
+                type: string
+                nullable: true
+                description: Reserved. The whole set comes back in one page, so this is always empty.
     RuleVersionsResponse:
       description: Successful response
       content:
@@ -2742,6 +2807,10 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/DocumentFolder'
+              next_page_token:
+                type: string
+                nullable: true
+                description: Reserved. The whole set comes back in one page, so this is always empty.
   schemas:
     ProgramListSummary:
       type: object
@@ -2749,10 +2818,14 @@ components:
       description: The cards above the programs table. Counted over every program the filter matches,
         not only the returned page.
       properties:
+        total_programs:
+          type: integer
+          format: int64
+          description: Every program in the view, live or not (`live_programs + not_live_programs`).
         live_programs:
           type: integer
           format: int64
-          description: Programs that are active.
+          description: Programs that are active (`active = true`).
         not_live_programs:
           type: integer
           format: int64
@@ -2819,7 +2892,7 @@ components:
               summary:
                 type: string
                 example: Program updated
-              time:
+              update_time:
                 type: string
                 format: date-time
     Program:
@@ -2884,7 +2957,14 @@ components:
           format: date-time
           readOnly: true
         state:
-          $ref: '#/components/schemas/ResourceState'
+          type: string
+          readOnly: true
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - DELETED
+          description: '`INACTIVE` when the program is not live (`active` is false), `DELETED` when it
+            is soft-deleted, otherwise `ACTIVE`. `filter=state=inactive` selects the INACTIVE ones.'
     ModuleCatalogItem:
       type: object
       description: A node of the module tree (group or leaf). Seeded; the tree can nest to any depth.
@@ -3275,7 +3355,18 @@ components:
         are excluded from Get/List by default and surfaced with show_deleted=true.
     HealthCheck:
       type: object
+      x-aep-resource:
+        singleton: true
+        singular: health-check
+        plural: health-checks
+        patterns:
+        - health
+        type: msrestapi.com/programs/health-check
       properties:
+        path:
+          type: string
+          readOnly: true
+          description: Always `health`.
         status:
           type: string
           example: ok
@@ -3591,6 +3682,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SettingValue'
+        next_page_token:
+          type: string
+          nullable: true
+          description: Reserved. The whole set comes back in one page, so this is always empty.
     BatchUpdateSettingValuesResponse:
       type: object
       properties:
@@ -3727,6 +3822,13 @@ components:
           default: false
     Notifications:
       type: object
+      x-aep-resource:
+        singleton: true
+        singular: notifications
+        plural: notificationss
+        patterns:
+        - programs/{program}/notifications
+        type: msrestapi.com/programs/notifications
       description: 'The Notifications page of a program (a singleton: one per program, no id).'
       properties:
         path:
@@ -3755,6 +3857,13 @@ components:
             $ref: '#/components/schemas/NotificationTrigger'
     DangerZone:
       type: object
+      x-aep-resource:
+        singleton: true
+        singular: dangerzone
+        plural: dangerzones
+        patterns:
+        - programs/{program}/danger-zone
+        type: msrestapi.com/programs/dangerzone
       description: 'The Danger zone page of a program (a singleton: one per program, no id).'
       properties:
         path:
@@ -3766,6 +3875,7 @@ components:
           readOnly: true
         archive_time:
           type: string
+          format: date-time
           nullable: true
           readOnly: true
           description: When it was archived; null when it is not.
@@ -3788,9 +3898,20 @@ components:
           description: Why it cannot be deleted; null when it can.
     Overview:
       type: object
+      x-aep-resource:
+        singleton: true
+        singular: overview
+        plural: overviews
+        patterns:
+        - programs/{program}/overview
+        type: msrestapi.com/programs/overview
       description: 'The default page every program has (a singleton: one per program, no id). Read in
         ONE database round trip.'
       properties:
+        path:
+          type: string
+          readOnly: true
+          description: programs/{program}/overview
         program:
           $ref: '#/components/schemas/Program'
         config_version:
@@ -4017,7 +4138,18 @@ components:
           description: Every requested store, in the order sent.
     DiscountLevels:
       type: object
+      x-aep-resource:
+        singleton: true
+        singular: discount-levels
+        plural: discount-levels
+        patterns:
+        - programs/{program}/store-discount-levels
+        type: msrestapi.com/programs/discount-levels
       properties:
+        path:
+          type: string
+          readOnly: true
+          description: programs/{program}/store-discount-levels
         program:
           $ref: '#/components/schemas/DiscountConfig'
         domains:
@@ -4031,7 +4163,18 @@ components:
                 $ref: '#/components/schemas/DiscountConfig'
     DiscountLevel:
       type: object
+      x-aep-resource:
+        patterns:
+        - programs/{program}/store-discount-levels/program
+        - programs/{program}/store-discount-levels/domains/{website_id}
+        singular: discount-level
+        plural: discount-levels
+        type: msrestapi.com/programs/discount-level
       properties:
+        path:
+          type: string
+          readOnly: true
+          description: The discount level that was changed.
         level:
           type: string
           enum:
@@ -4199,6 +4342,7 @@ components:
       properties:
         type:
           type: string
+          format: uri-reference
         status:
           type: integer
         title:
@@ -4208,6 +4352,7 @@ components:
           example: 'input does not match the rule (missing: credit_score); required fields: store_id, credit_score'
         instance:
           type: string
+          format: uri-reference
         code:
           type: string
           enum:
@@ -4607,7 +4752,7 @@ components:
       description: A request the BROWSER makes straight to the object storage. The file bytes never pass
         through this service.
       properties:
-        url:
+        uri:
           type: string
         method:
           type: string
@@ -4625,7 +4770,17 @@ components:
           format: date-time
     CreateDocumentResponse:
       type: object
+      x-aep-resource:
+        patterns:
+        - programs/{program}/documents/{document}
+        singular: document
+        plural: documents
+        type: msrestapi.com/programs/document
       properties:
+        path:
+          type: string
+          readOnly: true
+          description: programs/{program}/documents/{document}
         document:
           $ref: '#/components/schemas/Document'
         upload:

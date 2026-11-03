@@ -485,8 +485,8 @@ the service only signs the URL and later asks the storage what arrived.
 **The upload, in three steps**
 1. `POST /programs/{program}/documents` with `{name, content_type, size_bytes, checksum?, folder_id?}`. Size and type are checked first (**413** too big,
    **415** type not allowed; defaults: 25 MB, pdf / png / jpeg / docx / xlsx / csv / plain text). The row is created as `uploading` (hidden from every list, not
-   counted) and the answer carries `upload: {url, method: "PUT", headers, expires_time}`.
-2. `PUT` the file bytes to `upload.url` with **exactly** `upload.headers` (`content-type`, and `x-amz-checksum-sha256` when a checksum was declared). The URL is
+   counted) and the answer carries `upload: {uri, method: "PUT", headers, expires_time}`.
+2. `PUT` the file bytes to `upload.uri` with **exactly** `upload.headers` (`content-type`, and `x-amz-checksum-sha256` when a checksum was declared). The URL is
    for one object key and expires in minutes; the type, size and checksum are signed into it, so the **storage itself refuses** anything else (403 / 400).
 3. `POST .../documents/{document}:complete`. The server asks the storage what really arrived: object missing → **409**; size, type or SHA-256 different → **422**.
    Then the file is `pending_scan`, counted in the totals and its folder, and the outbox event the scanner listens to is written. Completing twice is harmless.
@@ -502,7 +502,7 @@ the service only signs the URL and later asks the storage what arrived.
   unique in its parent, ignoring case (**409**), and has no slashes (**422**).
 
 **Scan and review**
-- `POST /webhooks/document-scan` `{document_id, result: clean|suspicious|infected, scanner?}` (the scanner's callback, **204**): a file that is `pending_scan` becomes `ok`,
+- `POST /webhooks/document-scan:receive` `{document_id, result: clean|suspicious|infected, scanner?}` (the scanner's callback, **204**): a file that is `pending_scan` becomes `ok`,
   `needs_review` or `quarantined`; a repeated callback, or one for a file that is not waiting, changes nothing. Nothing becomes `ok` until it was scanned. With
   `storage.scan_webhook_secret` set, the `X-Webhook-Secret` header must carry it.
 - `POST .../documents/{document}:review` `{decision: approve|reject, note?}`: only a file that `needs_review` (**409** otherwise); approve → `ok`, reject → `quarantined`.

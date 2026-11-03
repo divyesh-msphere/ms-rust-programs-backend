@@ -7,13 +7,14 @@ use crate::application::errors::application_error::ApplicationError;
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::aep::ResourceIdentifier;
 use crate::domain::program::{
-    LastActivity, NewProgram, Program, ProgramDomain, ProgramListStats, ProgramListSummary, ProgramRepository, UpdateProgram,
+    LastActivity, NewProgram, Program, ProgramDomain, ProgramFilter, ProgramListStats, ProgramListSummary, ProgramRepository, UpdateProgram,
 };
 use crate::domain::program_module::ProgramModule;
+use crate::domain::program_query::{SearchField, SearchTerm, TextOp};
 use async_trait::async_trait;
 use ms_telemetry_rs::tracing::error;
 use serde_json::{Value, json};
-use sqlx::PgConnection;
+use sqlx::{PgConnection, Postgres, QueryBuilder};
 use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -49,6 +50,91 @@ fn create_conflict(err: sqlx::Error, slug: &str) -> ApplicationError {
         };
     }
     db_error(err)
+}
+
+/// `%`, `_` and `\` in a search term are literal characters, not LIKE wildcards.
+fn escape_like(term: &str) -> String {
+    term.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_")
+}
+
+/// One `search` condition. `program` looks at the name and the slug; the negative operators
+/// need BOTH to miss. Values are bound, never spliced in.
+fn push_search_term(qb: &mut QueryBuilder<'_, Postgres>, term: &SearchTerm) {
+    let value = term.value.to_lowercase();
+    let columns: &[&str] = match term.field {
+        SearchField::Program => &["lower(name)", "slug"],
+        SearchField::Description => &["lower(COALESCE(description, ''))"],
+    };
+    if matches!(term.op, TextOp::IsEmpty | TextOp::IsNotEmpty) {
+        let negate = if term.op == TextOp::IsNotEmpty { "NOT " } else { "" };
+        qb.push(format!("{negate}(COALESCE(btrim(description), '') = '')"));
+        return;
+    }
+    let (negate, op, pattern) = match term.op {
+        TextOp::Contains => (false, "LIKE", format!("%{}%", escape_like(&value))),
+        TextOp::NotContains => (true, "LIKE", format!("%{}%", escape_like(&value))),
+        TextOp::StartsWith => (false, "LIKE", format!("{}%", escape_like(&value))),
+        TextOp::EndsWith => (false, "LIKE", format!("%{}", escape_like(&value))),
+        TextOp::Equals => (false, "=", value),
+        TextOp::NotEquals => (true, "=", value),
+        TextOp::IsEmpty | TextOp::IsNotEmpty => unreachable!("handled above"),
+    };
+    qb.push(if negate { "NOT (" } else { "(" });
+    for (i, column) in columns.iter().enumerate() {
+        if i > 0 {
+            qb.push(" OR ");
+        }
+        qb.push(format!("{column} {op} ")).push_bind(pattern.clone());
+    }
+    qb.push(")");
+}
+
+/// The WHERE clause of the programs list. `state` and the archive test are literals so the
+/// planner can use the partial indexes; everything the caller typed is bound.
+fn push_filter(qb: &mut QueryBuilder<'_, Postgres>, filter: &ProgramFilter) {
+    let state = if filter.show_deleted { "DELETED" } else { "ACTIVE" };
+    // The working catalog leaves archived programs out; `show_archived` lists only them.
+    let archived = if filter.show_archived { "archive_time IS NOT NULL" } else { "archive_time IS NULL" };
+    qb.push(format!("state = '{state}' AND {archived}"));
+
+    for term in &filter.search {
+        qb.push(" AND ");
+        push_search_term(qb, term);
+    }
+    if !filter.list.active.is_empty() {
+        qb.push(" AND active = ANY(").push_bind(filter.list.active.clone()).push(")");
+    }
+    if !filter.list.levels.is_empty() {
+        qb.push(" AND level = ANY(").push_bind(filter.list.levels.clone()).push(")");
+    }
+    if !filter.list.not_active.is_empty() {
+        qb.push(" AND NOT (active = ANY(").push_bind(filter.list.not_active.clone()).push("))");
+    }
+    if !filter.list.not_levels.is_empty() {
+        qb.push(" AND NOT (level = ANY(").push_bind(filter.list.not_levels.clone()).push("))");
+    }
+    if !filter.list.not_domains.is_empty() {
+        let lowered: Vec<String> = filter.list.not_domains.iter().map(|d| d.to_lowercase()).collect();
+        qb.push(
+            " AND NOT EXISTS (SELECT 1 FROM enrollments e WHERE e.program_id = programs.id \
+             AND e.status IN ('pending', 'active', 'suspended') AND (e.website_id = ANY(",
+        )
+        .push_bind(filter.list.not_domains.clone())
+        .push(") OR lower(e.website_name) = ANY(")
+        .push_bind(lowered)
+        .push(")))");
+    }
+    if !filter.list.domains.is_empty() {
+        let lowered: Vec<String> = filter.list.domains.iter().map(|d| d.to_lowercase()).collect();
+        qb.push(
+            " AND EXISTS (SELECT 1 FROM enrollments e WHERE e.program_id = programs.id \
+             AND e.status IN ('pending', 'active', 'suspended') AND (e.website_id = ANY(",
+        )
+        .push_bind(filter.list.domains.clone())
+        .push(") OR lower(e.website_name) = ANY(")
+        .push_bind(lowered)
+        .push(")))");
+    }
 }
 
 fn snapshot(program: &Program) -> Value {
@@ -172,34 +258,23 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         &self,
         page_size: i64,
         page_token: Option<Uuid>,
-        show_deleted: bool,
-        show_archived: bool,
+        filter: &ProgramFilter,
     ) -> Result<(Vec<Program>, Option<Uuid>, i64), ApplicationError> {
-        // `state` is a LITERAL in the query text (not a bound parameter) so the planner
-        // can use the partial indexes: an index-only scan over live (or deleted) rows,
-        // never the whole table.
-        let state = if show_deleted { "DELETED" } else { "ACTIVE" };
-        // The working catalog leaves archived programs out; `show_archived` lists only them.
-        let archived = if show_archived { "archive_time IS NOT NULL" } else { "archive_time IS NULL" };
+        let pool = self.db_connection.get_pool();
 
-        let total_size: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM programs WHERE state = '{state}' AND {archived}"))
-            .fetch_one(self.db_connection.get_pool())
-            .await
-            .map_err(db_error)?;
+        let mut count = QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM programs WHERE ");
+        push_filter(&mut count, filter);
+        let total_size: i64 = count.build_query_scalar().fetch_one(pool).await.map_err(db_error)?;
 
         // Keyset on the primary key; UUIDv7 ids are in creation order.
-        let query = format!(
-            "SELECT {COLUMNS} FROM programs \
-             WHERE state = '{state}' AND {archived} AND ($1::uuid IS NULL OR id > $1) \
-             ORDER BY id LIMIT $2"
-        );
+        let mut select = QueryBuilder::<Postgres>::new(format!("SELECT {COLUMNS} FROM programs WHERE "));
+        push_filter(&mut select, filter);
+        if let Some(token) = page_token {
+            select.push(" AND id > ").push_bind(token);
+        }
+        select.push(" ORDER BY id LIMIT ").push_bind(page_size + 1);
 
-        let mut rows = sqlx::query_as::<_, ProgramDbModel>(&query)
-            .bind(page_token)
-            .bind(page_size + 1)
-            .fetch_all(self.db_connection.get_pool())
-            .await
-            .map_err(db_error)?;
+        let mut rows = select.build_query_as::<ProgramDbModel>().fetch_all(pool).await.map_err(db_error)?;
 
         let next_page_token = if rows.len() as i64 > page_size {
             rows.pop();
@@ -292,6 +367,7 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         .await
         .map_err(db_error)?;
         Ok(ProgramListSummary {
+            total_programs: live + not_live,
             live_programs: live,
             not_live_programs: not_live,
             active_enrollments: active,

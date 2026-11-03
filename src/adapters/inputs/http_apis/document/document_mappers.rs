@@ -66,7 +66,7 @@ pub fn document_presenter(document: Document) -> DocumentPresenter {
 
 fn storage_request_presenter(request: PresignedRequest) -> StorageRequestPresenter {
     StorageRequestPresenter {
-        url: request.url,
+        uri: request.url,
         method: request.method,
         headers: request.headers.into_iter().collect(),
         expires_time: format_datetime(request.expires_time),

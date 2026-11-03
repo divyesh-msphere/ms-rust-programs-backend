@@ -15,11 +15,18 @@ use crate::dto::payloads::json::program::{
     CreateProgramBodyPayload, CreateProgramQueryPayload, DeleteProgramPayload, GetProgramPayload,
     ListProgramsPayload, ModulePayload, OptionPayload, SettingPayload, UndeleteProgramPayload, UpdateProgramBodyPayload, UpdateProgramPathPayload,
 };
+use crate::domain::aep::ResourceState;
 use crate::domain::program::ProgramListItem;
 use crate::dto::presenters::json::program::{
     DomainPresenter, DomainsPresenter, EnrollmentCountsPresenter, LastActivityPresenter, ListProgramsPresenter,
     ProgramListSummaryPresenter, ProgramPresenter, ProgramStatsPresenter, ProgramWithModulesPresenter,
 };
+
+/// The `state` a program shows: its resource state, except that a live-switched-off program that
+/// is not deleted reads `INACTIVE` (so the state and the `active` flag never disagree).
+pub fn shown_state(state: ResourceState, active: bool) -> &'static str {
+    if state == ResourceState::Active && !active { "INACTIVE" } else { state.as_str() }
+}
 
 pub fn to_presenter(program: Program) -> ProgramPresenter {
     ProgramPresenter {
@@ -34,7 +41,7 @@ pub fn to_presenter(program: Program) -> ProgramPresenter {
         config_hash: program.config_hash,
         create_time: format_datetime(program.create_time),
         update_time: format_datetime(program.update_time),
-        state: program.state.as_str().to_string(),
+        state: shown_state(program.state, program.active).to_string(),
         stats: None,
     }
 }
@@ -55,7 +62,7 @@ fn to_list_row(item: ProgramListItem) -> ProgramPresenter {
         },
         last_activity: stats.last_activity.map(|a| LastActivityPresenter {
             summary: a.summary(),
-            time: format_datetime(a.time),
+            update_time: format_datetime(a.time),
             actor: a.actor,
             action: a.action,
         }),
@@ -106,18 +113,36 @@ fn modules_presenters(program_id: &str, modules: Vec<crate::domain::program_modu
 pub struct ListProgramsMapper;
 
 impl ListProgramsMapper {
-    pub fn input(payload: ListProgramsPayload) -> Result<ListProgramsInput, ApplicationError> {
+    /// `pairs` is the whole query string. Besides `filter=`, a parameter named like a filter key
+    /// (`program`, `program.<operator>`, `description.<operator>`, `domain`, `status`, `level`) is
+    /// one more filter term, so `?filter=domain=[a,b]&status=active` and `?status=active` both work.
+    pub fn input(payload: ListProgramsPayload, pairs: Vec<(String, String)>) -> Result<ListProgramsInput, ApplicationError> {
+        let is_filter_key = |key: &str| {
+            let head = key.split('.').next().unwrap_or("").trim_end_matches('!').to_lowercase();
+            matches!(head.as_str(), "program" | "description" | "domain" | "status" | "state" | "level")
+        };
+        let terms: Vec<String> = payload
+            .filter
+            .into_iter()
+            .chain(pairs.into_iter().filter(|(key, _)| is_filter_key(key)).map(|(key, value)| format!("{key}={value}")))
+            .filter(|term| !term.trim().is_empty())
+            .collect();
+        let filter = if terms.is_empty() { None } else { Some(terms.join("&")) };
+
         Ok(ListProgramsInput {
             page_size: payload.max_page_size,
             page_token: parse::optional_uuid("page_token", payload.page_token.as_deref())?,
             show_deleted: payload.show_deleted.unwrap_or(false),
             show_archived: payload.show_archived.unwrap_or(false),
+            search: payload.search,
+            filter,
         })
     }
 
     pub fn output_success(output: ListProgramsOutput) -> ListProgramsPresenter {
         ListProgramsPresenter {
             summary: ProgramListSummaryPresenter {
+                total_programs: output.summary.total_programs,
                 live_programs: output.summary.live_programs,
                 not_live_programs: output.summary.not_live_programs,
                 active_enrollments: output.summary.active_enrollments,

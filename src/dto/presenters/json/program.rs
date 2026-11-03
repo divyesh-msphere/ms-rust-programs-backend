@@ -44,7 +44,7 @@ pub struct LastActivityPresenter {
     pub actor: String,
     pub action: String,
     pub summary: String,
-    pub time: String,
+    pub update_time: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -57,6 +57,7 @@ pub struct ProgramStatsPresenter {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct ProgramListSummaryPresenter {
+    pub total_programs: i64,
     pub live_programs: i64,
     pub not_live_programs: i64,
     pub active_enrollments: i64,

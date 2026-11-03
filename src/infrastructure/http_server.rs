@@ -57,7 +57,7 @@ pub async fn http_server(
             .split(',')
             .map(str::trim)
             .filter(|o| !o.is_empty())
-            .fold(Cors::default(), |c, o| c.allowed_origin(o))
+            .fold(Cors::default(), |c, o| if o == "*" { c.allow_any_origin() } else { c.allowed_origin(o) })
             .allow_any_method()
             .allow_any_header()
             .max_age(3600);
