@@ -61,6 +61,7 @@ pub fn to_presenter(program_path: &str, module: ProgramModule) -> ProgramModuleP
         requires_publish: module.requires_publish,
         enabled: module.enabled,
         icon: module.icon,
+        module_in: module.module_in,
         mode: module.mode,
         settings: is_settings.then(|| module.settings.into_iter().map(setting_to_presenter).collect()),
         rule: module.rule.map(|r| ProgramRulePresenter {

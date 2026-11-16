@@ -53,7 +53,7 @@ pub async fn ensure_modules(conn: &mut PgConnection, program_id: Uuid, keys: &[S
     let had_notifications = has_notifications(conn, program_id).await?;
     sqlx::query(
         "INSERT INTO program_modules (program_id, module_id, enabled, position, mode) \
-         SELECT $1, md.id, true, md.position, md.default_mode FROM module_definitions md \
+         SELECT $1, md.id, false, md.position, md.default_mode FROM module_definitions md \
          WHERE md.source = 'default' \
             OR EXISTS (SELECT 1 FROM module_definitions u WHERE u.source = 'premade' AND u.universal \
                        AND u.ancestry <@ md.ancestry) \

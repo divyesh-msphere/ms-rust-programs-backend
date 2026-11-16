@@ -44,6 +44,7 @@ fn to_grpc_module_catalog_item(module_catalog_item: ModuleCatalogItem) -> GrpcMo
         has_children: module_catalog_item.has_children,
         children_count: module_catalog_item.children_count,
         icon: module_catalog_item.icon,
+        module_in: module_catalog_item.module_in,
         create_time: format_datetime(module_catalog_item.create_time),
         update_time: format_datetime(module_catalog_item.update_time),
         ..Default::default()
@@ -66,8 +67,6 @@ impl
             page_size: request.max_page_size,
             page_token: parse::optional_uuid("page_token", request.page_token.as_deref())?,
             search: request.search.map(|text| module_search_text(&text)),
-            program: request.program,
-            checked: request.checked,
             keys: request.keys.into_iter().map(|key| key.trim().to_string()).filter(|key| !key.is_empty()).collect(),
         })
     }
@@ -94,13 +93,14 @@ impl
 {
     fn input(request: GetModuleCatalogItemRequest) -> Result<GetModuleCatalogItemInput, ApplicationError> {
         Ok(GetModuleCatalogItemInput {
+            program: request.program,
             identifier: ResourceIdentifier::parse(&request.module_catalog_item),
         })
     }
 
     fn output_success(output: GetModuleCatalogItemOutput) -> GetModuleCatalogItemResponse {
         GetModuleCatalogItemResponse {
-            module_catalog_item: Some(to_grpc_module_catalog_item(output.module_catalog_item)).into(),
+            results: output.module_catalog_items.into_iter().map(to_grpc_module_catalog_item).collect(),
             ..Default::default()
         }
     }
@@ -131,6 +131,7 @@ fn to_grpc_tree_node(node: ModuleCatalogItemNode) -> GrpcModuleCatalogTreeNode {
         has_children: module_catalog_item.has_children,
         children_count: module_catalog_item.children_count,
         icon: module_catalog_item.icon,
+        module_in: module_catalog_item.module_in,
         create_time: format_datetime(module_catalog_item.create_time),
         update_time: format_datetime(module_catalog_item.update_time),
         children: node.children.into_iter().map(to_grpc_tree_node).collect(),

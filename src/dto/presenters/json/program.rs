@@ -33,9 +33,9 @@ pub struct BrandingPresenter {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct RenewalPresenter {
-    pub term_months: i32,
-    pub grace_period_days: i32,
-    pub reminder_days: i32,
+    pub term_months: Option<i32>,
+    pub grace_period_days: Option<i32>,
+    pub reminder_days: Option<i32>,
     pub auto_renew: bool,
 }
 

@@ -21,6 +21,8 @@ pub struct ProgramModulePresenter {
     pub enabled: bool,
     /// The icon drawn beside the module: the program's own, else the catalog module's. Null when neither is set.
     pub icon: Option<String>,
+    /// `configuration` or `operate` on the modules named in the catalog, null for every other module.
+    pub module_in: Option<String>,
     /// `rule`, `settings`, or null until the admin chooses (always null when the
     /// module is not configurable).
     pub mode: Option<String>,

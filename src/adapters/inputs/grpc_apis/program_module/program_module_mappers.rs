@@ -64,6 +64,7 @@ pub fn to_grpc_program_module(program_path: &str, module: ProgramModule) -> Grpc
         requires_publish: module.requires_publish,
         enabled: module.enabled,
         icon: module.icon,
+        module_in: module.module_in,
         mode: module.mode,
         settings: if is_settings { module.settings.into_iter().map(to_grpc_setting).collect() } else { Vec::new() },
         rule: module

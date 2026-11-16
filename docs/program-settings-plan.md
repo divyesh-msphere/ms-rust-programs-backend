@@ -165,7 +165,7 @@ All lists use `max_page_size`, `page_token`, `next_page_token`, `total_size`.
 |---|---|---|---|
 | `GET` | `/programs/{program}/modules` | `parent_id?`, `full_tree?` | enabled modules only (same shape as module catalog) |
 | `GET` | `/module-catalog` | `parent_id?`, `full_tree?`, paging | *done* |
-| `GET` | `/module-catalog/{id-or-key}` | – | *done* |
+| `GET` | `/programs/{p}/module-catalog/{id-or-key}` | – | *done* (enabled modules under the item) |
 
 ### 4.3 Settings (the new core)
 

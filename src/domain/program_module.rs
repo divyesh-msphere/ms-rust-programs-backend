@@ -27,6 +27,8 @@ pub struct ProgramModule {
     pub enabled: bool,
     /// The program's own icon for this module, else the catalog module's icon.
     pub icon: Option<String>,
+    /// `configuration` or `operate`, from the catalog module; None for every other module.
+    pub module_in: Option<String>,
     /// What the admin made this leaf: `rule`, `settings`, or `None` until chosen
     /// (and always `None` on a module that is not configurable).
     pub mode: Option<String>,

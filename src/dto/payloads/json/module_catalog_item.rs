@@ -2,6 +2,8 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct GetModuleCatalogItemPayload {
+    /// The program's ID (UUID) or its slug.
+    pub program: String,
     /// The module catalog item's ID, or its key (`catalog_pricing`).
     pub module_catalog_item: String,
 }
@@ -19,12 +21,6 @@ pub struct ListModuleCatalogPayload {
     /// Comma-separated module keys or ids (`[a,b]` also works): returns exactly these modules, flat and
     /// with nothing beneath them, in display order. `parent_id` is ignored; `search` narrows within them. Wins over `full_tree`.
     pub keys: Option<String>,
-    /// With `checked`: the program (id or slug) whose ticked modules to return.
-    pub program: Option<String>,
-    /// `true` returns only the modules the `program` has ticked (selected and switched on), flat and with
-    /// nothing beneath them; `false` returns the ones it has not. Needs `program`; `program` alone means
-    /// `true`. Wins over `full_tree` and `parent_id`.
-    pub checked: Option<bool>,
     /// When true, ignores `max_page_size` / `page_token` and returns the whole
     /// tree (or, with `parent_id`, everything beneath that module) nested
     /// under `children`, in one response.

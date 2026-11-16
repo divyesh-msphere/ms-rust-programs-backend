@@ -28,16 +28,17 @@ pub struct Branding {
 /// The renewal defaults of a program.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Renewal {
-    pub term_months: i32,
-    pub grace_period_days: i32,
+    /// `None` until set: nothing is defaulted.
+    pub term_months: Option<i32>,
+    pub grace_period_days: Option<i32>,
     /// Days before the term ends.
-    pub reminder_days: i32,
+    pub reminder_days: Option<i32>,
     pub auto_renew: bool,
 }
 
 impl Default for Renewal {
     fn default() -> Self {
-        Self { term_months: 12, grace_period_days: 30, reminder_days: 30, auto_renew: false }
+        Self { term_months: None, grace_period_days: None, reminder_days: None, auto_renew: false }
     }
 }
 
@@ -72,9 +73,9 @@ pub struct RenewalPatch {
 impl RenewalPatch {
     pub fn apply(self, current: &Renewal) -> Renewal {
         Renewal {
-            term_months: self.term_months.unwrap_or(current.term_months),
-            grace_period_days: self.grace_period_days.unwrap_or(current.grace_period_days),
-            reminder_days: self.reminder_days.unwrap_or(current.reminder_days),
+            term_months: self.term_months.or(current.term_months),
+            grace_period_days: self.grace_period_days.or(current.grace_period_days),
+            reminder_days: self.reminder_days.or(current.reminder_days),
             auto_renew: self.auto_renew.unwrap_or(current.auto_renew),
         }
     }
@@ -309,17 +310,19 @@ pub fn clean_branding(branding: Branding) -> Result<Branding, ApplicationError> 
 }
 
 pub fn validate_renewal(renewal: &Renewal) -> Result<(), ApplicationError> {
-    if !(1..=MAX_TERM_MONTHS).contains(&renewal.term_months) {
+    if renewal.term_months.is_some_and(|v| !(1..=MAX_TERM_MONTHS).contains(&v)) {
         return Err(unprocessable(format!("renewal.term_months must be 1-{MAX_TERM_MONTHS}")));
     }
-    if !(0..=MAX_DAYS).contains(&renewal.grace_period_days) {
+    if renewal.grace_period_days.is_some_and(|v| !(0..=MAX_DAYS).contains(&v)) {
         return Err(unprocessable(format!("renewal.grace_period_days must be 0-{MAX_DAYS}")));
     }
-    if !(0..=MAX_DAYS).contains(&renewal.reminder_days) {
+    if renewal.reminder_days.is_some_and(|v| !(0..=MAX_DAYS).contains(&v)) {
         return Err(unprocessable(format!("renewal.reminder_days must be 0-{MAX_DAYS}")));
     }
-    if renewal.reminder_days > renewal.term_months * 30 {
-        return Err(unprocessable("renewal.reminder_days cannot be longer than the renewal term".to_string()));
+    if let (Some(reminder), Some(term)) = (renewal.reminder_days, renewal.term_months) {
+        if reminder > term * 30 {
+            return Err(unprocessable("renewal.reminder_days cannot be longer than the renewal term".to_string()));
+        }
     }
     Ok(())
 }
@@ -406,18 +409,18 @@ mod tests {
 
     #[test]
     fn renewal_defaults_and_limits() {
-        assert_eq!(Renewal::default(), Renewal { term_months: 12, grace_period_days: 30, reminder_days: 30, auto_renew: false });
+        assert_eq!(Renewal::default(), Renewal { term_months: None, grace_period_days: None, reminder_days: None, auto_renew: false });
         assert!(validate_renewal(&Renewal::default()).is_ok());
-        assert!(validate_renewal(&Renewal { term_months: 0, ..Default::default() }).is_err());
-        assert!(validate_renewal(&Renewal { grace_period_days: -1, ..Default::default() }).is_err());
-        assert!(validate_renewal(&Renewal { term_months: 1, reminder_days: 31, ..Default::default() }).is_err());
+        assert!(validate_renewal(&Renewal { term_months: Some(0), ..Default::default() }).is_err());
+        assert!(validate_renewal(&Renewal { grace_period_days: Some(-1), ..Default::default() }).is_err());
+        assert!(validate_renewal(&Renewal { term_months: Some(1), reminder_days: Some(31), ..Default::default() }).is_err());
     }
 
     #[test]
     fn a_patch_keeps_what_it_does_not_send() {
-        let current = Renewal { term_months: 6, grace_period_days: 10, reminder_days: 5, auto_renew: true };
+        let current = Renewal { term_months: Some(6), grace_period_days: Some(10), reminder_days: Some(5), auto_renew: true };
         let next = RenewalPatch { term_months: Some(24), ..Default::default() }.apply(&current);
-        assert_eq!(next, Renewal { term_months: 24, grace_period_days: 10, reminder_days: 5, auto_renew: true });
+        assert_eq!(next, Renewal { term_months: Some(24), grace_period_days: Some(10), reminder_days: Some(5), auto_renew: true });
         let b = Branding { brand_color: Some("#111111".into()), text_color: Some("#222222".into()), logo_icon: None };
         let merged = BrandingPatch { text_color: Some("#333333".into()), ..Default::default() }.apply(&b);
         assert_eq!(merged.brand_color.as_deref(), Some("#111111"));

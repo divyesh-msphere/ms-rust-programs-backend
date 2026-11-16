@@ -52,6 +52,8 @@ message ModuleCatalogItem {
   int64 children_count = 23 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // The icon the frontend draws beside the module (an icon name). Absent until set.
   optional string icon = 24 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // `configuration` (Products & Rules, Pricing, Documents, Agreements, Settings) or `operate` (Store Discounts, Stores, Core Returns), on those modules only. Absent for every other module.
+  optional string module_in = 25 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // A module with its descendants nested under `children` (`full_tree = true`).
@@ -82,6 +84,7 @@ message ModuleCatalogTreeNode {
   bool has_children = 23 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   int64 children_count = 24 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string icon = 25 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string module_in = 26 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message ListModuleCatalogRequest {
@@ -100,12 +103,7 @@ message ListModuleCatalogRequest {
   // Module keys or ids: returns exactly these modules, flat and with nothing beneath them. `parent_id`
   // is ignored; `search` narrows within them. Wins over `full_tree`.
   repeated string keys = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // With `checked`: the program (ID or slug) whose ticks decide what is returned.
-  optional string program = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // true: only the selectable modules `program` has ticked (selected and switched on), flat and with
-  // nothing beneath them; false: the ones it has not. Needs `program`; `program` alone means true.
-  // Wins over `full_tree` and `parent_id`.
-  optional bool checked = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  reserved 7, 8;
 }
 message ListModuleCatalogResponse {
   repeated ModuleCatalogItem results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -121,9 +119,13 @@ message GetModuleCatalogItemRequest {
   string module_catalog_item = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The program's ID (UUID) or its slug: the modules it has switched on are returned.
+  string program = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
 message GetModuleCatalogItemResponse {
-  ModuleCatalogItem module_catalog_item = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  reserved 1;
+  // The item and everything beneath it that the program has switched on (enabled = true), parents first.
+  repeated ModuleCatalogItem results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // ---------------------------------------------------------------------------
@@ -175,8 +177,8 @@ message ProgramBranding {
   optional string logo_icon = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
-// The renewal defaults of a program. In a request omitted parts take the defaults (create: 12 months,
-// 30 days grace, 30 days reminder, no auto-renew) or keep their value (update).
+// The renewal defaults of a program. Term, grace and reminder are unset (null) until
+// sent: omitted parts stay unset on create (auto_renew: false) and keep their value on update.
 message ProgramRenewal {
   optional int32 term_months = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional int32 grace_period_days = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
@@ -256,6 +258,8 @@ message ProgramModule {
   // The icon drawn beside the module: the program's own, else the catalog module's.
   optional string icon = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   reserved 21;
+  // `configuration` (Products & Rules, Pricing, Documents, Agreements, Settings) or `operate` (Store Discounts, Stores, Core Returns), on those modules only. Absent for every other module.
+  optional string module_in = 22 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // One setting of a "settings" leaf, with what the frontend needs to draw it.

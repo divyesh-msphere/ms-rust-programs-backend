@@ -26,6 +26,7 @@ pub struct ModuleCatalogItemDbModel {
     pub has_children: bool,
     pub children_count: i64,
     pub icon: Option<String>,
+    pub module_in: Option<String>,
     pub create_time: DateTime<Utc>,
     pub update_time: DateTime<Utc>,
 }

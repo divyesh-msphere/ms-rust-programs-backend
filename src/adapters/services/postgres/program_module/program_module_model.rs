@@ -19,6 +19,7 @@ pub struct ProgramModuleDbModel {
     pub requires_publish: bool,
     pub enabled: bool,
     pub icon: Option<String>,
+    pub module_in: Option<String>,
     pub mode: Option<String>,
     pub position: i32,
     pub update_time: DateTime<Utc>,

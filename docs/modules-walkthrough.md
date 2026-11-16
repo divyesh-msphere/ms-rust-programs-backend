@@ -36,7 +36,7 @@ Three things every write does (shared helpers, so every module behaves the same)
 **What it is.** The read-only list of every module a program can have (Overview, Applications, Enrolled Stores, and so on),
 arranged as a tree of groups and leaves. It is seeded by migrations and never changed through the API.
 
-**Endpoints.** `GET /module-catalog` (list, also as a tree), `GET /module-catalog/{module_catalog_item}`.
+**Endpoints.** `GET /module-catalog` (list, also as a tree), `GET /programs/{program}/module-catalog/{module_catalog_item}` (the modules the program has switched on, at or beneath that item).
 gRPC: `ListModuleCatalog`, `GetModuleCatalogItem`.
 
 **Files.**

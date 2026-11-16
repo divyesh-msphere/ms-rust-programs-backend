@@ -15,7 +15,7 @@ use uuid::Uuid;
 
 pub const COLUMNS: &str = "pm.module_id, md.key, md.name, md.kind, md.parent_id, \
     md.ancestry::text AS ancestry, md.source, md.handler_key, md.api_base, md.ui_component, \
-    md.allow_components, md.requires_publish, pm.enabled, COALESCE(pm.icon, md.icon) AS icon, pm.mode, pm.position, pm.update_time";
+    md.allow_components, md.requires_publish, pm.enabled, COALESCE(pm.icon, md.icon) AS icon, md.module_in, pm.mode, pm.position, pm.update_time";
 
 #[derive(Debug, FromRow)]
 struct FieldRow {
@@ -73,7 +73,9 @@ pub async fn fetch_modules(
     let query = format!(
         "SELECT {COLUMNS} FROM program_modules pm \
          JOIN module_definitions md ON md.id = pm.module_id \
-         WHERE pm.program_id = $1 AND (pm.enabled OR NOT $2) \
+         WHERE pm.program_id = $1 AND (NOT $2 OR pm.enabled \
+               OR EXISTS (SELECT 1 FROM program_modules c JOIN module_definitions cd ON cd.id = c.module_id \
+                          WHERE c.program_id = pm.program_id AND c.enabled AND cd.ancestry <@ md.ancestry)) \
          ORDER BY nlevel(md.ancestry), pm.position, md.id"
     );
     let models = sqlx::query_as::<_, ProgramModuleDbModel>(&query)
@@ -83,6 +85,13 @@ pub async fn fetch_modules(
         .await?;
 
     let mut modules: Vec<ProgramModule> = models.into_iter().map(ProgramModuleDbMapper::to_entity).collect();
+    if enabled_only {
+        // The list is the enabled modules plus the parents they hang under, so the tree stays connected:
+        // each parent is reported as enabled, whatever its own switch says.
+        for module in &mut modules {
+            module.enabled = true;
+        }
+    }
 
     if modules.iter().any(|m| m.mode.as_deref() == Some("settings")) {
         let mut by_module = load_settings(&mut *conn, program_id).await?;

@@ -255,7 +255,7 @@ Read-only: the list of every page a program can have, as a tree. Folders **Modul
 - `GET /module-catalog?parent_id={id}`: the direct children of one module (the right panel of Create Program). A leaf, or an unknown id, gives an empty list.
 - `GET /module-catalog?full_tree=true`: the **whole tree in one call**, nested under `children` (71 modules). With `&parent_id={id}` it returns the tree below that module (unknown id: **404**).
   The simplest way to build Create Program is to load this once and render it.
-- `GET /module-catalog/{id or key}`: one module, for example `/module-catalog/enrollment`.
+- `GET /programs/{program}/module-catalog/{id or key}`: the modules the program has switched on at or beneath that item, for example `/programs/{{program_id}}/module-catalog/enrollment`.
 - Paging uses `max_page_size` (default 50, capped at 200, **400** if below 1) and `page_token` (a UUID; **400** if it is not one).
 - There is no write API: the catalog comes from seed migrations (`POST /module-catalog` is a 404).
 - gRPC: `ListModuleCatalog` and `GetModuleCatalogItem`.

@@ -94,9 +94,9 @@ pub fn to_grpc_program(program: Program) -> GrpcProgram {
         })
         .into(),
         renewal: Some(ProgramRenewal {
-            term_months: Some(program.renewal.term_months),
-            grace_period_days: Some(program.renewal.grace_period_days),
-            reminder_days: Some(program.renewal.reminder_days),
+            term_months: program.renewal.term_months,
+            grace_period_days: program.renewal.grace_period_days,
+            reminder_days: program.renewal.reminder_days,
             auto_renew: Some(program.renewal.auto_renew),
             ..Default::default()
         })

@@ -17,7 +17,7 @@ const COLUMNS: &str = "id, key, name, kind, parent_id, ancestry::text AS ancestr
                            AS has_children, \
                        (SELECT COUNT(*) FROM module_definitions c WHERE c.parent_id = module_definitions.id) \
                            AS children_count, \
-                       icon, \
+                       icon, module_in, \
                        create_time, update_time";
 
 pub struct ModuleCatalogItemRepositoryPostgresImpl {
@@ -74,12 +74,45 @@ impl ModuleCatalogItemRepository for ModuleCatalogItemRepositoryPostgresImpl {
         }
     }
 
+    async fn list_enabled_under(
+        &self,
+        program: &str,
+        root: ResourceIdentifier,
+    ) -> Result<Vec<ModuleCatalogItem>, ApplicationError> {
+        let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM programs WHERE id::text = $1 OR slug = $1)")
+            .bind(program)
+            .fetch_one(self.db_connection.get_pool())
+            .await
+            .map_err(db_error)?;
+        if !exists {
+            return Err(ApplicationError::not_found_with_message(&format!("Program {program} not found")));
+        }
+        let root = self.get(root).await?;
+
+        // `<@` is the ltree "is at or below": the item itself and everything under it, narrowed to the
+        // modules the program has switched on.
+        let query = format!(
+            "SELECT {COLUMNS} FROM module_definitions \
+             WHERE ancestry <@ (SELECT ancestry FROM module_definitions WHERE id = $1) \
+               AND EXISTS (SELECT 1 FROM program_modules pm JOIN programs p ON p.id = pm.program_id \
+                           WHERE (p.id::text = $2 OR p.slug = $2) AND pm.module_id = module_definitions.id \
+                             AND pm.enabled) \
+             ORDER BY nlevel(ancestry), position, id"
+        );
+        let rows = sqlx::query_as::<_, ModuleCatalogItemDbModel>(&query)
+            .bind(root.id)
+            .bind(program)
+            .fetch_all(self.db_connection.get_pool())
+            .await
+            .map_err(db_error)?;
+        Ok(rows.into_iter().map(ModuleCatalogItemDbMapper::to_entity).collect())
+    }
+
     async fn list(
         &self,
         parent_id: Option<Uuid>,
         search: Option<&str>,
         keys: &[String],
-        checked: Option<(&str, bool)>,
         page_size: i64,
         page_token: Option<Uuid>,
     ) -> Result<(Vec<ModuleCatalogItem>, Option<Uuid>, i64), ApplicationError> {
@@ -92,34 +125,12 @@ impl ModuleCatalogItemRepository for ModuleCatalogItemRepositoryPostgresImpl {
             let escaped = text.to_lowercase().replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_");
             format!("%{escaped}%")
         });
-        // Which program's ticks: `program` is its id or slug.
-        let (program, wanted) = match checked {
-            Some((program, wanted)) => (Some(program.to_string()), Some(wanted)),
-            None => (None, None),
-        };
-        if let Some(program) = &program {
-            let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM programs WHERE id::text = $1 OR slug = $1)")
-                .bind(program)
-                .fetch_one(self.db_connection.get_pool())
-                .await
-                .map_err(db_error)?;
-            if !exists {
-                return Err(ApplicationError::not_found_with_message(&format!("Program {program} not found")));
-            }
-        }
-
         // `$3` (keys) wins: exactly those modules (by key or id), no parent scoping, no descendants.
-        // Else `$4`/`$5` (program, wanted): the selectable modules that program has ticked (or not),
-        // flat at any depth. Else the tree browse. `search` ($2) narrows in every case.
+        // Else the tree browse. `search` ($2) narrows in every case.
         const FILTER: &str = "( \
               ( cardinality($3::text[]) > 0 AND (key = ANY($3) OR id::text = ANY($3)) \
                 AND ($2::text IS NULL OR lower(name) LIKE $2 ESCAPE '\\') ) \
-           OR ( cardinality($3::text[]) = 0 AND $4::text IS NOT NULL AND selectable \
-                AND ($2::text IS NULL OR lower(name) LIKE $2 ESCAPE '\\') \
-                AND EXISTS (SELECT 1 FROM program_modules pm JOIN programs p ON p.id = pm.program_id \
-                            WHERE (p.id::text = $4 OR p.slug = $4) AND pm.module_id = module_definitions.id \
-                              AND pm.enabled) = $5 ) \
-           OR ( cardinality($3::text[]) = 0 AND $4::text IS NULL AND ( \
+           OR ( cardinality($3::text[]) = 0 AND ( \
                 ($2::text IS NULL AND parent_id IS NOT DISTINCT FROM $1) \
                 OR ($2::text IS NOT NULL AND lower(name) LIKE $2 ESCAPE '\\' \
                     AND ($1::uuid IS NULL OR (id <> $1 AND ancestry <@ \
@@ -129,8 +140,6 @@ impl ModuleCatalogItemRepository for ModuleCatalogItemRepositoryPostgresImpl {
             .bind(parent_id)
             .bind(pattern.clone())
             .bind(keys)
-            .bind(program.clone())
-            .bind(wanted.unwrap_or(true))
             .fetch_one(self.db_connection.get_pool())
             .await
             .map_err(db_error)?;
@@ -139,17 +148,15 @@ impl ModuleCatalogItemRepository for ModuleCatalogItemRepositoryPostgresImpl {
         let query = format!(
             "SELECT {COLUMNS} FROM module_definitions \
              WHERE {FILTER} \
-               AND ($6::uuid IS NULL OR (position, id) > \
-                    (SELECT position, id FROM module_definitions WHERE id = $6)) \
-             ORDER BY position, id LIMIT $7"
+               AND ($4::uuid IS NULL OR (position, id) > \
+                    (SELECT position, id FROM module_definitions WHERE id = $4)) \
+             ORDER BY position, id LIMIT $5"
         );
 
         let mut rows = sqlx::query_as::<_, ModuleCatalogItemDbModel>(&query)
             .bind(parent_id)
             .bind(pattern)
             .bind(keys)
-            .bind(program)
-            .bind(wanted.unwrap_or(true))
             .bind(page_token)
             .bind(page_size + 1)
             .fetch_all(self.db_connection.get_pool())

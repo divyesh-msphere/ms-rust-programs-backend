@@ -33,6 +33,7 @@ fn configure(cfg: &mut web::ServiceConfig, enrollment_review: bool) {
         web::scope("/programs")
             .configure(program_controllers::routes)
             .configure(program_module_controllers::routes)
+            .configure(module_catalog_item_controllers::program_routes)
             .configure(program_setting_value_controllers::routes)
             .configure(program_overview_controllers::routes)
             .configure(danger_zone_controllers::routes)

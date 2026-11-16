@@ -28,6 +28,7 @@ impl DbMapper<ModuleCatalogItem, ModuleCatalogItemDbModel> for ModuleCatalogItem
             has_children: model.has_children,
             children_count: model.children_count,
             icon: model.icon,
+            module_in: model.module_in,
             create_time: model.create_time,
             update_time: model.update_time,
         }
@@ -56,6 +57,7 @@ impl DbMapper<ModuleCatalogItem, ModuleCatalogItemDbModel> for ModuleCatalogItem
             has_children: entity.has_children,
             children_count: entity.children_count,
             icon: entity.icon,
+            module_in: entity.module_in,
             create_time: entity.create_time,
             update_time: entity.update_time,
         }

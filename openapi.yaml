@@ -291,7 +291,7 @@ paths:
       description: 'Partially updates a program. `slug` is immutable: it is ignored if sent. Changing
         `level`, `active` or any module, mode or setting bumps `config_version`; changing only `name`
         or `description` does not. `modules` applies module changes in ONE transaction: a new key adds
-        the module (with its ancestors), `mode` sets what a leaf is, `settings` replaces that module''s
+        the module (with its ancestors, switched OFF until you send `enabled: true`), `mode` sets what a leaf is, `settings` replaces that module''s
         settings, `enabled: false` switches a module off. The response includes the module manifest when
         `modules` was sent. Send `description: null` to clear it.'
       parameters:
@@ -351,7 +351,8 @@ paths:
                     - type: string
                     - $ref: '#/components/schemas/ModuleConfig'
                   description: 'Module changes. A new key adds the module; `mode` sets what a leaf is;
-                    `settings` REPLACES that module''s settings; `enabled: false` switches it off. Absent
+                    `settings` REPLACES that module''s settings; a new module starts OFF, `enabled: true` switches
+                    it on and `enabled: false` switches it off. Absent
                     touches no module.'
       responses:
         '200':
@@ -483,22 +484,6 @@ paths:
           the modules the admin ticked can ask for just those. `parent_id` is ignored; `search` narrows within
           them; it wins over `full_tree`. An unknown key is simply not in the result. At most 200.'
         example: catalog_pricing.store_discounts,catalog_pricing.products_rules
-      - name: program
-        in: query
-        required: false
-        schema:
-          type: string
-        description: 'Used with `checked`: the program (id or slug) whose ticks decide what is returned. Unknown program is a 404.'
-      - name: checked
-        in: query
-        required: false
-        schema:
-          type: boolean
-        description: '`true` returns only the modules the `program` has ticked (selected and switched on) - each on
-          its own, flat, with nothing beneath it - so Pricing is left out when it is not ticked. `false` returns the
-          selectable modules it has not ticked. Needs `program`; `program` alone means `true`. Wins over `full_tree`
-          and `parent_id`; `search` narrows within the result.'
-        example: true
       responses:
         '200':
           $ref: '#/components/responses/ModuleCatalogResponse'
@@ -508,31 +493,6 @@ paths:
           $ref: '#/components/responses/InternalServerError'
         '404':
           $ref: '#/components/responses/NotFound'
-  /module-catalog/{module_catalog_item}:
-    parameters:
-    - name: module_catalog_item
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The module catalog item's ID, or its key (e.g. `catalog_pricing`).
-    get:
-      operationId: GetModuleCatalogItem
-      summary: Get a module catalog item
-      tags:
-      - module-catalog
-      description: Returns a single module catalog item by ID or by key.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModuleCatalogItem'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
   /programs/{program}/modules:
     parameters:
     - name: program
@@ -560,7 +520,8 @@ paths:
         schema:
           type: boolean
           default: true
-        description: Only modules the program has switched on.
+        description: 'Only modules the program has switched on, plus every parent above them (reported as
+          `enabled: true`), so the tree stays connected.'
       - name: include_options
         in: query
         required: false
@@ -582,6 +543,58 @@ paths:
           the frontend needs the complete tree to draw the page.
       - rule: aep-158-page-token-parameter
         reason: 'Same: never paginated.'
+  /programs/{program}/module-catalog/{module_catalog_item}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: module_catalog_item
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The module catalog item's ID, or its key (e.g. `catalog_pricing`).
+    get:
+      operationId: GetModuleCatalogItem
+      summary: Get the modules a program has switched on under a catalog item
+      tags:
+      - module-catalog
+      description: Returns the catalog item and everything beneath it that the program has switched on
+        (`enabled = true`), flat, parents first and then in display order. A module the program has not
+        switched on is left out, so the list is empty when none is. 404 when the program or the item does
+        not exist.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                x-aep-resource:
+                  patterns:
+                  - module-catalog/{module_catalog_item}
+                  singular: module-catalog-item
+                  plural: module-catalog
+                  type: msrestapi.com/programs/module-catalog-item
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModuleCatalogItem'
+                  next_page_token:
+                    type: string
+                    nullable: true
+                    description: Reserved. The whole set comes back in one page, so this is always empty.
+                  total_size:
+                    type: integer
+                    format: int64
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /programs/{program}/audit-logs:
     parameters:
     - name: program
@@ -2986,27 +2999,27 @@ components:
           description: An icon name of letters, digits, `_` or `-`.
     ProgramRenewal:
       type: object
-      description: The renewal defaults of a program. Omitted parts take the defaults on create and keep
-        their value on update.
+      description: The renewal defaults of a program. Term, grace and reminder are null until set. Omitted
+        parts stay null on create and keep their value on update.
       properties:
         term_months:
           type: integer
           format: int32
           minimum: 1
           maximum: 120
-          default: 12
+          nullable: true
         grace_period_days:
           type: integer
           format: int32
           minimum: 0
           maximum: 3650
-          default: 30
+          nullable: true
         reminder_days:
           type: integer
           format: int32
           minimum: 0
           maximum: 3650
-          default: 30
+          nullable: true
           description: Days before the term ends. Cannot be longer than the term (`term_months` x 30).
         auto_renew:
           type: boolean
@@ -3200,6 +3213,14 @@ components:
           type: string
           nullable: true
           description: The icon the frontend draws beside the module (an icon name). Null until it is set.
+        module_in:
+          type: string
+          nullable: true
+          readOnly: true
+          enum:
+          - configuration
+          - operate
+          description: Set on these modules only, never on what is beneath them. `configuration` for Products & Rules, Pricing, Documents, Agreements and Settings; `operate` for Store Discounts, Stores and Core Returns. Null for every other module.
     ProgramModule:
       type: object
       description: 'One entry of a program''s module manifest. `source` tells the frontend how to draw
@@ -3262,6 +3283,14 @@ components:
           readOnly: true
           description: The icon drawn beside the module - the program's own, else the catalog module's. Null when neither is set.
           example: tag
+        module_in:
+          type: string
+          nullable: true
+          readOnly: true
+          enum:
+          - configuration
+          - operate
+          description: Set on these modules only, never on what is beneath them. `configuration` for Products & Rules, Pricing, Documents, Agreements and Settings; `operate` for Store Discounts, Stores and Core Returns. Null for every other module.
         position:
           type: integer
           format: int32

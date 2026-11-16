@@ -155,7 +155,7 @@ which API backs it). It is data, not code, so adding a page is a migration, not 
 | API | Tables |
 |---|---|
 | `GET /module-catalog` (`parent_id` for children, `full_tree=true` for everything nested in one response) | R `module_definitions` |
-| `GET /module-catalog/{id or key}` | R `module_definitions` |
+| `GET /programs/{p}/module-catalog/{id or key}` (the program's enabled modules under it) | R `module_definitions` |
 
 **Table `module_definitions`**: `key` (unique, like `enrollment.applications_approvals.application_panel`), `kind` (`group` or `leaf`), `parent_id`, `ancestry` (an `ltree`, so
 a whole subtree is one query), `source`, `handler_key`, `api_base`, `ui_component`, `rule_family`, `requires_publish`, `selectable`, `allow_components`, `default_mode`, `default_rule`, `permission_key`.

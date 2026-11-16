@@ -28,11 +28,6 @@ pub struct ListModuleCatalogInput {
     pub search: Option<String>,
     /// Module keys or ids: return exactly these modules (and nothing beneath them).
     pub keys: Vec<String>,
-    /// With `checked`: the program (id or slug) whose ticks decide what is returned.
-    pub program: Option<String>,
-    /// `true`: only the modules `program` has ticked; `false`: the ones it has not. Needs `program`;
-    /// `program` alone means `true`.
-    pub checked: Option<bool>,
 }
 
 #[derive(Debug)]
@@ -61,16 +56,11 @@ impl UseCase<ListModuleCatalogOutput, ListModuleCatalogInput> for ListModuleCata
         if input.keys.len() > MAX_KEYS {
             return Err(ApplicationError::validation_error(&format!("keys takes at most {MAX_KEYS} modules")));
         }
-        let program = input.program.as_deref().map(str::trim).filter(|text| !text.is_empty());
-        if input.checked.is_some() && program.is_none() {
-            return Err(ApplicationError::validation_error("checked needs a program (its id or slug)"));
-        }
-        let checked = program.map(|program| (program.to_string(), input.checked.unwrap_or(true)));
         let search = input.search.as_deref().map(str::trim).filter(|text| !text.is_empty()).map(str::to_string);
 
         let (module_catalog, next_page_token, total_size) = self
             .module_catalog_item_repository
-            .list(input.parent_id, search.as_deref(), &input.keys, checked.as_ref().map(|(program, wanted)| (program.as_str(), *wanted)), page_size.min(MAX_PAGE_SIZE), input.page_token)
+            .list(input.parent_id, search.as_deref(), &input.keys, page_size.min(MAX_PAGE_SIZE), input.page_token)
             .instrument(info_span!("ListModuleCatalogUseCase::list"))
             .await?;
 

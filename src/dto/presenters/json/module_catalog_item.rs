@@ -24,6 +24,8 @@ pub struct ModuleCatalogItemPresenter {
     pub has_children: bool,
     pub children_count: i64,
     pub icon: Option<String>,
+    /// `configuration` or `operate` on the modules named in the catalog, null for every other module.
+    pub module_in: Option<String>,
     pub create_time: String,
     pub update_time: String,
 }

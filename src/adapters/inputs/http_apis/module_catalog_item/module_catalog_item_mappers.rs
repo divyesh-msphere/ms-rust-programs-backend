@@ -44,6 +44,7 @@ pub fn to_presenter(module_catalog_item: ModuleCatalogItem) -> ModuleCatalogItem
         has_children: module_catalog_item.has_children,
         children_count: module_catalog_item.children_count,
         icon: module_catalog_item.icon,
+        module_in: module_catalog_item.module_in,
         create_time: format_datetime(module_catalog_item.create_time),
         update_time: format_datetime(module_catalog_item.update_time),
     }
@@ -71,8 +72,6 @@ impl ListModuleCatalogMapper {
             page_token: parse::optional_uuid("page_token", payload.page_token.as_deref())?,
             search: payload.search.map(|text| module_search_text(&text)),
             keys: payload.keys.map(|text| module_keys(&text)).unwrap_or_default(),
-            program: payload.program,
-            checked: payload.checked,
         })
     }
 
@@ -90,12 +89,17 @@ pub struct GetModuleCatalogItemMapper;
 impl GetModuleCatalogItemMapper {
     pub fn input(payload: GetModuleCatalogItemPayload) -> Result<GetModuleCatalogItemInput, ApplicationError> {
         Ok(GetModuleCatalogItemInput {
+            program: payload.program,
             identifier: ResourceIdentifier::parse(&payload.module_catalog_item),
         })
     }
 
-    pub fn output_success(output: GetModuleCatalogItemOutput) -> ModuleCatalogItemPresenter {
-        to_presenter(output.module_catalog_item)
+    pub fn output_success(output: GetModuleCatalogItemOutput) -> ListModuleCatalogPresenter {
+        ListModuleCatalogPresenter {
+            total_size: output.module_catalog_items.len() as i64,
+            results: output.module_catalog_items.into_iter().map(to_presenter).collect(),
+            next_page_token: None,
+        }
     }
 }
 

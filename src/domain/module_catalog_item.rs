@@ -38,6 +38,7 @@ pub struct ModuleCatalogItem {
     pub has_children: bool,              // OUTPUT_ONLY — true when another module hangs under this one
     pub children_count: i64,             // OUTPUT_ONLY — how many modules hang directly under this one
     pub icon: Option<String>,            // the icon the frontend draws beside the module
+    pub module_in: Option<String>,       // `configuration` or `operate`; None for every other module
     pub create_time: DateTime<Utc>,      // OUTPUT_ONLY
     pub update_time: DateTime<Utc>,      // OUTPUT_ONLY
 }
@@ -47,16 +48,21 @@ pub trait ModuleCatalogItemRepository: Send + Sync {
     /// Accepts the id or the key, same as `GET /libraries/{library}`.
     async fn get(&self, identifier: ResourceIdentifier) -> Result<ModuleCatalogItem, ApplicationError>;
 
+    /// The modules at or beneath `root` that `program` (id or slug) has switched on
+    /// (`enabled = true`), flat, parents first, then in display order. `NotFound` when the
+    /// program or `root` does not exist.
+    async fn list_enabled_under(
+        &self,
+        program: &str,
+        root: ResourceIdentifier,
+    ) -> Result<Vec<ModuleCatalogItem>, ApplicationError>;
+
     /// Direct children of `parent_id`, or the root-level modules when it is
     /// `None`, in display order (`position`, then `id`). The returned `i64` is
     /// `total_size`, the count matching this same filter.
     ///
     /// With `keys` (module keys or ids) it returns exactly those modules, nothing beneath them, and
     /// `parent_id` is ignored; `search` then narrows within them.
-    ///
-    /// With `checked = (program, wanted)` it returns the selectable modules the program has ticked
-    /// (`wanted = true`: has the module, switched on) or not ticked (`false`), flat and at any depth;
-    /// `NotFound` when the program does not exist. `parent_id` is ignored.
     ///
     /// With `search` (already trimmed, non-empty) it switches to a name search: every module
     /// at ANY depth whose name contains the text (case-insensitive), or, with `parent_id`, only
@@ -66,7 +72,6 @@ pub trait ModuleCatalogItemRepository: Send + Sync {
         parent_id: Option<Uuid>,
         search: Option<&str>,
         keys: &[String],
-        checked: Option<(&str, bool)>,
         page_size: i64,
         page_token: Option<Uuid>,
     ) -> Result<(Vec<ModuleCatalogItem>, Option<Uuid>, i64), ApplicationError>;
@@ -140,6 +145,7 @@ mod tests {
             has_children: false,
             children_count: 0,
             icon: None,
+            module_in: None,
             create_time: chrono::Utc::now(),
             update_time: chrono::Utc::now(),
         }

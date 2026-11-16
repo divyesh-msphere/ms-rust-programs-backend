@@ -457,11 +457,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/enrollment",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/enrollment",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "enrollment"
               ]
@@ -476,9 +478,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('Enrollment',()=>{pm.expect(j.key).to.eql('enrollment');pm.expect(j.name).to.eql('Enrollment');pm.expect(j.kind).to.eql('group');pm.expect(j.parent_id).to.eql(null);pm.expect(j.ancestry).to.eql('enrollment');pm.expect(j.path).to.eql('module-catalog/'+j.id);});",
-                  "pm.test('has_children is a boolean', () => pm.expect(pm.response.json().has_children).to.be.a('boolean'));",
-                  "pm.test('children_count and icon are present; count matches has_children', () => { const m = pm.response.json(); pm.expect(m.children_count).to.be.a('number'); pm.expect(m).to.have.property('icon'); pm.expect(m.has_children).to.eql(m.children_count > 0); });"
+                  "pm.test('only modules the program has switched on, at or beneath the item',()=>{pm.expect(j.results).to.be.an('array');pm.expect(j.total_size).to.eql(j.results.length);j.results.forEach(m=>{pm.expect(m.path).to.eql('module-catalog/'+m.id);});});"
                 ]
               }
             }
@@ -495,11 +495,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/{{mdenroll}}",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/{{mdenroll}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "{{mdenroll}}"
               ]
@@ -514,7 +516,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('same one',()=>{pm.expect(j.id).to.eql(pm.collectionVariables.get('mdenroll'));pm.expect(j.key).to.eql('enrollment');});"
+                  "pm.test('only modules the program has switched on, at or beneath the item',()=>{pm.expect(j.results).to.be.an('array');pm.expect(j.total_size).to.eql(j.results.length);j.results.forEach(m=>{pm.expect(m.path).to.eql('module-catalog/'+m.id);});});"
                 ]
               }
             }
@@ -531,11 +533,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/enrollment.stores.enrolled_stores_control_panel",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/enrollment.stores.enrolled_stores_control_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "enrollment.stores.enrolled_stores_control_panel"
               ]
@@ -550,7 +554,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('premade leaf with its handler and api',()=>{pm.expect(j.kind).to.eql('leaf');pm.expect(j.source).to.eql('premade');pm.expect(j.handler_key).to.eql('enrolled_stores');pm.expect(j.api_base).to.eql('enrollments');pm.expect(j.ui_component).to.eql('custom:enrolled_stores');pm.expect(j.selectable).to.eql(true);pm.expect(j.allow_components).to.eql(true);pm.expect(j.ancestry).to.eql(j.key);});"
+                  "pm.test('only modules the program has switched on, at or beneath the item',()=>{pm.expect(j.results).to.be.an('array');pm.expect(j.total_size).to.eql(j.results.length);j.results.forEach(m=>{pm.expect(m.path).to.eql('module-catalog/'+m.id);});});"
                 ]
               }
             }
@@ -567,11 +571,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/catalog_pricing.products_rules.pre_enrollment",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/catalog_pricing.products_rules.pre_enrollment",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "catalog_pricing.products_rules.pre_enrollment"
               ]
@@ -586,7 +592,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('container leaf, a rule family, requires publish',()=>{pm.expect(j.source).to.eql('container');pm.expect(j.kind).to.eql('leaf');pm.expect(j.rule_family).to.eql('pre_enrollment');pm.expect(j.requires_publish).to.eql(true);pm.expect(j.handler_key).to.eql(null);});"
+                  "pm.test('only modules the program has switched on, at or beneath the item',()=>{pm.expect(j.results).to.be.an('array');pm.expect(j.total_size).to.eql(j.results.length);j.results.forEach(m=>{pm.expect(m.path).to.eql('module-catalog/'+m.id);});});"
                 ]
               }
             }
@@ -1226,309 +1232,6 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.test('only the real one',()=>pm.expect(j.results.map(r=>r.key)).to.eql(['catalog_pricing']));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "checked: set up a program that ticks Store Discounts",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-User-Id",
-                "value": "postman"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/programs",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "programs"
-              ]
-            },
-            "description": "",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Checked filter\",\n  \"slug\": \"checked-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    \"catalog_pricing.store_discounts\"\n  ]\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200',()=>pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set('checked_program_id',pm.response.json().id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "checked=true: only what the program ticked (Pricing is not there)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-User-Id",
-                "value": "postman"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-catalog?program={{checked_program_id}}&checked=true",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-catalog"
-              ],
-              "query": [
-                {
-                  "key": "program",
-                  "value": "{{checked_program_id}}"
-                },
-                {
-                  "key": "checked",
-                  "value": "true"
-                }
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200',()=>pm.response.to.have.status(200));",
-                  "const j=pm.response.json();",
-                  "const k=j.results.map(r=>r.key);",
-                  "pm.test('has the ticked module and its control panel, flat',()=>{pm.expect(k).to.include('catalog_pricing.store_discounts');pm.expect(k).to.include('catalog_pricing.store_discounts'+'.control_panel');j.results.forEach(r=>pm.expect(r).to.not.have.property('children'));});",
-                  "pm.test('not Pricing, not an unticked module',()=>{pm.expect(k).to.not.include('catalog_pricing.pricing');pm.expect(k).to.not.include('enrollment');});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "checked=false: the modules it has not ticked",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-User-Id",
-                "value": "postman"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-catalog?program={{checked_program_id}}&checked=false&max_page_size=200",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-catalog"
-              ],
-              "query": [
-                {
-                  "key": "program",
-                  "value": "{{checked_program_id}}"
-                },
-                {
-                  "key": "checked",
-                  "value": "false"
-                },
-                {
-                  "key": "max_page_size",
-                  "value": "200"
-                }
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200',()=>pm.response.to.have.status(200));",
-                  "const k=pm.response.json().results.map(r=>r.key);",
-                  "pm.test('Pricing is here, the ticked one is not',()=>{pm.expect(k).to.include('catalog_pricing.pricing');pm.expect(k).to.not.include('catalog_pricing.store_discounts');});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "checked without a program -> 400",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-User-Id",
-                "value": "postman"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-catalog?checked=true",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-catalog"
-              ],
-              "query": [
-                {
-                  "key": "checked",
-                  "value": "true"
-                }
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('400',()=>pm.response.to.have.status(400));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "checked with an unknown program -> 404",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-User-Id",
-                "value": "postman"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/module-catalog?program=no-such-program&checked=true",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "module-catalog"
-              ],
-              "query": [
-                {
-                  "key": "program",
-                  "value": "no-such-program"
-                },
-                {
-                  "key": "checked",
-                  "value": "true"
-                }
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('404',()=>pm.response.to.have.status(404));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "checked: clean up",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "X-User-Id",
-                "value": "postman"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/programs/{{checked_program_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "programs",
-                "{{checked_program_id}}"
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('204',()=>pm.response.to.have.status(204));"
                 ]
               }
             }
@@ -4769,11 +4472,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/order_transaction.core_returns.fees",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/order_transaction.core_returns.fees",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "order_transaction.core_returns.fees"
               ]
@@ -4788,7 +4493,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('a configurable container leaf that starts as a rule',()=>{pm.expect(j.name).to.eql('Fees');pm.expect(j.kind).to.eql('leaf');pm.expect(j.source).to.eql('container');pm.expect(j.ui_component).to.eql('rule_playground');pm.expect(j.rule_family).to.eql('fees');pm.expect(j.allow_components).to.eql(true);pm.expect(j.selectable).to.eql(true);pm.expect(j.default_mode).to.eql('rule');pm.expect(j.parent_id).to.be.a('string');});"
+                  "pm.test('only modules the program has switched on, at or beneath the item',()=>{pm.expect(j.results).to.be.an('array');pm.expect(j.total_size).to.eql(j.results.length);j.results.forEach(m=>{pm.expect(m.path).to.eql('module-catalog/'+m.id);});});"
                 ]
               }
             }
@@ -4805,11 +4510,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/order_transaction.core_returns.terms",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/order_transaction.core_returns.terms",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "order_transaction.core_returns.terms"
               ]
@@ -4823,7 +4530,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
-                  "pm.test('default_mode is null',()=>pm.expect(pm.response.json().default_mode).to.eql(null));"
+                  "const j=pm.response.json();",
+                  "pm.test('only modules the program has switched on, at or beneath the item',()=>{pm.expect(j.results).to.be.an('array');pm.expect(j.total_size).to.eql(j.results.length);j.results.forEach(m=>{pm.expect(m.path).to.eql('module-catalog/'+m.id);});});"
                 ]
               }
             }
@@ -4884,11 +4592,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/order_transaction.core_returns.core_return_fees_panel",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/order_transaction.core_returns.core_return_fees_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "order_transaction.core_returns.core_return_fees_panel"
               ]
@@ -25384,11 +25094,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/no.such.module",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/no.such.module",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "no.such.module"
               ]
@@ -25409,6 +25121,43 @@
           ]
         },
         {
+          "name": "An unknown program -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/no-such-program/module-catalog/enrollment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "no-such-program",
+                "module-catalog",
+                "enrollment"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));",
+                  "pm.test('says which',()=>pm.expect(pm.response.json().detail).to.include('no-such-program'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "An unknown id -> 404",
           "request": {
             "method": "GET",
@@ -25419,11 +25168,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/01a14424-0000-7000-8000-000000000000",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/01a14424-0000-7000-8000-000000000000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "01a14424-0000-7000-8000-000000000000"
               ]
@@ -26062,11 +25813,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/enrollment.requirements.enrollment_requirements",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/enrollment.requirements.enrollment_requirements",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "enrollment.requirements.enrollment_requirements"
               ]
@@ -26096,11 +25849,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/enrollment.applications_approvals.application_panel",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/enrollment.applications_approvals.application_panel",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "enrollment.applications_approvals.application_panel"
               ]
@@ -26130,11 +25885,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/module-catalog/enrollment.requirements",
+              "raw": "{{base_url}}/programs/{{program_id}}/module-catalog/enrollment.requirements",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "programs",
+                "{{program_id}}",
                 "module-catalog",
                 "enrollment.requirements"
               ]
