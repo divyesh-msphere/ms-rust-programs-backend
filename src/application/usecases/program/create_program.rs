@@ -3,7 +3,8 @@ use crate::application::usecases::interface::UseCase;
 use crate::application::services::library_options::{resolve_options, validate_libraries};
 use crate::domain::library_catalog::LibraryCatalog;
 use crate::domain::program::{
-    DEFAULT_PROGRAM_LEVEL, NewProgram, Program, ProgramRepository, validate_level, validate_slug,
+    Branding, DEFAULT_PROGRAM_LEVEL, NewProgram, Program, ProgramRepository, Renewal, clean_about, clean_branding,
+    clean_highlights, validate_level, validate_renewal, validate_slug,
 };
 use crate::domain::program_module::ProgramModule;
 use crate::domain::program_setting::{ModuleChange, validate_changes};
@@ -30,6 +31,11 @@ pub struct CreateProgramInput {
     pub name: String,
     pub slug: String,
     pub description: Option<String>,
+    pub about: Option<String>,
+    pub highlights: Vec<String>,
+    pub branding: Branding,
+    /// `None` takes the defaults (12 months, 30 days grace, 30 days reminder, no auto-renew).
+    pub renewal: Option<Renewal>,
     pub level: Option<String>,
     /// The modules the admin picked, each optionally with its mode and settings.
     pub modules: Vec<ModuleChange>,
@@ -59,6 +65,11 @@ impl UseCase<CreateProgramOutput, CreateProgramInput> for CreateProgramUseCase {
         validate_slug(&input.slug)?;
         let level = input.level.unwrap_or_else(|| DEFAULT_PROGRAM_LEVEL.to_string());
         validate_level(&level)?;
+        let about = clean_about(input.about)?;
+        let highlights = clean_highlights(input.highlights)?;
+        let branding = clean_branding(input.branding)?;
+        let renewal = input.renewal.unwrap_or_default();
+        validate_renewal(&renewal)?;
         // A module named twice with nothing else on it is harmless; anything else is checked.
         let mut modules: Vec<ModuleChange> = Vec::with_capacity(input.modules.len());
         for change in input.modules {
@@ -78,6 +89,10 @@ impl UseCase<CreateProgramOutput, CreateProgramInput> for CreateProgramUseCase {
                 name,
                 slug: input.slug,
                 description: input.description.map(|d| d.trim().to_string()).filter(|d| !d.is_empty()),
+                about,
+                highlights,
+                branding,
+                renewal,
                 level,
                 modules,
                 actor: input.actor,

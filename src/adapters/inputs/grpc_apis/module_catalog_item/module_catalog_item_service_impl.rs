@@ -30,7 +30,8 @@ impl ModuleCatalogItemServiceImpl {
         let request = request.to_owned_message();
 
         // `full_tree = true` swaps the paginated flat list for the nested tree.
-        if request.full_tree.unwrap_or(false) {
+        // `keys` wins: it asks for exactly those modules, never a nested tree.
+        if request.full_tree.unwrap_or(false) && request.keys.is_empty() && request.program.as_deref().is_none_or(|p| p.trim().is_empty()) {
             let tree_input = GetModuleCatalogTreeGrpcMapper::input(request)
                 .map_err(GrpcErrorResponse::map_response_error)?;
 

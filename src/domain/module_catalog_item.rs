@@ -35,6 +35,9 @@ pub struct ModuleCatalogItem {
     pub selectable: bool,                // false for Overview (always on)
     pub allow_components: bool,          // the admin may add settings / rules here
     pub default_mode: Option<String>,    // "rule" | "settings": the mode a program gets when it selects the page
+    pub has_children: bool,              // OUTPUT_ONLY — true when another module hangs under this one
+    pub children_count: i64,             // OUTPUT_ONLY — how many modules hang directly under this one
+    pub icon: Option<String>,            // the icon the frontend draws beside the module
     pub create_time: DateTime<Utc>,      // OUTPUT_ONLY
     pub update_time: DateTime<Utc>,      // OUTPUT_ONLY
 }
@@ -47,9 +50,23 @@ pub trait ModuleCatalogItemRepository: Send + Sync {
     /// Direct children of `parent_id`, or the root-level modules when it is
     /// `None`, in display order (`position`, then `id`). The returned `i64` is
     /// `total_size`, the count matching this same filter.
+    ///
+    /// With `keys` (module keys or ids) it returns exactly those modules, nothing beneath them, and
+    /// `parent_id` is ignored; `search` then narrows within them.
+    ///
+    /// With `checked = (program, wanted)` it returns the selectable modules the program has ticked
+    /// (`wanted = true`: has the module, switched on) or not ticked (`false`), flat and at any depth;
+    /// `NotFound` when the program does not exist. `parent_id` is ignored.
+    ///
+    /// With `search` (already trimmed, non-empty) it switches to a name search: every module
+    /// at ANY depth whose name contains the text (case-insensitive), or, with `parent_id`, only
+    /// those beneath that module.
     async fn list(
         &self,
         parent_id: Option<Uuid>,
+        search: Option<&str>,
+        keys: &[String],
+        checked: Option<(&str, bool)>,
         page_size: i64,
         page_token: Option<Uuid>,
     ) -> Result<(Vec<ModuleCatalogItem>, Option<Uuid>, i64), ApplicationError>;
@@ -120,6 +137,9 @@ mod tests {
             selectable: true,
             allow_components: false,
             default_mode: None,
+            has_children: false,
+            children_count: 0,
+            icon: None,
             create_time: chrono::Utc::now(),
             update_time: chrono::Utc::now(),
         }

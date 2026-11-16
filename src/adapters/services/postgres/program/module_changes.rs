@@ -229,6 +229,35 @@ pub async fn apply_changes(
             changed = true;
         }
 
+        let icon = change.icon.as_deref().map(str::trim).map(|text| (!text.is_empty()).then(|| text.to_string()));
+        if let Some(icon) = icon {
+            sqlx::query("UPDATE program_modules SET icon = $3, update_time = now() WHERE program_id = $1 AND module_id = $2")
+                .bind(program_id)
+                .bind(module.id)
+                .bind(icon)
+                .execute(&mut *conn)
+                .await
+                .map_err(db_error)?;
+            changed = true;
+        }
+        if let Some(display) = change.rule_display {
+            let updated = sqlx::query("UPDATE rule_sets SET display = $3, update_time = now() WHERE program_id = $1 AND module_id = $2")
+                .bind(program_id)
+                .bind(module.id)
+                .bind(display)
+                .execute(&mut *conn)
+                .await
+                .map_err(db_error)?
+                .rows_affected();
+            if updated == 0 {
+                return Err(ApplicationError::unprocessable_entity(&format!(
+                    "module {:?} has no rule yet: switch it to mode rule first, then set rule.display",
+                    change.key
+                )));
+            }
+            changed = true;
+        }
+
         let current_mode = current.mode.as_deref().and_then(|m| ModuleMode::parse(m).ok());
         let mut target_mode = current_mode;
 
@@ -427,7 +456,7 @@ async fn replace_settings(
                 }
                 sqlx::query(
                     "UPDATE program_fields SET name = $2, field_type = $3, options_source = $4, library_id = $5, \
-                            required = $6, default_value = $7, position = $8, update_time = now() \
+                            required = $6, default_value = $7, position = $8, display = $9, update_time = now() \
                      WHERE id = $1",
                 )
                 .bind(id)
@@ -438,6 +467,7 @@ async fn replace_settings(
                 .bind(input.required)
                 .bind(&input.default_value)
                 .bind(position as i32)
+                .bind(input.display)
                 .execute(&mut *conn)
                 .await
                 .map_err(db_error)?;
@@ -447,8 +477,8 @@ async fn replace_settings(
                 let id = Uuid::now_v7();
                 sqlx::query(
                     "INSERT INTO program_fields \
-                        (id, program_id, module_id, name, key, field_type, options_source, library_id, required, default_value, position) \
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+                        (id, program_id, module_id, name, key, field_type, options_source, library_id, required, default_value, position, display) \
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
                 )
                 .bind(id)
                 .bind(program_id)
@@ -461,6 +491,7 @@ async fn replace_settings(
                 .bind(input.required)
                 .bind(&input.default_value)
                 .bind(position as i32)
+                .bind(input.display)
                 .execute(&mut *conn)
                 .await
                 .map_err(|err| {

@@ -62,7 +62,8 @@ fn freshness(age: Duration, soft: Duration, hard: Duration) -> Freshness {
 impl GlobalSettingsClient {
     pub fn new(config: &GlobalSettingsConfig) -> Self {
         let soft_ttl = Duration::from_secs(config.cache_seconds.max(1));
-        let headers = [("x-client-id", &config.client_id), ("x-client-secret", &config.client_secret)]
+        let bearer = if config.token.is_empty() { String::new() } else { format!("Bearer {}", config.token) };
+        let headers = [("x-client-id", &config.client_id), ("x-client-secret", &config.client_secret), ("authorization", &bearer)]
             .into_iter()
             .filter(|(_, value)| !value.is_empty())
             .map(|(name, value)| (name.to_string(), value.clone()))

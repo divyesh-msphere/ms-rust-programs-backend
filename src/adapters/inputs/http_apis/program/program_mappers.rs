@@ -9,7 +9,7 @@ use crate::application::usecases::program::undelete_program::{UndeleteProgramInp
 use crate::application::usecases::program::update_program::{UpdateProgramInput, UpdateProgramOutput};
 use crate::application::utils::datetime::format_datetime;
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::program::Program;
+use crate::domain::program::{Branding, BrandingPatch, Program, Renewal, RenewalPatch};
 use crate::domain::program_setting::{ModuleChange, ModuleMode, OptionInput, SettingInput, SettingType};
 use crate::dto::payloads::json::program::{
     CreateProgramBodyPayload, CreateProgramQueryPayload, DeleteProgramPayload, GetProgramPayload,
@@ -18,7 +18,7 @@ use crate::dto::payloads::json::program::{
 use crate::domain::aep::ResourceState;
 use crate::domain::program::ProgramListItem;
 use crate::dto::presenters::json::program::{
-    DomainPresenter, DomainsPresenter, EnrollmentCountsPresenter, LastActivityPresenter, ListProgramsPresenter,
+    BrandingPresenter, DomainPresenter, DomainsPresenter, RenewalPresenter, EnrollmentCountsPresenter, LastActivityPresenter, ListProgramsPresenter,
     ProgramListSummaryPresenter, ProgramPresenter, ProgramStatsPresenter, ProgramWithModulesPresenter,
 };
 
@@ -35,6 +35,19 @@ pub fn to_presenter(program: Program) -> ProgramPresenter {
         name: program.name,
         slug: program.slug,
         description: program.description,
+        about: program.about,
+        highlights: program.highlights,
+        branding: BrandingPresenter {
+            brand_color: program.branding.brand_color,
+            text_color: program.branding.text_color,
+            logo_icon: program.branding.logo_icon,
+        },
+        renewal: RenewalPresenter {
+            term_months: program.renewal.term_months,
+            grace_period_days: program.renewal.grace_period_days,
+            reminder_days: program.renewal.reminder_days,
+            auto_renew: program.renewal.auto_renew,
+        },
         level: program.level,
         active: program.active,
         config_version: program.config_version,
@@ -75,15 +88,52 @@ fn to_option(payload: OptionPayload) -> OptionInput {
 }
 
 fn to_setting(payload: SettingPayload) -> Result<SettingInput, ApplicationError> {
+    let options = setting_options(&payload.name, payload.options, payload.custom_options)?;
     Ok(SettingInput {
         id: parse::optional_uuid("settings[].id", payload.id.as_deref())?,
         name: payload.name,
         field_type: SettingType::parse(&payload.field_type)?,
         required: payload.required.unwrap_or(false),
+        display: payload.display.unwrap_or(true),
         default_value: payload.default_value,
         library_id: parse::optional_uuid("settings[].library_id", payload.library_id.as_deref())?,
-        options: payload.options.unwrap_or_default().into_iter().map(to_option).collect(),
+        options,
     })
+}
+
+/// `options` and `custom_options` both name the admin's own choices; `custom_options` also takes the
+/// comma-separated text of the form or a plain list of labels.
+fn setting_options(
+    setting: &str,
+    options: Option<Vec<OptionPayload>>,
+    custom: Option<serde_json::Value>,
+) -> Result<Vec<OptionInput>, ApplicationError> {
+    use serde_json::Value;
+    let bad = |why: &str| ApplicationError::validation_error(&format!("setting {setting:?}: {why}"));
+    let Some(custom) = custom.filter(|value| !value.is_null()) else {
+        return Ok(options.unwrap_or_default().into_iter().map(to_option).collect());
+    };
+    if options.as_ref().is_some_and(|list| !list.is_empty()) {
+        return Err(bad("send `options` or `custom_options`, not both"));
+    }
+    let label = |text: &str| OptionInput { code: None, label: text.trim().to_string() };
+    let list: Vec<OptionInput> = match custom {
+        Value::String(text) => text.split(',').map(label).collect(),
+        Value::Array(items) => items
+            .into_iter()
+            .map(|item| match item {
+                Value::String(text) => Ok(label(&text)),
+                Value::Object(map) => {
+                    let label = map.get("label").and_then(Value::as_str).ok_or_else(|| bad("a custom option object needs a `label`"))?;
+                    let code = map.get("code").and_then(Value::as_str).map(str::to_string);
+                    Ok(OptionInput { code, label: label.trim().to_string() })
+                }
+                _ => Err(bad("custom_options holds labels (text) or {label, code} objects")),
+            })
+            .collect::<Result<_, _>>()?,
+        _ => return Err(bad("custom_options is a comma-separated text or a list")),
+    };
+    Ok(list.into_iter().filter(|option| !option.label.is_empty()).collect())
 }
 
 /// The module entries of a create / update request as domain changes.
@@ -95,6 +145,8 @@ pub fn to_module_changes(payloads: Vec<ModulePayload>) -> Result<Vec<ModuleChang
             ModulePayload::Config(config) => Ok(ModuleChange {
                 key: config.key,
                 enabled: config.enabled,
+                icon: config.icon,
+                rule_display: config.rule.and_then(|rule| rule.display),
                 mode: config.mode.as_deref().map(ModuleMode::parse).transpose()?,
                 settings: config
                     .settings
@@ -182,6 +234,21 @@ impl CreateProgramMapper {
             name: body.name,
             slug: body.slug,
             description: body.description,
+            about: body.about,
+            highlights: body.highlights.unwrap_or_default(),
+            branding: body
+                .branding
+                .map(|b| Branding { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon })
+                .unwrap_or_default(),
+            renewal: body.renewal.map(|r| {
+                RenewalPatch {
+                    term_months: r.term_months,
+                    grace_period_days: r.grace_period_days,
+                    reminder_days: r.reminder_days,
+                    auto_renew: r.auto_renew,
+                }
+                .apply(&Renewal::default())
+            }),
             level: body.level,
             modules: to_module_changes(body.modules.unwrap_or_default())?,
             actor,
@@ -209,6 +276,17 @@ impl UpdateProgramMapper {
             identifier: ResourceIdentifier::parse(&path.program),
             name: body.name,
             description: body.description,
+            about: body.about,
+            highlights: body.highlights,
+            branding: body
+                .branding
+                .map(|b| BrandingPatch { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon }),
+            renewal: body.renewal.map(|r| RenewalPatch {
+                term_months: r.term_months,
+                grace_period_days: r.grace_period_days,
+                reminder_days: r.reminder_days,
+                auto_renew: r.auto_renew,
+            }),
             level: body.level,
             active: body.active,
             modules: body.modules.map(to_module_changes).transpose()?,

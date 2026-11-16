@@ -21,6 +21,9 @@ pub struct ModuleCatalogItemPresenter {
     pub selectable: bool,
     pub allow_components: bool,
     pub default_mode: Option<String>,
+    pub has_children: bool,
+    pub children_count: i64,
+    pub icon: Option<String>,
     pub create_time: String,
     pub update_time: String,
 }

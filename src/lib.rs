@@ -19,8 +19,6 @@ pub struct Dependencies {
     pub application_config: Arc<ApplicationConfig>,
     pub repositories: Arc<Repositories>,
     pub use_cases: Arc<UseCases>,
-    /// Where library-backed settings read their options (global-settings).
-    pub library_catalog: Arc<dyn LibraryCatalog>,
 }
 
 impl Dependencies {
@@ -56,7 +54,6 @@ impl Dependencies {
             application_config: app_cfg,
             repositories,
             use_cases,
-            library_catalog,
         }
     }
 }

@@ -3,7 +3,10 @@ use crate::application::usecases::interface::UseCase;
 use crate::application::services::library_options::{resolve_options, validate_libraries};
 use crate::domain::aep::ResourceIdentifier;
 use crate::domain::library_catalog::LibraryCatalog;
-use crate::domain::program::{Program, ProgramRepository, UpdateProgram, validate_level};
+use crate::domain::program::{
+    BrandingPatch, Program, ProgramRepository, RenewalPatch, UpdateProgram, clean_about, clean_branding,
+    clean_highlights, validate_level, validate_renewal,
+};
 use crate::domain::program_module::ProgramModule;
 use crate::domain::program_setting::{ModuleChange, validate_changes};
 use std::sync::Arc;
@@ -27,6 +30,10 @@ pub struct UpdateProgramInput {
     pub identifier: ResourceIdentifier,
     pub name: Option<String>,
     pub description: Option<Option<String>>,
+    pub about: Option<Option<String>>,
+    pub highlights: Option<Vec<String>>,
+    pub branding: Option<BrandingPatch>,
+    pub renewal: Option<RenewalPatch>,
     pub level: Option<String>,
     pub active: Option<bool>,
     /// Module changes (add a module, set its mode, replace its settings, switch it off).
@@ -77,6 +84,25 @@ impl UseCase<UpdateProgramOutput, UpdateProgramInput> for UpdateProgramUseCase {
             .instrument(info_span!("UpdateProgramUseCase::get"))
             .await?;
 
+        // A sent part of the badge or the renewal replaces that part; the rest keeps its value.
+        let about = match input.about {
+            Some(about) => Some(clean_about(about)?),
+            None => None,
+        };
+        let highlights = input.highlights.map(clean_highlights).transpose()?;
+        let branding = input
+            .branding
+            .map(|patch| clean_branding(patch.apply(&existing.branding)))
+            .transpose()?;
+        let renewal = match input.renewal {
+            Some(patch) => {
+                let renewal = patch.apply(&existing.renewal);
+                validate_renewal(&renewal)?;
+                Some(renewal)
+            }
+            None => None,
+        };
+
         let (program, modules) = self
             .program_repository
             .update(
@@ -84,6 +110,10 @@ impl UseCase<UpdateProgramOutput, UpdateProgramInput> for UpdateProgramUseCase {
                 UpdateProgram {
                     name,
                     description: input.description.map(|d| d.map(|d| d.trim().to_string()).filter(|d| !d.is_empty())),
+                    about,
+                    highlights,
+                    branding,
+                    renewal,
                     level: input.level,
                     active: input.active,
                     modules: input.modules,

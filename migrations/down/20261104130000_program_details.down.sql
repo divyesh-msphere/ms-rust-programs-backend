@@ -1,0 +1,10 @@
+ALTER TABLE program_fields DROP COLUMN IF EXISTS display;
+ALTER TABLE programs DROP COLUMN IF EXISTS auto_renew;
+ALTER TABLE programs DROP COLUMN IF EXISTS renewal_reminder_days;
+ALTER TABLE programs DROP COLUMN IF EXISTS renewal_grace_days;
+ALTER TABLE programs DROP COLUMN IF EXISTS renewal_term_months;
+ALTER TABLE programs DROP COLUMN IF EXISTS logo_icon;
+ALTER TABLE programs DROP COLUMN IF EXISTS text_color;
+ALTER TABLE programs DROP COLUMN IF EXISTS brand_color;
+ALTER TABLE programs DROP COLUMN IF EXISTS highlights;
+ALTER TABLE programs DROP COLUMN IF EXISTS about;

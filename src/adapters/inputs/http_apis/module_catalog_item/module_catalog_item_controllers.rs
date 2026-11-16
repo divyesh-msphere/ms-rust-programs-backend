@@ -25,7 +25,10 @@ pub async fn list_module_catalog(
     let query = query.into_inner();
 
     // `full_tree=true` swaps the paginated flat list for the nested tree.
-    if query.full_tree.unwrap_or(false) {
+    // `keys` wins: it asks for exactly those modules, never a nested tree.
+    let has_keys = query.keys.as_deref().is_some_and(|keys| !keys.trim().is_empty())
+        || query.program.as_deref().is_some_and(|program| !program.trim().is_empty());
+    if query.full_tree.unwrap_or(false) && !has_keys {
         let tree_input = GetModuleCatalogTreeMapper::input(query)
             .map_err(ErrorResponse::map_response_error)?;
 

@@ -46,6 +46,12 @@ message ModuleCatalogItem {
   // "rule" or "settings": the mode a program gets when it selects this page, without the admin choosing it.
   // Absent for a page the admin configures freely.
   optional string default_mode = 21 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // True when at least one module hangs under this one.
+  bool has_children = 22 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // How many modules hang directly under this one.
+  int64 children_count = 23 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The icon the frontend draws beside the module (an icon name). Absent until set.
+  optional string icon = 24 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // A module with its descendants nested under `children` (`full_tree = true`).
@@ -73,6 +79,9 @@ message ModuleCatalogTreeNode {
   bool selectable = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   bool allow_components = 21 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string default_mode = 22 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  bool has_children = 23 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int64 children_count = 24 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string icon = 25 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message ListModuleCatalogRequest {
@@ -85,6 +94,18 @@ message ListModuleCatalogRequest {
   // tree (or, with `parent_id`, everything beneath that module) nested under
   // `children`, in `tree_results`.
   optional bool full_tree = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Finds modules whose name contains this text, at any depth, case-insensitive (`module=text` is
+  // accepted too). With `parent_id`, only modules beneath it. Ignored when `full_tree` is true.
+  optional string search = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Module keys or ids: returns exactly these modules, flat and with nothing beneath them. `parent_id`
+  // is ignored; `search` narrows within them. Wins over `full_tree`.
+  repeated string keys = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // With `checked`: the program (ID or slug) whose ticks decide what is returned.
+  optional string program = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // true: only the selectable modules `program` has ticked (selected and switched on), flat and with
+  // nothing beneath them; false: the ones it has not. Needs `program`; `program` alone means true.
+  // Wins over `full_tree` and `parent_id`.
+  optional bool checked = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message ListModuleCatalogResponse {
   repeated ModuleCatalogItem results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -117,7 +138,7 @@ message Program {
     pattern: "programs/{program}"
   };
 
-  string path =z 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Lowercase letters, digits and single hyphens. IMMUTABLE after create.
@@ -136,6 +157,37 @@ message Program {
   reserved 14;
   // The numbers of the programs table. Set on ListPrograms rows only.
   optional ProgramStats stats = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The merchant-facing text (`description` is the internal one).
+  optional string about = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Up to 5 short selling points, in order.
+  repeated string highlights = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  ProgramBranding branding = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  ProgramRenewal renewal = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
+// The badge of a program. In a request a sent part replaces that part (an empty text clears it).
+message ProgramBranding {
+  // `#RRGGBB`, the badge background.
+  optional string brand_color = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // `#RRGGBB`, the text on the badge.
+  optional string text_color = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // An icon name, e.g. `credit_card`.
+  optional string logo_icon = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// The renewal defaults of a program. In a request omitted parts take the defaults (create: 12 months,
+// 30 days grace, 30 days reminder, no auto-renew) or keep their value (update).
+message ProgramRenewal {
+  optional int32 term_months = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional int32 grace_period_days = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Days before the term ends.
+  optional int32 reminder_days = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional bool auto_renew = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// The highlights of an update: present replaces the whole list (an empty list clears it).
+message HighlightList {
+  repeated string items = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
 message ProgramDomain {
@@ -201,6 +253,9 @@ message ProgramModule {
   repeated ProgramSetting settings = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // The leaf's rule-set summary, when `mode` is "rule" (the frontend renders the rule engine).
   optional ProgramRule rule = 19 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The icon drawn beside the module: the program's own, else the catalog module's.
+  optional string icon = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  reserved 21;
 }
 
 // One setting of a "settings" leaf, with what the frontend needs to draw it.
@@ -227,6 +282,8 @@ message ProgramSetting {
   repeated string option_ids = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // Saved options that are no longer on offer (deactivated, or gone from their library).
   repeated string missing_option_ids = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The Display switch: false means the setting is hidden from the form.
+  bool display = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message SettingOption {
@@ -242,6 +299,8 @@ message ProgramRule {
   optional string rule_type = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional int32 draft_version = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional int32 published_version = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The rule's Display switch (default true).
+  bool display = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // ---- Request side: what the admin builds on a leaf ----
@@ -256,6 +315,16 @@ message ModuleConfig {
   // For mode "settings". Present REPLACES the module's settings (items with an id are kept and
   // updated, items without one are created, the rest are removed); absent leaves them alone.
   optional SettingConfigList settings = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The icon drawn beside this module (a name such as "tag"). An empty string clears it, and the catalog
+  // module's icon shows again; absent leaves it alone.
+  optional string icon = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The rule's settings, for a rule module. Absent leaves them alone.
+  optional RuleConfig rule = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+message RuleConfig {
+  // The rule's Display switch: false hides the rule from the program's pages; absent leaves it alone.
+  optional bool display = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
 // A wrapper, so "no settings sent" and "an empty list" can be told apart.
@@ -267,7 +336,8 @@ message SettingConfig {
   // Present for an existing setting.
   optional string id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  // boolean | number | text | radio | checkbox | dropdown.
+  // boolean | number | text | radio | checkbox | dropdown | percentage, or custom_option (a dropdown whose
+  // choices you type in `custom_options`; stored and returned as dropdown).
   string type = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   optional bool required = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // The starting value: a boolean, number, text, option code, or list of option codes.
@@ -276,6 +346,11 @@ message SettingConfig {
   optional string library_id = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // The admin's own options (when there is no library).
   repeated OptionConfig options = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The Display switch (default true): false hides the setting from the form.
+  optional bool display = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The custom choices of a radio / checkbox / dropdown as plain labels (the code is made from each
+  // label). The same as `options`; send one of the two, not both, and not with a library_id.
+  repeated string custom_options = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
 message OptionConfig {
@@ -328,6 +403,12 @@ message CreateProgramRequest {
   repeated string modules = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // Modules with their mode and settings (the richer form of `modules`; both can be used together).
   repeated ModuleConfig module_configs = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The merchant-facing text.
+  optional string about = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Up to 5 short selling points.
+  repeated string highlights = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional ProgramBranding branding = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional ProgramRenewal renewal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message CreateProgramResponse {
   Program program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -347,6 +428,11 @@ message UpdateProgramRequest {
   // Module changes: a new key adds the module; `mode` sets what a leaf is; `settings` replaces that
   // module's settings; `enabled: false` switches it off. Empty touches no module.
   repeated ModuleConfig modules = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // An empty string clears the merchant-facing text.
+  optional string about = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional HighlightList highlights = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional ProgramBranding branding = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional ProgramRenewal renewal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message UpdateProgramResponse {
   Program program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];

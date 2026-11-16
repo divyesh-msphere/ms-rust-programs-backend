@@ -23,6 +23,9 @@ pub struct ModuleCatalogItemDbModel {
     pub selectable: bool,
     pub allow_components: bool,
     pub default_mode: Option<String>,
+    pub has_children: bool,
+    pub children_count: i64,
+    pub icon: Option<String>,
     pub create_time: DateTime<Utc>,
     pub update_time: DateTime<Utc>,
 }

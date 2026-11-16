@@ -21,6 +21,7 @@ fn to_grpc_setting(setting: ProgramSetting) -> GrpcProgramSetting {
         r#type: setting.field_type.as_str().to_string(),
         render: setting.field_type.render().to_string(),
         required: setting.required,
+        display: setting.display,
         default_value: setting.default_value.map(json_to_buffa_value).into(),
         position: setting.position,
         options_source: setting.options_source.map(|s| s.as_str().to_string()),
@@ -62,6 +63,7 @@ pub fn to_grpc_program_module(program_path: &str, module: ProgramModule) -> Grpc
         allow_components: module.allow_components,
         requires_publish: module.requires_publish,
         enabled: module.enabled,
+        icon: module.icon,
         mode: module.mode,
         settings: if is_settings { module.settings.into_iter().map(to_grpc_setting).collect() } else { Vec::new() },
         rule: module
@@ -70,6 +72,7 @@ pub fn to_grpc_program_module(program_path: &str, module: ProgramModule) -> Grpc
                 rule_type: r.rule_type,
                 draft_version: r.draft_version,
                 published_version: r.published_version,
+                display: r.display,
                 ..Default::default()
             })
             .into(),

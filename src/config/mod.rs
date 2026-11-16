@@ -136,6 +136,10 @@ pub struct GlobalSettingsConfig {
     pub client_id: String,
     #[serde(default)]
     pub client_secret: String,
+    /// JWT sent as `Authorization: Bearer` on global-settings calls ONLY. Keep it in the
+    /// git-ignored `src/config/config.local.toml` (or `APP__GLOBAL_SETTINGS__TOKEN`), never in config.toml.
+    #[serde(default)]
+    pub token: String,
 }
 
 fn default_gs_base_url() -> String { "http://localhost:8000".to_string() }
@@ -152,6 +156,7 @@ impl Default for GlobalSettingsConfig {
             cache_seconds: default_gs_cache_seconds(),
             client_id: String::new(),
             client_secret: String::new(),
+            token: String::new(),
         }
     }
 }
@@ -170,6 +175,7 @@ impl ApplicationConfig {
     pub fn new() -> Result<Self, ConfigError> {
         let cfg = Config::builder()
             .add_source(File::with_name("src/config/config.toml").required(true))
+            .add_source(File::with_name("src/config/config.local.toml").required(false))
             .add_source(
                 Environment::with_prefix("APP")
                     .separator("__")

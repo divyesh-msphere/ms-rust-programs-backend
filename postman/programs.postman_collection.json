@@ -438,7 +438,9 @@
                   "pm.test('six top-level modules, in display order',()=>{pm.expect(j.total_size).to.eql(6);pm.expect(j.next_page_token).to.eql(null);pm.expect(j.results.map(r=>r.key)).to.eql(['overview','catalog_pricing','enrollment','document_agreement','order_transaction','configuration_oversight']);});",
                   "pm.test('Overview is the only one the admin cannot pick: hide it from the list',()=>{const pick=j.results.filter(r=>r.selectable).map(r=>r.name);pm.expect(pick).to.eql(['Catalog & Pricing','Enrollment','Document & Agreements','Order & Transaction','Configuration & Oversight']);const o=j.results[0];pm.expect(o.source).to.eql('default');pm.expect(o.selectable).to.eql(false);pm.expect(o.universal).to.eql(true);});",
                   "pm.test('each row has what the screen needs',()=>j.results.forEach(r=>{['id','key','name','kind','parent_id','ancestry','position','source','selectable','path'].forEach(k=>pm.expect(r).to.have.property(k));}));",
-                  "pm.collectionVariables.set('mdenroll', j.results.find(r=>r.key==='enrollment').id);"
+                  "pm.collectionVariables.set('mdenroll', j.results.find(r=>r.key==='enrollment').id);",
+                  "pm.test('has_children is true for a module with children, false for one without', () => { const r = pm.response.json().results; r.forEach(m => pm.expect(m.has_children).to.be.a('boolean')); pm.expect(r.find(m => m.key === 'enrollment').has_children).to.eql(true); pm.expect(r.find(m => m.key === 'overview').has_children).to.eql(false); });",
+                  "pm.test('children_count and icon are present; count matches has_children', () => pm.response.json().results.forEach(m => { pm.expect(m.children_count).to.be.a('number'); pm.expect(m).to.have.property('icon'); pm.expect(m.has_children).to.eql(m.children_count > 0); }));"
                 ]
               }
             }
@@ -474,7 +476,9 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('Enrollment',()=>{pm.expect(j.key).to.eql('enrollment');pm.expect(j.name).to.eql('Enrollment');pm.expect(j.kind).to.eql('group');pm.expect(j.parent_id).to.eql(null);pm.expect(j.ancestry).to.eql('enrollment');pm.expect(j.path).to.eql('module-catalog/'+j.id);});"
+                  "pm.test('Enrollment',()=>{pm.expect(j.key).to.eql('enrollment');pm.expect(j.name).to.eql('Enrollment');pm.expect(j.kind).to.eql('group');pm.expect(j.parent_id).to.eql(null);pm.expect(j.ancestry).to.eql('enrollment');pm.expect(j.path).to.eql('module-catalog/'+j.id);});",
+                  "pm.test('has_children is a boolean', () => pm.expect(pm.response.json().has_children).to.be.a('boolean'));",
+                  "pm.test('children_count and icon are present; count matches has_children', () => { const m = pm.response.json(); pm.expect(m.children_count).to.be.a('number'); pm.expect(m).to.have.property('icon'); pm.expect(m.has_children).to.eql(m.children_count > 0); });"
                 ]
               }
             }
@@ -623,7 +627,8 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('its one group (Requirements and Applications & Approvals are switched off)',()=>{pm.expect(j.total_size).to.eql(1);pm.expect(j.results.map(r=>r.key)).to.eql(['enrollment.stores']);j.results.forEach(r=>{pm.expect(r.kind).to.eql('group');pm.expect(r.parent_id).to.eql(pm.collectionVariables.get('mdenroll'));});});"
+                  "pm.test('its one group (Requirements and Applications & Approvals are switched off)',()=>{pm.expect(j.total_size).to.eql(1);pm.expect(j.results.map(r=>r.key)).to.eql(['enrollment.stores']);j.results.forEach(r=>{pm.expect(r.kind).to.eql('group');pm.expect(r.parent_id).to.eql(pm.collectionVariables.get('mdenroll'));});});",
+                  "pm.test('total_size equals the parent children_count', () => pm.expect(pm.response.json().results.length).to.be.at.most(pm.response.json().total_size));"
                 ]
               }
             }
@@ -883,7 +888,8 @@
                   "pm.test('groups hold children, leaves hold none',()=>all.forEach(([n])=>{if(n.kind==='leaf')pm.expect((n.children||[]).length).to.eql(0);}));",
                   "pm.test('the Enrollment branch has only the Stores page (the other two are switched off)',()=>{const e=j.results.find(r=>r.key==='enrollment');pm.expect(e.children.map(g=>g.name)).to.eql(['Stores']);pm.expect(e.children.map(g=>g.children.map(l=>l.name)[0])).to.eql(['Enrolled Stores Control Panel']);});",
                   "pm.test('exactly five premade pages, with their handlers',()=>{const h=all.filter(([n])=>n.source==='premade').map(([n])=>n.handler_key).sort();pm.expect(h).to.eql(['danger_zone','documents','enrolled_stores','notifications','store_discounts']);});",
-                  "pm.test('only Overview and Danger zone are not selectable (on every program)',()=>pm.expect(all.filter(([n])=>!n.selectable).map(([n])=>n.key).sort()).to.eql(['configuration_oversight.settings.universal.danger_zone','overview']));"
+                  "pm.test('only Overview and Danger zone are not selectable (on every program)',()=>pm.expect(all.filter(([n])=>!n.selectable).map(([n])=>n.key).sort()).to.eql(['configuration_oversight.settings.universal.danger_zone','overview']));",
+                  "pm.test('has_children matches the nested children on every node', () => { const walk = ns => ns.forEach(n => { pm.expect(n.has_children).to.eql(n.children.length > 0); walk(n.children); }); walk(pm.response.json().results); });"
                 ]
               }
             }
@@ -929,6 +935,600 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.test('Enrollment\\'s groups with their pages',()=>{pm.expect(j.results.map(r=>r.key)).to.eql(['enrollment.stores']);j.results.forEach(g=>pm.expect(g.children.length).to.eql(1));});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search modules by name (any depth, case-insensitive)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?search=DISCOUNT",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "DISCOUNT"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('finds the three discount modules, flat, from any depth',()=>{pm.expect(j.total_size).to.eql(3);pm.expect(j.results.map(r=>r.name).sort()).to.eql(['Discount Rules','Store Discounts','Store Discounts Control Panel']);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search accepts the module=text form",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?search=module=discount",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "module=discount"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('same three modules',()=>pm.expect(j.total_size).to.eql(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search with no match -> empty list",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?search=zzzz-no-such-module",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "zzzz-no-such-module"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('empty',()=>{pm.expect(j.total_size).to.eql(0);pm.expect(j.results).to.eql([]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search treats % and _ as plain text",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?search=%25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "%25"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('no wildcard match',()=>pm.expect(j.total_size).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "keys: only the modules named, nothing beneath them",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?keys=catalog_pricing.store_discounts,catalog_pricing.products_rules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "keys",
+                  "value": "catalog_pricing.store_discounts,catalog_pricing.products_rules"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('exactly the two, no children, no Pricing',()=>{pm.expect(j.total_size).to.eql(2);pm.expect(j.results.map(r=>r.key)).to.have.members(['catalog_pricing.store_discounts','catalog_pricing.products_rules']);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "keys wins over full_tree (still flat)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?full_tree=true&keys=catalog_pricing.store_discounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "full_tree",
+                  "value": "true"
+                },
+                {
+                  "key": "keys",
+                  "value": "catalog_pricing.store_discounts"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('one flat module, no nesting',()=>{pm.expect(j.results.length).to.eql(1);pm.expect(j.results[0]).to.not.have.property('children');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "keys: [a,b] form, an unknown key is just absent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?keys=[catalog_pricing,no-such-module]",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "keys",
+                  "value": "[catalog_pricing,no-such-module]"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('only the real one',()=>pm.expect(j.results.map(r=>r.key)).to.eql(['catalog_pricing']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "checked: set up a program that ticks Store Discounts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Checked filter\",\n  \"slug\": \"checked-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    \"catalog_pricing.store_discounts\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('checked_program_id',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "checked=true: only what the program ticked (Pricing is not there)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?program={{checked_program_id}}&checked=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "program",
+                  "value": "{{checked_program_id}}"
+                },
+                {
+                  "key": "checked",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "const k=j.results.map(r=>r.key);",
+                  "pm.test('has the ticked module and its control panel, flat',()=>{pm.expect(k).to.include('catalog_pricing.store_discounts');pm.expect(k).to.include('catalog_pricing.store_discounts'+'.control_panel');j.results.forEach(r=>pm.expect(r).to.not.have.property('children'));});",
+                  "pm.test('not Pricing, not an unticked module',()=>{pm.expect(k).to.not.include('catalog_pricing.pricing');pm.expect(k).to.not.include('enrollment');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "checked=false: the modules it has not ticked",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?program={{checked_program_id}}&checked=false&max_page_size=200",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "program",
+                  "value": "{{checked_program_id}}"
+                },
+                {
+                  "key": "checked",
+                  "value": "false"
+                },
+                {
+                  "key": "max_page_size",
+                  "value": "200"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const k=pm.response.json().results.map(r=>r.key);",
+                  "pm.test('Pricing is here, the ticked one is not',()=>{pm.expect(k).to.include('catalog_pricing.pricing');pm.expect(k).to.not.include('catalog_pricing.store_discounts');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "checked without a program -> 400",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?checked=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "checked",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "checked with an unknown program -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/module-catalog?program=no-such-program&checked=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "module-catalog"
+              ],
+              "query": [
+                {
+                  "key": "program",
+                  "value": "no-such-program"
+                },
+                {
+                  "key": "checked",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "checked: clean up",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{checked_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{checked_program_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
                 ]
               }
             }
@@ -1082,6 +1682,812 @@
                   "  };",
                   "  look(first);",
                   "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a program with the Details step (about, highlights, branding, renewal, display, percentage)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Credit Line Details\",\n  \"slug\": \"details-{{$timestamp}}\",\n  \"description\": \"Net-30 credit line.\",\n  \"about\": \"Buy parts now and pay in 30 days.\",\n  \"highlights\": [\n    \"Net-30 payment terms\",\n    \"Monthly statements\"\n  ],\n  \"branding\": {\n    \"brand_color\": \"#1b62f6\",\n    \"text_color\": \"#FFFFFF\",\n    \"logo_icon\": \"credit_card\"\n  },\n  \"renewal\": {\n    \"term_months\": 12,\n    \"grace_period_days\": 30,\n    \"reminder_days\": 30,\n    \"auto_renew\": false\n  },\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Discount limit\",\n          \"type\": \"percentage\",\n          \"display\": true,\n          \"default\": 10\n        },\n        {\n          \"name\": \"Internal note\",\n          \"type\": \"text\",\n          \"display\": false\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json();",
+                  "pm.test('about, highlights, branding (upper-cased), renewal come back', () => { pm.expect(p.about).to.eql('Buy parts now and pay in 30 days.'); pm.expect(p.highlights).to.eql(['Net-30 payment terms','Monthly statements']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#FFFFFF',logo_icon:'credit_card'}); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });",
+                  "pm.test('settings carry display and the percentage type', () => { const s = p.modules.flatMap(m => m.settings || []); const limit = s.find(x => x.name === 'Discount limit'); const note = s.find(x => x.name === 'Internal note'); pm.expect(limit.type).to.eql('percentage'); pm.expect(limit.render).to.eql('percentage_input'); pm.expect(limit.display).to.eql(true); pm.expect(note.display).to.eql(false); });",
+                  "pm.collectionVariables.set('detailsSlug', p.slug);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A program created without the Details fields gets the defaults",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Plain Details\",\n  \"slug\": \"plain-details-{{$timestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('empty details and the Figma renewal defaults', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql([]); pm.expect(p.branding).to.eql({brand_color:null,text_color:null,logo_icon:null}); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad: more than 5 highlights",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Details\",\n  \"slug\": \"bad-details-{{$timestamp}}\",\n  \"highlights\": [\n    \"1\",\n    \"2\",\n    \"3\",\n    \"4\",\n    \"5\",\n    \"6\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('the message names the problem', () => pm.expect(pm.response.json().detail).to.include('at most 5'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad: brand colour is not #RRGGBB",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Details\",\n  \"slug\": \"bad-details-{{$timestamp}}\",\n  \"branding\": {\n    \"brand_color\": \"blue\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('the message names the problem', () => pm.expect(pm.response.json().detail).to.include('#1B62F6'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad: renewal term is 0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Details\",\n  \"slug\": \"bad-details-{{$timestamp}}\",\n  \"renewal\": {\n    \"term_months\": 0\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('the message names the problem', () => pm.expect(pm.response.json().detail).to.include('term_months'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bad: percentage default above 100",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Details\",\n  \"slug\": \"bad-details-{{$timestamp}}\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Limit\",\n          \"type\": \"percentage\",\n          \"default\": 150\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));",
+                  "pm.test('the message names the problem', () => pm.expect(pm.response.json().detail).to.include('0 to 100'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update the Details: about cleared, one highlight, only the text colour, auto-renew on",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/merge-patch+json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{detailsSlug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{detailsSlug}}"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"about\": null,\n  \"highlights\": [\n    \"Only one\"\n  ],\n  \"branding\": {\n    \"text_color\": \"#000000\"\n  },\n  \"renewal\": {\n    \"auto_renew\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('a sent part replaces that part, the rest is kept', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql(['Only one']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#000000',logo_icon:'credit_card'}); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:true}); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get shows the updated Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{detailsSlug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{detailsSlug}}"
+              ]
+            },
+            "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('details persisted', () => { const p = pm.response.json(); pm.expect(p.highlights).to.eql(['Only one']); pm.expect(p.renewal.auto_renew).to.eql(true); pm.expect(p.branding.text_color).to.eql('#000000'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: create a program with a module icon and a rule module",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Module icon test\",\n  \"slug\": \"mod-icon-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.store_discounts\",\n      \"icon\": \"tag\"\n    },\n    \"order_transaction.core_returns.fees\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();pm.collectionVariables.set('icon_program_id',j.id);",
+                  "const m=(k)=>j.modules.find(x=>x.key===k);",
+                  "pm.test('the module carries the icon',()=>pm.expect(m('catalog_pricing.store_discounts').icon).to.eql('tag'));",
+                  "pm.test('display is NOT on the module',()=>j.modules.forEach(x=>pm.expect(x).to.not.have.property('display')));",
+                  "pm.test('the rule carries display=true',()=>pm.expect(m('order_transaction.core_returns.fees').rule.display).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: rule.display=false, the icon stays",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"order_transaction.core_returns.fees\",\n      \"rule\": {\n        \"display\": false\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('rule display off',()=>pm.expect(j.modules.find(x=>x.key==='order_transaction.core_returns.fees').rule.display).to.eql(false));",
+                  "pm.test('the other module keeps its icon',()=>pm.expect(j.modules.find(x=>x.key==='catalog_pricing.store_discounts').icon).to.eql('tag'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + display: an empty icon clears it",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.store_discounts\",\n      \"icon\": \"\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('icon cleared',()=>pm.expect(j.modules.find(x=>x.key==='catalog_pricing.store_discounts').icon).to.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: an icon over 64 characters -> 422",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.store_discounts\",\n      \"icon\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: display on the module itself is not accepted -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.store_discounts\",\n      \"display\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: rule.display on a module with no rule -> 422",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.store_discounts\",\n      \"rule\": {\n        \"display\": false\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: the modules list shows icon, and no module-level display",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}",
+                "modules"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('icon on every module, display on none',()=>j.results.forEach(x=>{pm.expect(x).to.have.property('icon');pm.expect(x).to.not.have.property('display');}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Module icon + rule display: clean up",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{icon_program_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{icon_program_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204',()=>pm.response.to.have.status(204));"
                 ]
               }
             }
@@ -2286,6 +3692,371 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "pm.test('ACTIVE again', () => pm.expect(pm.response.json().state).to.eql('ACTIVE'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "custom_options: a comma-separated text makes the dropdown's options",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom options\",\n  \"slug\": \"custom-opt-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Billing cycle\",\n          \"type\": \"dropdown\",\n          \"default\": \"weekly\",\n          \"custom_options\": \"Weekly, Monthly , Quarterly\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const opts=()=>pm.response.json().modules.find(x=>x.key==='catalog_pricing.pricing.discount_rules').settings[0].options;",
+                  "pm.test('three manual options, codes from the labels',()=>{pm.expect(opts().map(o=>o.code)).to.eql(['weekly','monthly','quarterly']);pm.expect(opts().every(o=>o.source==='manual')).to.eql(true);});",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "custom_options: a list of labels",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom options\",\n  \"slug\": \"custom-opt-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Size\",\n          \"type\": \"radio\",\n          \"custom_options\": [\n            \"Small\",\n            \"Large\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const opts=()=>pm.response.json().modules.find(x=>x.key==='catalog_pricing.pricing.discount_rules').settings[0].options;",
+                  "pm.test('two options',()=>pm.expect(opts().map(o=>o.label)).to.eql(['Small','Large']));",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "custom_options: a list of {label, code}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom options\",\n  \"slug\": \"custom-opt-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Tier\",\n          \"type\": \"checkbox\",\n          \"custom_options\": [\n            {\n              \"label\": \"Gold\",\n              \"code\": \"g\"\n            },\n            {\n              \"label\": \"Silver\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const opts=()=>pm.response.json().modules.find(x=>x.key==='catalog_pricing.pricing.discount_rules').settings[0].options;",
+                  "pm.test('given code kept, other made from label',()=>pm.expect(opts().map(o=>o.code)).to.eql(['g','silver']));",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "custom_options together with options -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom options\",\n  \"slug\": \"custom-opt-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"dropdown\",\n          \"options\": [\n            {\n              \"label\": \"A\"\n            }\n          ],\n          \"custom_options\": \"B\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "custom_options: a default that is not one of them -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom options\",\n  \"slug\": \"custom-opt-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"X\",\n          \"type\": \"dropdown\",\n          \"default\": \"nope\",\n          \"custom_options\": \"A,B\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "type custom_option: a dropdown with your own choices (custom_options)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom option type\",\n  \"slug\": \"custom-type-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Billing cycle\",\n          \"type\": \"custom_option\",\n          \"custom_options\": \"Weekly, Monthly\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const s=()=>pm.response.json().modules.find(x=>x.key==='catalog_pricing.pricing.discount_rules').settings[0];",
+                  "pm.test('stored as a dropdown with the two choices',()=>{pm.expect(s().type).to.eql('dropdown');pm.expect(s().options.map(o=>o.code)).to.eql(['weekly','monthly']);});",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "type custom_option with no choices -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "postman"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom option type\",\n  \"slug\": \"custom-type-{{$timestamp}}\",\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Billing cycle\",\n          \"type\": \"custom_option\"\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422',()=>pm.response.to.have.status(422));",
+                  "if(pm.response.code===200){pm.sendRequest({url:pm.variables.get('base_url')+'/programs/'+pm.response.json().id,method:'DELETE'},()=>{});}"
                 ]
               }
             }
@@ -23589,7 +25360,7 @@
               "  const folder = (await call('POST', '/programs/' + slug + '/document-folders', {name: 'Custom'})).json().id;",
               "  const body = 'negative body!!';",
               "  const made = (await call('POST', '/programs/' + slug + '/documents', {name: 'waiting.txt', content_type: 'text/plain', size_bytes: body.length})).json();",
-              "  await call('PUT', made.upload.url, body, {'Content-Type': made.upload.headers['content-type']});",
+              "  await call('PUT', made.upload.uri, body, {'Content-Type': made.upload.headers['content-type']});",
               "  await call('POST', '/programs/' + slug + '/documents/' + made.document.id + ':complete');",
               "  const up = (await call('POST', '/programs/' + slug + '/documents', {name: 'never-finished.txt', content_type: 'text/plain', size_bytes: 10})).json();",
               "  Object.entries({kslug: slug, knoslug: noslug, kdoc: made.document.id, kup: up.document.id, kfolder: folder, kgeneral: general}).forEach(([k, v]) => pm.collectionVariables.set(k, v));",

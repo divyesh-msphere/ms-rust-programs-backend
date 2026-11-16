@@ -17,3 +17,4 @@ package-lock.json
 apply-deployments.sh
 
 .memory-bank
+/src/config/config.local.toml

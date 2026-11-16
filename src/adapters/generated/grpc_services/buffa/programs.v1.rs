@@ -172,6 +172,31 @@ pub struct ModuleCatalogItem {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub default_mode: ::core::option::Option<::buffa::alloc::string::String>,
+    /// True when at least one module hangs under this one.
+    ///
+    /// Field 22: `has_children`
+    #[serde(
+        rename = "hasChildren",
+        alias = "has_children",
+        with = "::buffa::json_helpers::proto_bool",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
+    )]
+    pub has_children: bool,
+    /// How many modules hang directly under this one.
+    ///
+    /// Field 23: `children_count`
+    #[serde(
+        rename = "childrenCount",
+        alias = "children_count",
+        with = "::buffa::json_helpers::int64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_i64"
+    )]
+    pub children_count: i64,
+    /// The icon the frontend draws beside the module (an icon name). Absent until set.
+    ///
+    /// Field 24: `icon`
+    #[serde(rename = "icon", skip_serializing_if = "::core::option::Option::is_none")]
+    pub icon: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -200,6 +225,9 @@ impl ::core::fmt::Debug for ModuleCatalogItem {
             .field("selectable", &self.selectable)
             .field("allow_components", &self.allow_components)
             .field("default_mode", &self.default_mode)
+            .field("has_children", &self.has_children)
+            .field("children_count", &self.children_count)
+            .field("icon", &self.icon)
             .finish()
     }
 }
@@ -279,6 +307,16 @@ impl ModuleCatalogItem {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.default_mode = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::icon`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_icon(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.icon = Some(value.into());
         self
     }
 }
@@ -365,6 +403,15 @@ impl ::buffa::Message for ModuleCatalogItem {
         if let Some(ref v) = self.default_mode {
             size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
+        if self.has_children {
+            size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.children_count != 0i64 {
+            size += 2u64 + ::buffa::types::int64_encoded_len(self.children_count) as u64;
+        }
+        if let Some(ref v) = self.icon {
+            size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -437,6 +484,15 @@ impl ::buffa::Message for ModuleCatalogItem {
         }
         if let Some(ref v) = self.default_mode {
             ::buffa::types::put_string_field(21u32, v, buf);
+        }
+        if self.has_children {
+            ::buffa::types::put_bool_field(22u32, self.has_children, buf);
+        }
+        if self.children_count != 0i64 {
+            ::buffa::types::put_int64_field(23u32, self.children_count, buf);
+        }
+        if let Some(ref v) = self.icon {
+            ::buffa::types::put_string_field(24u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -633,6 +689,30 @@ impl ::buffa::Message for ModuleCatalogItem {
                     buf,
                 )?;
             }
+            22u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.has_children = ::buffa::types::decode_bool(buf)?;
+            }
+            23u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.children_count = ::buffa::types::decode_int64(buf)?;
+            }
+            24u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.icon.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -662,6 +742,9 @@ impl ::buffa::Message for ModuleCatalogItem {
         self.selectable = false;
         self.allow_components = false;
         self.default_mode = ::core::option::Option::None;
+        self.has_children = false;
+        self.children_count = 0i64;
+        self.icon = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -859,6 +942,25 @@ pub struct ModuleCatalogTreeNode {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub default_mode: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 23: `has_children`
+    #[serde(
+        rename = "hasChildren",
+        alias = "has_children",
+        with = "::buffa::json_helpers::proto_bool",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
+    )]
+    pub has_children: bool,
+    /// Field 24: `children_count`
+    #[serde(
+        rename = "childrenCount",
+        alias = "children_count",
+        with = "::buffa::json_helpers::int64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_i64"
+    )]
+    pub children_count: i64,
+    /// Field 25: `icon`
+    #[serde(rename = "icon", skip_serializing_if = "::core::option::Option::is_none")]
+    pub icon: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -888,6 +990,9 @@ impl ::core::fmt::Debug for ModuleCatalogTreeNode {
             .field("selectable", &self.selectable)
             .field("allow_components", &self.allow_components)
             .field("default_mode", &self.default_mode)
+            .field("has_children", &self.has_children)
+            .field("children_count", &self.children_count)
+            .field("icon", &self.icon)
             .finish()
     }
 }
@@ -967,6 +1072,16 @@ impl ModuleCatalogTreeNode {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.default_mode = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::icon`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_icon(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.icon = Some(value.into());
         self
     }
 }
@@ -1061,6 +1176,15 @@ impl ::buffa::Message for ModuleCatalogTreeNode {
         if let Some(ref v) = self.default_mode {
             size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
+        if self.has_children {
+            size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.children_count != 0i64 {
+            size += 2u64 + ::buffa::types::int64_encoded_len(self.children_count) as u64;
+        }
+        if let Some(ref v) = self.icon {
+            size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -1141,6 +1265,15 @@ impl ::buffa::Message for ModuleCatalogTreeNode {
         }
         if let Some(ref v) = self.default_mode {
             ::buffa::types::put_string_field(22u32, v, buf);
+        }
+        if self.has_children {
+            ::buffa::types::put_bool_field(23u32, self.has_children, buf);
+        }
+        if self.children_count != 0i64 {
+            ::buffa::types::put_int64_field(24u32, self.children_count, buf);
+        }
+        if let Some(ref v) = self.icon {
+            ::buffa::types::put_string_field(25u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -1349,6 +1482,30 @@ impl ::buffa::Message for ModuleCatalogTreeNode {
                     buf,
                 )?;
             }
+            23u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.has_children = ::buffa::types::decode_bool(buf)?;
+            }
+            24u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.children_count = ::buffa::types::decode_int64(buf)?;
+            }
+            25u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.icon.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -1379,6 +1536,9 @@ impl ::buffa::Message for ModuleCatalogTreeNode {
         self.selectable = false;
         self.allow_components = false;
         self.default_mode = ::core::option::Option::None;
+        self.has_children = false;
+        self.children_count = 0i64;
+        self.icon = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -1451,6 +1611,34 @@ pub struct ListModuleCatalogRequest {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub full_tree: ::core::option::Option<bool>,
+    /// Finds modules whose name contains this text, at any depth, case-insensitive (`module=text` is
+    /// accepted too). With `parent_id`, only modules beneath it. Ignored when `full_tree` is true.
+    ///
+    /// Field 5: `search`
+    #[serde(rename = "search", skip_serializing_if = "::core::option::Option::is_none")]
+    pub search: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Module keys or ids: returns exactly these modules, flat and with nothing beneath them. `parent_id`
+    /// is ignored; `search` narrows within them. Wins over `full_tree`.
+    ///
+    /// Field 6: `keys`
+    #[serde(
+        rename = "keys",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub keys: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// With `checked`: the program (ID or slug) whose ticks decide what is returned.
+    ///
+    /// Field 7: `program`
+    #[serde(rename = "program", skip_serializing_if = "::core::option::Option::is_none")]
+    pub program: ::core::option::Option<::buffa::alloc::string::String>,
+    /// true: only the selectable modules `program` has ticked (selected and switched on), flat and with
+    /// nothing beneath them; false: the ones it has not. Needs `program`; `program` alone means true.
+    /// Wins over `full_tree` and `parent_id`.
+    ///
+    /// Field 8: `checked`
+    #[serde(rename = "checked", skip_serializing_if = "::core::option::Option::is_none")]
+    pub checked: ::core::option::Option<bool>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -1462,6 +1650,10 @@ impl ::core::fmt::Debug for ListModuleCatalogRequest {
             .field("max_page_size", &self.max_page_size)
             .field("page_token", &self.page_token)
             .field("full_tree", &self.full_tree)
+            .field("search", &self.search)
+            .field("keys", &self.keys)
+            .field("program", &self.program)
+            .field("checked", &self.checked)
             .finish()
     }
 }
@@ -1507,6 +1699,33 @@ impl ListModuleCatalogRequest {
         self.full_tree = Some(value);
         self
     }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::search`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_search(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.search = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::program`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_program(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.program = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::checked`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_checked(mut self, value: bool) -> Self {
+        self.checked = Some(value);
+        self
+    }
 }
 ::buffa::impl_default_instance!(ListModuleCatalogRequest);
 impl ::buffa::MessageName for ListModuleCatalogRequest {
@@ -1540,6 +1759,18 @@ impl ::buffa::Message for ListModuleCatalogRequest {
         if self.full_tree.is_some() {
             size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
         }
+        if let Some(ref v) = self.search {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        for v in &self.keys {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.program {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if self.checked.is_some() {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -1561,6 +1792,18 @@ impl ::buffa::Message for ListModuleCatalogRequest {
         }
         if let Some(v) = self.full_tree {
             ::buffa::types::put_bool_field(4u32, v, buf);
+        }
+        if let Some(ref v) = self.search {
+            ::buffa::types::put_string_field(5u32, v, buf);
+        }
+        for v in &self.keys {
+            ::buffa::types::put_string_field(6u32, v, buf);
+        }
+        if let Some(ref v) = self.program {
+            ::buffa::types::put_string_field(7u32, v, buf);
+        }
+        if let Some(v) = self.checked {
+            ::buffa::types::put_bool_field(8u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -1617,6 +1860,46 @@ impl ::buffa::Message for ListModuleCatalogRequest {
                     ::buffa::types::decode_bool(buf)?,
                 );
             }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.search.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.keys.push(__elem);
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.program.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.checked = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -1629,6 +1912,10 @@ impl ::buffa::Message for ListModuleCatalogRequest {
         self.max_page_size = ::core::option::Option::None;
         self.page_token = ::core::option::Option::None;
         self.full_tree = ::core::option::Option::None;
+        self.search = ::core::option::Option::None;
+        self.keys.clear();
+        self.program = ::core::option::Option::None;
+        self.checked = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -2336,6 +2623,35 @@ pub struct Program {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
     pub stats: ::buffa::MessageField<ProgramStats, ::buffa::Inline<ProgramStats>>,
+    /// The merchant-facing text (`description` is the internal one).
+    ///
+    /// Field 15: `about`
+    #[serde(rename = "about", skip_serializing_if = "::core::option::Option::is_none")]
+    pub about: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Up to 5 short selling points, in order.
+    ///
+    /// Field 16: `highlights`
+    #[serde(
+        rename = "highlights",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub highlights: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// Field 17: `branding`
+    #[serde(
+        rename = "branding",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub branding: ::buffa::MessageField<
+        ProgramBranding,
+        ::buffa::Inline<ProgramBranding>,
+    >,
+    /// Field 18: `renewal`
+    #[serde(
+        rename = "renewal",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub renewal: ::buffa::MessageField<ProgramRenewal, ::buffa::Inline<ProgramRenewal>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -2356,6 +2672,10 @@ impl ::core::fmt::Debug for Program {
             .field("update_time", &self.update_time)
             .field("state", &self.state)
             .field("stats", &self.stats)
+            .field("about", &self.about)
+            .field("highlights", &self.highlights)
+            .field("branding", &self.branding)
+            .field("renewal", &self.renewal)
             .finish()
     }
 }
@@ -2375,6 +2695,16 @@ impl Program {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.description = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::about`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_about(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.about = Some(value.into());
         self
     }
 }
@@ -2442,6 +2772,28 @@ impl ::buffa::Message for Program {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if let Some(ref v) = self.about {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        for v in &self.highlights {
+            size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if self.branding.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.branding.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 2u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.renewal.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.renewal.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 2u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -2495,6 +2847,28 @@ impl ::buffa::Message for Program {
                 buf,
             );
             self.stats.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.about {
+            ::buffa::types::put_string_field(15u32, v, buf);
+        }
+        for v in &self.highlights {
+            ::buffa::types::put_string_field(16u32, v, buf);
+        }
+        if self.branding.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                17u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.branding.write_to(__cache, buf);
+        }
+        if self.renewal.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                18u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.renewal.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -2609,6 +2983,49 @@ impl ::buffa::Message for Program {
                     ctx,
                 )?;
             }
+            15u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.about.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            16u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.highlights.push(__elem);
+            }
+            17u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.branding.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            18u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.renewal.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -2630,6 +3047,10 @@ impl ::buffa::Message for Program {
         self.update_time.clear();
         self.state.clear();
         self.stats = ::buffa::MessageField::none();
+        self.about = ::core::option::Option::None;
+        self.highlights.clear();
+        self.branding = ::buffa::MessageField::none();
+        self.renewal = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -2660,6 +3081,596 @@ pub const __PROGRAM_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::ty
     type_url: "type.googleapis.com/programs.v1.Program",
     to_json: ::buffa::type_registry::any_to_json::<Program>,
     from_json: ::buffa::type_registry::any_from_json::<Program>,
+    is_wkt: false,
+};
+/// The badge of a program. In a request a sent part replaces that part (an empty text clears it).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct ProgramBranding {
+    /// `#RRGGBB`, the badge background.
+    ///
+    /// Field 1: `brand_color`
+    #[serde(
+        rename = "brandColor",
+        alias = "brand_color",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub brand_color: ::core::option::Option<::buffa::alloc::string::String>,
+    /// `#RRGGBB`, the text on the badge.
+    ///
+    /// Field 2: `text_color`
+    #[serde(
+        rename = "textColor",
+        alias = "text_color",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub text_color: ::core::option::Option<::buffa::alloc::string::String>,
+    /// An icon name, e.g. `credit_card`.
+    ///
+    /// Field 3: `logo_icon`
+    #[serde(
+        rename = "logoIcon",
+        alias = "logo_icon",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub logo_icon: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for ProgramBranding {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("ProgramBranding")
+            .field("brand_color", &self.brand_color)
+            .field("text_color", &self.text_color)
+            .field("logo_icon", &self.logo_icon)
+            .finish()
+    }
+}
+impl ProgramBranding {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ProgramBranding";
+}
+impl ProgramBranding {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::brand_color`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_brand_color(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.brand_color = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::text_color`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_text_color(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.text_color = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::logo_icon`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_logo_icon(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.logo_icon = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(ProgramBranding);
+impl ::buffa::MessageName for ProgramBranding {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "ProgramBranding";
+    const FULL_NAME: &'static str = "programs.v1.ProgramBranding";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ProgramBranding";
+}
+impl ::buffa::Message for ProgramBranding {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let Some(ref v) = self.brand_color {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.text_color {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.logo_icon {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(ref v) = self.brand_color {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        if let Some(ref v) = self.text_color {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.logo_icon {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .brand_color
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .text_color
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .logo_icon
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.brand_color = ::core::option::Option::None;
+        self.text_color = ::core::option::Option::None;
+        self.logo_icon = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for ProgramBranding {
+    const PROTO_FQN: &'static str = "programs.v1.ProgramBranding";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for ProgramBranding {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PROGRAM_BRANDING_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.ProgramBranding",
+    to_json: ::buffa::type_registry::any_to_json::<ProgramBranding>,
+    from_json: ::buffa::type_registry::any_from_json::<ProgramBranding>,
+    is_wkt: false,
+};
+/// The renewal defaults of a program. In a request omitted parts take the defaults (create: 12 months,
+/// 30 days grace, 30 days reminder, no auto-renew) or keep their value (update).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct ProgramRenewal {
+    /// Field 1: `term_months`
+    #[serde(
+        rename = "termMonths",
+        alias = "term_months",
+        with = "::buffa::json_helpers::opt_int32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub term_months: ::core::option::Option<i32>,
+    /// Field 2: `grace_period_days`
+    #[serde(
+        rename = "gracePeriodDays",
+        alias = "grace_period_days",
+        with = "::buffa::json_helpers::opt_int32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub grace_period_days: ::core::option::Option<i32>,
+    /// Days before the term ends.
+    ///
+    /// Field 3: `reminder_days`
+    #[serde(
+        rename = "reminderDays",
+        alias = "reminder_days",
+        with = "::buffa::json_helpers::opt_int32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub reminder_days: ::core::option::Option<i32>,
+    /// Field 4: `auto_renew`
+    #[serde(
+        rename = "autoRenew",
+        alias = "auto_renew",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub auto_renew: ::core::option::Option<bool>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for ProgramRenewal {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("ProgramRenewal")
+            .field("term_months", &self.term_months)
+            .field("grace_period_days", &self.grace_period_days)
+            .field("reminder_days", &self.reminder_days)
+            .field("auto_renew", &self.auto_renew)
+            .finish()
+    }
+}
+impl ProgramRenewal {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ProgramRenewal";
+}
+impl ProgramRenewal {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::term_months`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_term_months(mut self, value: i32) -> Self {
+        self.term_months = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::grace_period_days`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_grace_period_days(mut self, value: i32) -> Self {
+        self.grace_period_days = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::reminder_days`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_reminder_days(mut self, value: i32) -> Self {
+        self.reminder_days = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::auto_renew`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_auto_renew(mut self, value: bool) -> Self {
+        self.auto_renew = Some(value);
+        self
+    }
+}
+::buffa::impl_default_instance!(ProgramRenewal);
+impl ::buffa::MessageName for ProgramRenewal {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "ProgramRenewal";
+    const FULL_NAME: &'static str = "programs.v1.ProgramRenewal";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ProgramRenewal";
+}
+impl ::buffa::Message for ProgramRenewal {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let Some(v) = self.term_months {
+            size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
+        }
+        if let Some(v) = self.grace_period_days {
+            size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
+        }
+        if let Some(v) = self.reminder_days {
+            size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
+        }
+        if self.auto_renew.is_some() {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(v) = self.term_months {
+            ::buffa::types::put_int32_field(1u32, v, buf);
+        }
+        if let Some(v) = self.grace_period_days {
+            ::buffa::types::put_int32_field(2u32, v, buf);
+        }
+        if let Some(v) = self.reminder_days {
+            ::buffa::types::put_int32_field(3u32, v, buf);
+        }
+        if let Some(v) = self.auto_renew {
+            ::buffa::types::put_bool_field(4u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.term_months = ::core::option::Option::Some(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.grace_period_days = ::core::option::Option::Some(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.reminder_days = ::core::option::Option::Some(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.auto_renew = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.term_months = ::core::option::Option::None;
+        self.grace_period_days = ::core::option::Option::None;
+        self.reminder_days = ::core::option::Option::None;
+        self.auto_renew = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for ProgramRenewal {
+    const PROTO_FQN: &'static str = "programs.v1.ProgramRenewal";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for ProgramRenewal {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PROGRAM_RENEWAL_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.ProgramRenewal",
+    to_json: ::buffa::type_registry::any_to_json::<ProgramRenewal>,
+    from_json: ::buffa::type_registry::any_from_json::<ProgramRenewal>,
+    is_wkt: false,
+};
+/// The highlights of an update: present replaces the whole list (an empty list clears it).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct HighlightList {
+    /// Field 1: `items`
+    #[serde(
+        rename = "items",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub items: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for HighlightList {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("HighlightList").field("items", &self.items).finish()
+    }
+}
+impl HighlightList {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.HighlightList";
+}
+::buffa::impl_default_instance!(HighlightList);
+impl ::buffa::MessageName for HighlightList {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "HighlightList";
+    const FULL_NAME: &'static str = "programs.v1.HighlightList";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.HighlightList";
+}
+impl ::buffa::Message for HighlightList {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        for v in &self.items {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        for v in &self.items {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.items.push(__elem);
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.items.clear();
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for HighlightList {
+    const PROTO_FQN: &'static str = "programs.v1.HighlightList";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for HighlightList {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __HIGHLIGHT_LIST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.HighlightList",
+    to_json: ::buffa::type_registry::any_to_json::<HighlightList>,
+    from_json: ::buffa::type_registry::any_from_json::<HighlightList>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
@@ -3712,6 +4723,11 @@ pub struct ProgramModule {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
     pub rule: ::buffa::MessageField<ProgramRule, ::buffa::Inline<ProgramRule>>,
+    /// The icon drawn beside the module: the program's own, else the catalog module's.
+    ///
+    /// Field 20: `icon`
+    #[serde(rename = "icon", skip_serializing_if = "::core::option::Option::is_none")]
+    pub icon: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -3738,6 +4754,7 @@ impl ::core::fmt::Debug for ProgramModule {
             .field("mode", &self.mode)
             .field("settings", &self.settings)
             .field("rule", &self.rule)
+            .field("icon", &self.icon)
             .finish()
     }
 }
@@ -3797,6 +4814,16 @@ impl ProgramModule {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.mode = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::icon`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_icon(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.icon = Some(value.into());
         self
     }
 }
@@ -3887,6 +4914,9 @@ impl ::buffa::Message for ProgramModule {
                 += 2u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if let Some(ref v) = self.icon {
+            size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -3963,6 +4993,9 @@ impl ::buffa::Message for ProgramModule {
                 buf,
             );
             self.rule.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.icon {
+            ::buffa::types::put_string_field(20u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -4142,6 +5175,16 @@ impl ::buffa::Message for ProgramModule {
                     ctx,
                 )?;
             }
+            20u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.icon.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -4169,6 +5212,7 @@ impl ::buffa::Message for ProgramModule {
         self.mode = ::core::option::Option::None;
         self.settings.clear();
         self.rule = ::buffa::MessageField::none();
+        self.icon = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -4334,6 +5378,15 @@ pub struct ProgramSetting {
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub missing_option_ids: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// The Display switch: false means the setting is hidden from the form.
+    ///
+    /// Field 16: `display`
+    #[serde(
+        rename = "display",
+        with = "::buffa::json_helpers::proto_bool",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
+    )]
+    pub display: bool,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -4356,6 +5409,7 @@ impl ::core::fmt::Debug for ProgramSetting {
             .field("value", &self.value)
             .field("option_ids", &self.option_ids)
             .field("missing_option_ids", &self.missing_option_ids)
+            .field("display", &self.display)
             .finish()
     }
 }
@@ -4478,6 +5532,9 @@ impl ::buffa::Message for ProgramSetting {
         for v in &self.missing_option_ids {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
+        if self.display {
+            size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -4547,6 +5604,9 @@ impl ::buffa::Message for ProgramSetting {
         }
         for v in &self.missing_option_ids {
             ::buffa::types::put_string_field(15u32, v, buf);
+        }
+        if self.display {
+            ::buffa::types::put_bool_field(16u32, self.display, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -4702,6 +5762,13 @@ impl ::buffa::Message for ProgramSetting {
                 )?;
                 self.missing_option_ids.push(__elem);
             }
+            16u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.display = ::buffa::types::decode_bool(buf)?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -4725,6 +5792,7 @@ impl ::buffa::Message for ProgramSetting {
         self.value = ::buffa::MessageField::none();
         self.option_ids.clear();
         self.missing_option_ids.clear();
+        self.display = false;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -5000,6 +6068,15 @@ pub struct ProgramRule {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub published_version: ::core::option::Option<i32>,
+    /// The rule's Display switch (default true).
+    ///
+    /// Field 4: `display`
+    #[serde(
+        rename = "display",
+        with = "::buffa::json_helpers::proto_bool",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
+    )]
+    pub display: bool,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -5010,6 +6087,7 @@ impl ::core::fmt::Debug for ProgramRule {
             .field("rule_type", &self.rule_type)
             .field("draft_version", &self.draft_version)
             .field("published_version", &self.published_version)
+            .field("display", &self.display)
             .finish()
     }
 }
@@ -5075,6 +6153,9 @@ impl ::buffa::Message for ProgramRule {
         if let Some(v) = self.published_version {
             size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
         }
+        if self.display {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -5093,6 +6174,9 @@ impl ::buffa::Message for ProgramRule {
         }
         if let Some(v) = self.published_version {
             ::buffa::types::put_int32_field(3u32, v, buf);
+        }
+        if self.display {
+            ::buffa::types::put_bool_field(4u32, self.display, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -5137,6 +6221,13 @@ impl ::buffa::Message for ProgramRule {
                     ::buffa::types::decode_int32(buf)?,
                 );
             }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.display = ::buffa::types::decode_bool(buf)?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -5148,6 +6239,7 @@ impl ::buffa::Message for ProgramRule {
         self.rule_type = ::core::option::Option::None;
         self.draft_version = ::core::option::Option::None;
         self.published_version = ::core::option::Option::None;
+        self.display = false;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -5216,6 +6308,20 @@ pub struct ModuleConfig {
         SettingConfigList,
         ::buffa::Inline<SettingConfigList>,
     >,
+    /// The icon drawn beside this module (a name such as "tag"). An empty string clears it, and the catalog
+    /// module's icon shows again; absent leaves it alone.
+    ///
+    /// Field 5: `icon`
+    #[serde(rename = "icon", skip_serializing_if = "::core::option::Option::is_none")]
+    pub icon: ::core::option::Option<::buffa::alloc::string::String>,
+    /// The rule's settings, for a rule module. Absent leaves them alone.
+    ///
+    /// Field 6: `rule`
+    #[serde(
+        rename = "rule",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub rule: ::buffa::MessageField<RuleConfig, ::buffa::Inline<RuleConfig>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -5227,6 +6333,8 @@ impl ::core::fmt::Debug for ModuleConfig {
             .field("enabled", &self.enabled)
             .field("mode", &self.mode)
             .field("settings", &self.settings)
+            .field("icon", &self.icon)
+            .field("rule", &self.rule)
             .finish()
     }
 }
@@ -5253,6 +6361,16 @@ impl ModuleConfig {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.mode = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::icon`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_icon(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.icon = Some(value.into());
         self
     }
 }
@@ -5293,6 +6411,17 @@ impl ::buffa::Message for ModuleConfig {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if let Some(ref v) = self.icon {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if self.rule.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.rule.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -5319,6 +6448,17 @@ impl ::buffa::Message for ModuleConfig {
                 buf,
             );
             self.settings.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.icon {
+            ::buffa::types::put_string_field(5u32, v, buf);
+        }
+        if self.rule.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                6u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.rule.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -5370,6 +6510,27 @@ impl ::buffa::Message for ModuleConfig {
                     ctx,
                 )?;
             }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.icon.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.rule.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -5382,6 +6543,8 @@ impl ::buffa::Message for ModuleConfig {
         self.enabled = ::core::option::Option::None;
         self.mode = ::core::option::Option::None;
         self.settings = ::buffa::MessageField::none();
+        self.icon = ::core::option::Option::None;
+        self.rule = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -5412,6 +6575,139 @@ pub const __MODULE_CONFIG_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buf
     type_url: "type.googleapis.com/programs.v1.ModuleConfig",
     to_json: ::buffa::type_registry::any_to_json::<ModuleConfig>,
     from_json: ::buffa::type_registry::any_from_json::<ModuleConfig>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct RuleConfig {
+    /// The rule's Display switch: false hides the rule from the program's pages; absent leaves it alone.
+    ///
+    /// Field 1: `display`
+    #[serde(rename = "display", skip_serializing_if = "::core::option::Option::is_none")]
+    pub display: ::core::option::Option<bool>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for RuleConfig {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("RuleConfig").field("display", &self.display).finish()
+    }
+}
+impl RuleConfig {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.RuleConfig";
+}
+impl RuleConfig {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::display`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_display(mut self, value: bool) -> Self {
+        self.display = Some(value);
+        self
+    }
+}
+::buffa::impl_default_instance!(RuleConfig);
+impl ::buffa::MessageName for RuleConfig {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "RuleConfig";
+    const FULL_NAME: &'static str = "programs.v1.RuleConfig";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.RuleConfig";
+}
+impl ::buffa::Message for RuleConfig {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.display.is_some() {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(v) = self.display {
+            ::buffa::types::put_bool_field(1u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.display = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.display = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for RuleConfig {
+    const PROTO_FQN: &'static str = "programs.v1.RuleConfig";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for RuleConfig {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __RULE_CONFIG_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.RuleConfig",
+    to_json: ::buffa::type_registry::any_to_json::<RuleConfig>,
+    from_json: ::buffa::type_registry::any_from_json::<RuleConfig>,
     is_wkt: false,
 };
 /// A wrapper, so "no settings sent" and "an empty list" can be told apart.
@@ -5570,7 +6866,8 @@ pub struct SettingConfig {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub name: ::buffa::alloc::string::String,
-    /// boolean | number | text | radio | checkbox | dropdown.
+    /// boolean | number | text | radio | checkbox | dropdown | percentage, or custom_option (a dropdown whose
+    /// choices you type in `custom_options`; stored and returned as dropdown).
     ///
     /// Field 3: `type`
     #[serde(
@@ -5616,6 +6913,22 @@ pub struct SettingConfig {
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub options: ::buffa::alloc::vec::Vec<OptionConfig>,
+    /// The Display switch (default true): false hides the setting from the form.
+    ///
+    /// Field 8: `display`
+    #[serde(rename = "display", skip_serializing_if = "::core::option::Option::is_none")]
+    pub display: ::core::option::Option<bool>,
+    /// The custom choices of a radio / checkbox / dropdown as plain labels (the code is made from each
+    /// label). The same as `options`; send one of the two, not both, and not with a library_id.
+    ///
+    /// Field 9: `custom_options`
+    #[serde(
+        rename = "customOptions",
+        alias = "custom_options",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub custom_options: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -5630,6 +6943,8 @@ impl ::core::fmt::Debug for SettingConfig {
             .field("default_value", &self.default_value)
             .field("library_id", &self.library_id)
             .field("options", &self.options)
+            .field("display", &self.display)
+            .field("custom_options", &self.custom_options)
             .finish()
     }
 }
@@ -5663,6 +6978,13 @@ impl SettingConfig {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.library_id = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::display`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_display(mut self, value: bool) -> Self {
+        self.display = Some(value);
         self
     }
 }
@@ -5717,6 +7039,12 @@ impl ::buffa::Message for SettingConfig {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if self.display.is_some() {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        for v in &self.custom_options {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -5757,6 +7085,12 @@ impl ::buffa::Message for SettingConfig {
                 buf,
             );
             v.write_to(__cache, buf);
+        }
+        if let Some(v) = self.display {
+            ::buffa::types::put_bool_field(8u32, v, buf);
+        }
+        for v in &self.custom_options {
+            ::buffa::types::put_string_field(9u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -5839,6 +7173,26 @@ impl ::buffa::Message for SettingConfig {
                 ::buffa::Message::merge_length_delimited(&mut elem, buf, ctx)?;
                 self.options.push(elem);
             }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.display = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
+            9u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.custom_options.push(__elem);
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -5854,6 +7208,8 @@ impl ::buffa::Message for SettingConfig {
         self.default_value = ::buffa::MessageField::none();
         self.library_id = ::core::option::Option::None;
         self.options.clear();
+        self.display = ::core::option::Option::None;
+        self.custom_options.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -6938,6 +8294,35 @@ pub struct CreateProgramRequest {
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub module_configs: ::buffa::alloc::vec::Vec<ModuleConfig>,
+    /// The merchant-facing text.
+    ///
+    /// Field 8: `about`
+    #[serde(rename = "about", skip_serializing_if = "::core::option::Option::is_none")]
+    pub about: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Up to 5 short selling points.
+    ///
+    /// Field 9: `highlights`
+    #[serde(
+        rename = "highlights",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub highlights: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// Field 10: `branding`
+    #[serde(
+        rename = "branding",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub branding: ::buffa::MessageField<
+        ProgramBranding,
+        ::buffa::Inline<ProgramBranding>,
+    >,
+    /// Field 11: `renewal`
+    #[serde(
+        rename = "renewal",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub renewal: ::buffa::MessageField<ProgramRenewal, ::buffa::Inline<ProgramRenewal>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -6952,6 +8337,10 @@ impl ::core::fmt::Debug for CreateProgramRequest {
             .field("level", &self.level)
             .field("modules", &self.modules)
             .field("module_configs", &self.module_configs)
+            .field("about", &self.about)
+            .field("highlights", &self.highlights)
+            .field("branding", &self.branding)
+            .field("renewal", &self.renewal)
             .finish()
     }
 }
@@ -6988,6 +8377,16 @@ impl CreateProgramRequest {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.level = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::about`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_about(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.about = Some(value.into());
         self
     }
 }
@@ -7037,6 +8436,28 @@ impl ::buffa::Message for CreateProgramRequest {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if let Some(ref v) = self.about {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        for v in &self.highlights {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if self.branding.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.branding.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.renewal.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.renewal.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -7072,6 +8493,28 @@ impl ::buffa::Message for CreateProgramRequest {
                 buf,
             );
             v.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.about {
+            ::buffa::types::put_string_field(8u32, v, buf);
+        }
+        for v in &self.highlights {
+            ::buffa::types::put_string_field(9u32, v, buf);
+        }
+        if self.branding.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                10u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.branding.write_to(__cache, buf);
+        }
+        if self.renewal.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                11u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.renewal.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -7155,6 +8598,49 @@ impl ::buffa::Message for CreateProgramRequest {
                 ::buffa::Message::merge_length_delimited(&mut elem, buf, ctx)?;
                 self.module_configs.push(elem);
             }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.about.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            9u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.highlights.push(__elem);
+            }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.branding.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            11u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.renewal.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -7170,6 +8656,10 @@ impl ::buffa::Message for CreateProgramRequest {
         self.level = ::core::option::Option::None;
         self.modules.clear();
         self.module_configs.clear();
+        self.about = ::core::option::Option::None;
+        self.highlights.clear();
+        self.branding = ::buffa::MessageField::none();
+        self.renewal = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -7427,6 +8917,32 @@ pub struct UpdateProgramRequest {
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub modules: ::buffa::alloc::vec::Vec<ModuleConfig>,
+    /// An empty string clears the merchant-facing text.
+    ///
+    /// Field 8: `about`
+    #[serde(rename = "about", skip_serializing_if = "::core::option::Option::is_none")]
+    pub about: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 9: `highlights`
+    #[serde(
+        rename = "highlights",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub highlights: ::buffa::MessageField<HighlightList, ::buffa::Inline<HighlightList>>,
+    /// Field 10: `branding`
+    #[serde(
+        rename = "branding",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub branding: ::buffa::MessageField<
+        ProgramBranding,
+        ::buffa::Inline<ProgramBranding>,
+    >,
+    /// Field 11: `renewal`
+    #[serde(
+        rename = "renewal",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub renewal: ::buffa::MessageField<ProgramRenewal, ::buffa::Inline<ProgramRenewal>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -7441,6 +8957,10 @@ impl ::core::fmt::Debug for UpdateProgramRequest {
             .field("active", &self.active)
             .field("path", &self.path)
             .field("modules", &self.modules)
+            .field("about", &self.about)
+            .field("highlights", &self.highlights)
+            .field("branding", &self.branding)
+            .field("renewal", &self.renewal)
             .finish()
     }
 }
@@ -7487,6 +9007,16 @@ impl UpdateProgramRequest {
     ///Sets [`Self::active`] to `Some(value)`, consuming and returning `self`.
     pub fn with_active(mut self, value: bool) -> Self {
         self.active = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::about`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_about(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.about = Some(value.into());
         self
     }
 }
@@ -7536,6 +9066,33 @@ impl ::buffa::Message for UpdateProgramRequest {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if let Some(ref v) = self.about {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if self.highlights.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.highlights.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.branding.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.branding.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.renewal.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.renewal.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -7571,6 +9128,33 @@ impl ::buffa::Message for UpdateProgramRequest {
                 buf,
             );
             v.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.about {
+            ::buffa::types::put_string_field(8u32, v, buf);
+        }
+        if self.highlights.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                9u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.highlights.write_to(__cache, buf);
+        }
+        if self.branding.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                10u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.branding.write_to(__cache, buf);
+        }
+        if self.renewal.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                11u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.renewal.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -7652,6 +9236,49 @@ impl ::buffa::Message for UpdateProgramRequest {
                 ::buffa::Message::merge_length_delimited(&mut elem, buf, ctx)?;
                 self.modules.push(elem);
             }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.about.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            9u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.highlights.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.branding.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            11u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.renewal.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -7667,6 +9294,10 @@ impl ::buffa::Message for UpdateProgramRequest {
         self.active = ::core::option::Option::None;
         self.path.clear();
         self.modules.clear();
+        self.about = ::core::option::Option::None;
+        self.highlights = ::buffa::MessageField::none();
+        self.branding = ::buffa::MessageField::none();
+        self.renewal = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -41387,6 +43018,18 @@ pub mod __buffa {
             ///
             /// Field 21: `default_mode`
             pub default_mode: ::core::option::Option<&'a str>,
+            /// True when at least one module hangs under this one.
+            ///
+            /// Field 22: `has_children`
+            pub has_children: bool,
+            /// How many modules hang directly under this one.
+            ///
+            /// Field 23: `children_count`
+            pub children_count: i64,
+            /// The icon the frontend draws beside the module (an icon name). Absent until set.
+            ///
+            /// Field 24: `icon`
+            pub icon: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ModuleCatalogItemView<'a> {
@@ -41574,6 +43217,27 @@ pub mod __buffa {
                         )?;
                         view.default_mode = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    22u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.has_children = ::buffa::types::decode_bool(&mut cur)?;
+                    }
+                    23u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.children_count = ::buffa::types::decode_int64(&mut cur)?;
+                    }
+                    24u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.icon = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -41624,6 +43288,9 @@ pub mod __buffa {
                     selectable: self.selectable,
                     allow_components: self.allow_components,
                     default_mode: self.default_mode.map(|s| s.to_string()),
+                    has_children: self.has_children,
+                    children_count: self.children_count,
+                    icon: self.icon.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -41713,6 +43380,18 @@ pub mod __buffa {
                 if let Some(ref v) = self.default_mode {
                     size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
+                if self.has_children {
+                    size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
+                if self.children_count != 0i64 {
+                    size
+                        += 2u64
+                            + ::buffa::types::int64_encoded_len(self.children_count)
+                                as u64;
+                }
+                if let Some(ref v) = self.icon {
+                    size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -41786,6 +43465,15 @@ pub mod __buffa {
                 }
                 if let Some(ref v) = self.default_mode {
                     ::buffa::types::put_string_field(21u32, v, buf);
+                }
+                if self.has_children {
+                    ::buffa::types::put_bool_field(22u32, self.has_children, buf);
+                }
+                if self.children_count != 0i64 {
+                    ::buffa::types::put_int64_field(23u32, self.children_count, buf);
+                }
+                if let Some(ref v) = self.icon {
+                    ::buffa::types::put_string_field(24u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -41874,6 +43562,19 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.default_mode {
                     __map.serialize_entry("defaultMode", __v)?;
+                }
+                if self.has_children {
+                    __map.serialize_entry("hasChildren", &self.has_children)?;
+                }
+                if !::buffa::json_helpers::skip_if::is_zero_i64(&self.children_count) {
+                    __map
+                        .serialize_entry(
+                            "childrenCount",
+                            &::buffa::json_helpers::ProtoJson(&self.children_count),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.icon {
+                    __map.serialize_entry("icon", __v)?;
                 }
                 __map.end()
             }
@@ -42089,6 +43790,27 @@ pub mod __buffa {
             pub fn default_mode(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().default_mode
             }
+            /// True when at least one module hangs under this one.
+            ///
+            /// Field 22: `has_children`
+            #[must_use]
+            pub fn has_children(&self) -> bool {
+                self.0.reborrow().has_children
+            }
+            /// How many modules hang directly under this one.
+            ///
+            /// Field 23: `children_count`
+            #[must_use]
+            pub fn children_count(&self) -> i64 {
+                self.0.reborrow().children_count
+            }
+            /// The icon the frontend draws beside the module (an icon name). Absent until set.
+            ///
+            /// Field 24: `icon`
+            #[must_use]
+            pub fn icon(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().icon
+            }
         }
         impl ::core::convert::From<::buffa::OwnedView<ModuleCatalogItemView<'static>>>
         for ModuleCatalogItemOwnedView {
@@ -42169,6 +43891,12 @@ pub mod __buffa {
             pub allow_components: bool,
             /// Field 22: `default_mode`
             pub default_mode: ::core::option::Option<&'a str>,
+            /// Field 23: `has_children`
+            pub has_children: bool,
+            /// Field 24: `children_count`
+            pub children_count: i64,
+            /// Field 25: `icon`
+            pub icon: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ModuleCatalogTreeNodeView<'a> {
@@ -42356,6 +44084,27 @@ pub mod __buffa {
                         )?;
                         view.default_mode = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    23u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.has_children = ::buffa::types::decode_bool(&mut cur)?;
+                    }
+                    24u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.children_count = ::buffa::types::decode_int64(&mut cur)?;
+                    }
+                    25u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.icon = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     16u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -42431,6 +44180,9 @@ pub mod __buffa {
                     selectable: self.selectable,
                     allow_components: self.allow_components,
                     default_mode: self.default_mode.map(|s| s.to_string()),
+                    has_children: self.has_children,
+                    children_count: self.children_count,
+                    icon: self.icon.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -42528,6 +44280,18 @@ pub mod __buffa {
                 if let Some(ref v) = self.default_mode {
                     size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
+                if self.has_children {
+                    size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
+                if self.children_count != 0i64 {
+                    size
+                        += 2u64
+                            + ::buffa::types::int64_encoded_len(self.children_count)
+                                as u64;
+                }
+                if let Some(ref v) = self.icon {
+                    size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -42609,6 +44373,15 @@ pub mod __buffa {
                 }
                 if let Some(ref v) = self.default_mode {
                     ::buffa::types::put_string_field(22u32, v, buf);
+                }
+                if self.has_children {
+                    ::buffa::types::put_bool_field(23u32, self.has_children, buf);
+                }
+                if self.children_count != 0i64 {
+                    ::buffa::types::put_int64_field(24u32, self.children_count, buf);
+                }
+                if let Some(ref v) = self.icon {
+                    ::buffa::types::put_string_field(25u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -42700,6 +44473,19 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.default_mode {
                     __map.serialize_entry("defaultMode", __v)?;
+                }
+                if self.has_children {
+                    __map.serialize_entry("hasChildren", &self.has_children)?;
+                }
+                if !::buffa::json_helpers::skip_if::is_zero_i64(&self.children_count) {
+                    __map
+                        .serialize_entry(
+                            "childrenCount",
+                            &::buffa::json_helpers::ProtoJson(&self.children_count),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.icon {
+                    __map.serialize_entry("icon", __v)?;
                 }
                 __map.end()
             }
@@ -42911,6 +44697,21 @@ pub mod __buffa {
             pub fn default_mode(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().default_mode
             }
+            /// Field 23: `has_children`
+            #[must_use]
+            pub fn has_children(&self) -> bool {
+                self.0.reborrow().has_children
+            }
+            /// Field 24: `children_count`
+            #[must_use]
+            pub fn children_count(&self) -> i64 {
+                self.0.reborrow().children_count
+            }
+            /// Field 25: `icon`
+            #[must_use]
+            pub fn icon(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().icon
+            }
         }
         impl ::core::convert::From<
             ::buffa::OwnedView<ModuleCatalogTreeNodeView<'static>>,
@@ -42963,6 +44764,26 @@ pub mod __buffa {
             ///
             /// Field 4: `full_tree`
             pub full_tree: ::core::option::Option<bool>,
+            /// Finds modules whose name contains this text, at any depth, case-insensitive (`module=text` is
+            /// accepted too). With `parent_id`, only modules beneath it. Ignored when `full_tree` is true.
+            ///
+            /// Field 5: `search`
+            pub search: ::core::option::Option<&'a str>,
+            /// Module keys or ids: returns exactly these modules, flat and with nothing beneath them. `parent_id`
+            /// is ignored; `search` narrows within them. Wins over `full_tree`.
+            ///
+            /// Field 6: `keys`
+            pub keys: ::buffa::RepeatedView<'a, &'a str>,
+            /// With `checked`: the program (ID or slug) whose ticks decide what is returned.
+            ///
+            /// Field 7: `program`
+            pub program: ::core::option::Option<&'a str>,
+            /// true: only the selectable modules `program` has ticked (selected and switched on), flat and with
+            /// nothing beneath them; false: the ones it has not. Needs `program`; `program` alone means true.
+            /// Wins over `full_tree` and `parent_id`.
+            ///
+            /// Field 8: `checked`
+            pub checked: ::core::option::Option<bool>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ListModuleCatalogRequestView<'a> {
@@ -43031,6 +44852,38 @@ pub mod __buffa {
                         )?;
                         view.full_tree = Some(::buffa::types::decode_bool(&mut cur)?);
                     }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.search = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    7u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.program = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    8u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.checked = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
+                    6u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.keys.push(__elem);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -43064,6 +44917,10 @@ pub mod __buffa {
                     max_page_size: self.max_page_size,
                     page_token: self.page_token.map(|s| s.to_string()),
                     full_tree: self.full_tree,
+                    search: self.search.map(|s| s.to_string()),
+                    keys: self.keys.iter().map(|s| s.to_string()).collect(),
+                    program: self.program.map(|s| s.to_string()),
+                    checked: self.checked,
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -43090,6 +44947,18 @@ pub mod __buffa {
                 if self.full_tree.is_some() {
                     size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
                 }
+                if let Some(ref v) = self.search {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                for v in &self.keys {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if let Some(ref v) = self.program {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if self.checked.is_some() {
+                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -43112,6 +44981,18 @@ pub mod __buffa {
                 }
                 if let Some(v) = self.full_tree {
                     ::buffa::types::put_bool_field(4u32, v, buf);
+                }
+                if let Some(ref v) = self.search {
+                    ::buffa::types::put_string_field(5u32, v, buf);
+                }
+                for v in &self.keys {
+                    ::buffa::types::put_string_field(6u32, v, buf);
+                }
+                if let Some(ref v) = self.program {
+                    ::buffa::types::put_string_field(7u32, v, buf);
+                }
+                if let Some(v) = self.checked {
+                    ::buffa::types::put_bool_field(8u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -43149,6 +45030,18 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.full_tree {
                     __map.serialize_entry("fullTree", &__v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.search {
+                    __map.serialize_entry("search", __v)?;
+                }
+                if !self.keys.is_empty() {
+                    __map.serialize_entry("keys", &*self.keys)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.program {
+                    __map.serialize_entry("program", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.checked {
+                    __map.serialize_entry("checked", &__v)?;
                 }
                 __map.end()
             }
@@ -43273,6 +45166,38 @@ pub mod __buffa {
             #[must_use]
             pub fn full_tree(&self) -> ::core::option::Option<bool> {
                 self.0.reborrow().full_tree
+            }
+            /// Finds modules whose name contains this text, at any depth, case-insensitive (`module=text` is
+            /// accepted too). With `parent_id`, only modules beneath it. Ignored when `full_tree` is true.
+            ///
+            /// Field 5: `search`
+            #[must_use]
+            pub fn search(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().search
+            }
+            /// Module keys or ids: returns exactly these modules, flat and with nothing beneath them. `parent_id`
+            /// is ignored; `search` narrows within them. Wins over `full_tree`.
+            ///
+            /// Field 6: `keys`
+            #[must_use]
+            pub fn keys(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().keys
+            }
+            /// With `checked`: the program (ID or slug) whose ticks decide what is returned.
+            ///
+            /// Field 7: `program`
+            #[must_use]
+            pub fn program(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().program
+            }
+            /// true: only the selectable modules `program` has ticked (selected and switched on), flat and with
+            /// nothing beneath them; false: the ones it has not. Needs `program`; `program` alone means true.
+            /// Wins over `full_tree` and `parent_id`.
+            ///
+            /// Field 8: `checked`
+            #[must_use]
+            pub fn checked(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().checked
             }
         }
         impl ::core::convert::From<
@@ -44449,6 +46374,22 @@ pub mod __buffa {
             pub stats: ::buffa::MessageFieldView<
                 super::super::__buffa::view::ProgramStatsView<'a>,
             >,
+            /// The merchant-facing text (`description` is the internal one).
+            ///
+            /// Field 15: `about`
+            pub about: ::core::option::Option<&'a str>,
+            /// Up to 5 short selling points, in order.
+            ///
+            /// Field 16: `highlights`
+            pub highlights: ::buffa::RepeatedView<'a, &'a str>,
+            /// Field 17: `branding`
+            pub branding: ::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramBrandingView<'a>,
+            >,
+            /// Field 18: `renewal`
+            pub renewal: ::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramRenewalView<'a>,
+            >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ProgramView<'a> {
@@ -44596,6 +46537,74 @@ pub mod __buffa {
                             }
                         }
                     }
+                    15u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.about = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    17u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.branding.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.branding = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::ProgramBrandingView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    18u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.renewal.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.renewal = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::ProgramRenewalView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    16u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.highlights.push(__elem);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -44636,6 +46645,26 @@ pub mod __buffa {
                             ::buffa::MessageField::<
                                 super::super::ProgramStats,
                                 ::buffa::Inline<super::super::ProgramStats>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    about: self.about.map(|s| s.to_string()),
+                    highlights: self.highlights.iter().map(|s| s.to_string()).collect(),
+                    branding: match self.branding.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::ProgramBranding,
+                                ::buffa::Inline<super::super::ProgramBranding>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    renewal: match self.renewal.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::ProgramRenewal,
+                                ::buffa::Inline<super::super::ProgramRenewal>,
                             >::some(v.to_owned_from_source(__buffa_src)?)
                         }
                         None => ::buffa::MessageField::none(),
@@ -44712,6 +46741,28 @@ pub mod __buffa {
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
+                if let Some(ref v) = self.about {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                for v in &self.highlights {
+                    size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if self.branding.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.branding.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if self.renewal.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.renewal.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -44766,6 +46817,28 @@ pub mod __buffa {
                         buf,
                     );
                     self.stats.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.about {
+                    ::buffa::types::put_string_field(15u32, v, buf);
+                }
+                for v in &self.highlights {
+                    ::buffa::types::put_string_field(16u32, v, buf);
+                }
+                if self.branding.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        17u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.branding.write_to(__cache, buf);
+                }
+                if self.renewal.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        18u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.renewal.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -44831,6 +46904,23 @@ pub mod __buffa {
                 {
                     if let ::core::option::Option::Some(__v) = self.stats.as_option() {
                         __map.serialize_entry("stats", __v)?;
+                    }
+                }
+                if let ::core::option::Option::Some(__v) = self.about {
+                    __map.serialize_entry("about", __v)?;
+                }
+                if !self.highlights.is_empty() {
+                    __map.serialize_entry("highlights", &*self.highlights)?;
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.branding.as_option()
+                    {
+                        __map.serialize_entry("branding", __v)?;
+                    }
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.renewal.as_option() {
+                        __map.serialize_entry("renewal", __v)?;
                     }
                 }
                 __map.end()
@@ -45005,6 +47095,38 @@ pub mod __buffa {
             > {
                 &self.0.reborrow().stats
             }
+            /// The merchant-facing text (`description` is the internal one).
+            ///
+            /// Field 15: `about`
+            #[must_use]
+            pub fn about(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().about
+            }
+            /// Up to 5 short selling points, in order.
+            ///
+            /// Field 16: `highlights`
+            #[must_use]
+            pub fn highlights(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().highlights
+            }
+            /// Field 17: `branding`
+            #[must_use]
+            pub fn branding(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramBrandingView<'_>,
+            > {
+                &self.0.reborrow().branding
+            }
+            /// Field 18: `renewal`
+            #[must_use]
+            pub fn renewal(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramRenewalView<'_>,
+            > {
+                &self.0.reborrow().renewal
+            }
         }
         impl ::core::convert::From<::buffa::OwnedView<ProgramView<'static>>>
         for ProgramOwnedView {
@@ -45029,6 +47151,961 @@ pub mod __buffa {
             type ViewHandle = ProgramOwnedView;
         }
         impl ::serde::Serialize for ProgramOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// The badge of a program. In a request a sent part replaces that part (an empty text clears it).
+        #[derive(Clone, Debug, Default)]
+        pub struct ProgramBrandingView<'a> {
+            /// `#RRGGBB`, the badge background.
+            ///
+            /// Field 1: `brand_color`
+            pub brand_color: ::core::option::Option<&'a str>,
+            /// `#RRGGBB`, the text on the badge.
+            ///
+            /// Field 2: `text_color`
+            pub text_color: ::core::option::Option<&'a str>,
+            /// An icon name, e.g. `credit_card`.
+            ///
+            /// Field 3: `logo_icon`
+            pub logo_icon: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for ProgramBrandingView<'a> {
+            type Owned = super::super::ProgramBranding;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.brand_color = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.text_color = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.logo_icon = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::ProgramBranding,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::ProgramBranding,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::ProgramBranding {
+                    brand_color: self.brand_color.map(|s| s.to_string()),
+                    text_color: self.text_color.map(|s| s.to_string()),
+                    logo_icon: self.logo_icon.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for ProgramBrandingView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if let Some(ref v) = self.brand_color {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if let Some(ref v) = self.text_color {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if let Some(ref v) = self.logo_icon {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(ref v) = self.brand_color {
+                    ::buffa::types::put_string_field(1u32, v, buf);
+                }
+                if let Some(ref v) = self.text_color {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.logo_icon {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for ProgramBrandingView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.brand_color {
+                    __map.serialize_entry("brandColor", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.text_color {
+                    __map.serialize_entry("textColor", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.logo_icon {
+                    __map.serialize_entry("logoIcon", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for ProgramBrandingView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "ProgramBranding";
+            const FULL_NAME: &'static str = "programs.v1.ProgramBranding";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ProgramBranding";
+        }
+        ::buffa::impl_default_view_instance!(ProgramBrandingView);
+        ::buffa::impl_view_reborrow!(ProgramBrandingView);
+        /** Self-contained, `'static` owned view of a `ProgramBranding` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`ProgramBrandingView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ProgramBrandingView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct ProgramBrandingOwnedView(
+            ::buffa::OwnedView<ProgramBrandingView<'static>>,
+        );
+        impl ProgramBrandingOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ProgramBrandingOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ProgramBrandingOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::ProgramBranding,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ProgramBrandingOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`ProgramBrandingView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &ProgramBrandingView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::ProgramBranding {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// `#RRGGBB`, the badge background.
+            ///
+            /// Field 1: `brand_color`
+            #[must_use]
+            pub fn brand_color(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().brand_color
+            }
+            /// `#RRGGBB`, the text on the badge.
+            ///
+            /// Field 2: `text_color`
+            #[must_use]
+            pub fn text_color(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().text_color
+            }
+            /// An icon name, e.g. `credit_card`.
+            ///
+            /// Field 3: `logo_icon`
+            #[must_use]
+            pub fn logo_icon(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().logo_icon
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<ProgramBrandingView<'static>>>
+        for ProgramBrandingOwnedView {
+            fn from(inner: ::buffa::OwnedView<ProgramBrandingView<'static>>) -> Self {
+                ProgramBrandingOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<ProgramBrandingOwnedView>
+        for ::buffa::OwnedView<ProgramBrandingView<'static>> {
+            fn from(wrapper: ProgramBrandingOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<ProgramBrandingView<'static>>>
+        for ProgramBrandingOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<ProgramBrandingView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::ProgramBranding {
+            type View<'a> = ProgramBrandingView<'a>;
+            type ViewHandle = ProgramBrandingOwnedView;
+        }
+        impl ::serde::Serialize for ProgramBrandingOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// The renewal defaults of a program. In a request omitted parts take the defaults (create: 12 months,
+        /// 30 days grace, 30 days reminder, no auto-renew) or keep their value (update).
+        #[derive(Clone, Debug, Default)]
+        pub struct ProgramRenewalView<'a> {
+            /// Field 1: `term_months`
+            pub term_months: ::core::option::Option<i32>,
+            /// Field 2: `grace_period_days`
+            pub grace_period_days: ::core::option::Option<i32>,
+            /// Days before the term ends.
+            ///
+            /// Field 3: `reminder_days`
+            pub reminder_days: ::core::option::Option<i32>,
+            /// Field 4: `auto_renew`
+            pub auto_renew: ::core::option::Option<bool>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for ProgramRenewalView<'a> {
+            type Owned = super::super::ProgramRenewal;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.term_months = Some(::buffa::types::decode_int32(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.grace_period_days = Some(
+                            ::buffa::types::decode_int32(&mut cur)?,
+                        );
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.reminder_days = Some(
+                            ::buffa::types::decode_int32(&mut cur)?,
+                        );
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.auto_renew = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::ProgramRenewal,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::ProgramRenewal,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::ProgramRenewal {
+                    term_months: self.term_months,
+                    grace_period_days: self.grace_period_days,
+                    reminder_days: self.reminder_days,
+                    auto_renew: self.auto_renew,
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for ProgramRenewalView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if let Some(v) = self.term_months {
+                    size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
+                }
+                if let Some(v) = self.grace_period_days {
+                    size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
+                }
+                if let Some(v) = self.reminder_days {
+                    size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
+                }
+                if self.auto_renew.is_some() {
+                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(v) = self.term_months {
+                    ::buffa::types::put_int32_field(1u32, v, buf);
+                }
+                if let Some(v) = self.grace_period_days {
+                    ::buffa::types::put_int32_field(2u32, v, buf);
+                }
+                if let Some(v) = self.reminder_days {
+                    ::buffa::types::put_int32_field(3u32, v, buf);
+                }
+                if let Some(v) = self.auto_renew {
+                    ::buffa::types::put_bool_field(4u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for ProgramRenewalView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.term_months {
+                    __map
+                        .serialize_entry(
+                            "termMonths",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.grace_period_days {
+                    __map
+                        .serialize_entry(
+                            "gracePeriodDays",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.reminder_days {
+                    __map
+                        .serialize_entry(
+                            "reminderDays",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.auto_renew {
+                    __map.serialize_entry("autoRenew", &__v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for ProgramRenewalView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "ProgramRenewal";
+            const FULL_NAME: &'static str = "programs.v1.ProgramRenewal";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ProgramRenewal";
+        }
+        ::buffa::impl_default_view_instance!(ProgramRenewalView);
+        ::buffa::impl_view_reborrow!(ProgramRenewalView);
+        /** Self-contained, `'static` owned view of a `ProgramRenewal` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`ProgramRenewalView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ProgramRenewalView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct ProgramRenewalOwnedView(
+            ::buffa::OwnedView<ProgramRenewalView<'static>>,
+        );
+        impl ProgramRenewalOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ProgramRenewalOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ProgramRenewalOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::ProgramRenewal,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ProgramRenewalOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`ProgramRenewalView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &ProgramRenewalView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::ProgramRenewal {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `term_months`
+            #[must_use]
+            pub fn term_months(&self) -> ::core::option::Option<i32> {
+                self.0.reborrow().term_months
+            }
+            /// Field 2: `grace_period_days`
+            #[must_use]
+            pub fn grace_period_days(&self) -> ::core::option::Option<i32> {
+                self.0.reborrow().grace_period_days
+            }
+            /// Days before the term ends.
+            ///
+            /// Field 3: `reminder_days`
+            #[must_use]
+            pub fn reminder_days(&self) -> ::core::option::Option<i32> {
+                self.0.reborrow().reminder_days
+            }
+            /// Field 4: `auto_renew`
+            #[must_use]
+            pub fn auto_renew(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().auto_renew
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<ProgramRenewalView<'static>>>
+        for ProgramRenewalOwnedView {
+            fn from(inner: ::buffa::OwnedView<ProgramRenewalView<'static>>) -> Self {
+                ProgramRenewalOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<ProgramRenewalOwnedView>
+        for ::buffa::OwnedView<ProgramRenewalView<'static>> {
+            fn from(wrapper: ProgramRenewalOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<ProgramRenewalView<'static>>>
+        for ProgramRenewalOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<ProgramRenewalView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::ProgramRenewal {
+            type View<'a> = ProgramRenewalView<'a>;
+            type ViewHandle = ProgramRenewalOwnedView;
+        }
+        impl ::serde::Serialize for ProgramRenewalOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// The highlights of an update: present replaces the whole list (an empty list clears it).
+        #[derive(Clone, Debug, Default)]
+        pub struct HighlightListView<'a> {
+            /// Field 1: `items`
+            pub items: ::buffa::RepeatedView<'a, &'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for HighlightListView<'a> {
+            type Owned = super::super::HighlightList;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.items.push(__elem);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::HighlightList,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::HighlightList,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::HighlightList {
+                    items: self.items.iter().map(|s| s.to_string()).collect(),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for HighlightListView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                for v in &self.items {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                for v in &self.items {
+                    ::buffa::types::put_string_field(1u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for HighlightListView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !self.items.is_empty() {
+                    __map.serialize_entry("items", &*self.items)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for HighlightListView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "HighlightList";
+            const FULL_NAME: &'static str = "programs.v1.HighlightList";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.HighlightList";
+        }
+        ::buffa::impl_default_view_instance!(HighlightListView);
+        ::buffa::impl_view_reborrow!(HighlightListView);
+        /** Self-contained, `'static` owned view of a `HighlightList` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`HighlightListView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`HighlightListView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct HighlightListOwnedView(
+            ::buffa::OwnedView<HighlightListView<'static>>,
+        );
+        impl HighlightListOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    HighlightListOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    HighlightListOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::HighlightList,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    HighlightListOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`HighlightListView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &HighlightListView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::HighlightList {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `items`
+            #[must_use]
+            pub fn items(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().items
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<HighlightListView<'static>>>
+        for HighlightListOwnedView {
+            fn from(inner: ::buffa::OwnedView<HighlightListView<'static>>) -> Self {
+                HighlightListOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<HighlightListOwnedView>
+        for ::buffa::OwnedView<HighlightListView<'static>> {
+            fn from(wrapper: HighlightListOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<HighlightListView<'static>>>
+        for HighlightListOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<HighlightListView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::HighlightList {
+            type View<'a> = HighlightListView<'a>;
+            type ViewHandle = HighlightListOwnedView;
+        }
+        impl ::serde::Serialize for HighlightListOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -46698,6 +49775,10 @@ pub mod __buffa {
             pub rule: ::buffa::MessageFieldView<
                 super::super::__buffa::view::ProgramRuleView<'a>,
             >,
+            /// The icon drawn beside the module: the program's own, else the catalog module's.
+            ///
+            /// Field 20: `icon`
+            pub icon: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ProgramModuleView<'a> {
@@ -46880,6 +49961,13 @@ pub mod __buffa {
                             }
                         }
                     }
+                    20u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.icon = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     18u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -46960,6 +50048,7 @@ pub mod __buffa {
                         }
                         None => ::buffa::MessageField::none(),
                     },
+                    icon: self.icon.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -47052,6 +50141,9 @@ pub mod __buffa {
                         += 2u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
+                if let Some(ref v) = self.icon {
+                    size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -47129,6 +50221,9 @@ pub mod __buffa {
                         buf,
                     );
                     self.rule.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.icon {
+                    ::buffa::types::put_string_field(20u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -47213,6 +50308,9 @@ pub mod __buffa {
                     if let ::core::option::Option::Some(__v) = self.rule.as_option() {
                         __map.serialize_entry("rule", __v)?;
                     }
+                }
+                if let ::core::option::Option::Some(__v) = self.icon {
+                    __map.serialize_entry("icon", __v)?;
                 }
                 __map.end()
             }
@@ -47420,6 +50518,13 @@ pub mod __buffa {
             > {
                 &self.0.reborrow().rule
             }
+            /// The icon drawn beside the module: the program's own, else the catalog module's.
+            ///
+            /// Field 20: `icon`
+            #[must_use]
+            pub fn icon(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().icon
+            }
         }
         impl ::core::convert::From<::buffa::OwnedView<ProgramModuleView<'static>>>
         for ProgramModuleOwnedView {
@@ -47505,6 +50610,10 @@ pub mod __buffa {
             ///
             /// Field 15: `missing_option_ids`
             pub missing_option_ids: ::buffa::RepeatedView<'a, &'a str>,
+            /// The Display switch: false means the setting is hidden from the form.
+            ///
+            /// Field 16: `display`
+            pub display: bool,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ProgramSettingView<'a> {
@@ -47665,6 +50774,13 @@ pub mod __buffa {
                             }
                         }
                     }
+                    16u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.display = ::buffa::types::decode_bool(&mut cur)?;
+                    }
                     11u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -47775,6 +50891,7 @@ pub mod __buffa {
                         .iter()
                         .map(|s| s.to_string())
                         .collect(),
+                    display: self.display,
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -47855,6 +50972,9 @@ pub mod __buffa {
                 for v in &self.missing_option_ids {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
+                if self.display {
+                    size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -47925,6 +51045,9 @@ pub mod __buffa {
                 }
                 for v in &self.missing_option_ids {
                     ::buffa::types::put_string_field(15u32, v, buf);
+                }
+                if self.display {
+                    ::buffa::types::put_bool_field(16u32, self.display, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -48003,6 +51126,9 @@ pub mod __buffa {
                 if !self.missing_option_ids.is_empty() {
                     __map
                         .serialize_entry("missingOptionIds", &*self.missing_option_ids)?;
+                }
+                if self.display {
+                    __map.serialize_entry("display", &self.display)?;
                 }
                 __map.end()
             }
@@ -48200,6 +51326,13 @@ pub mod __buffa {
             #[must_use]
             pub fn missing_option_ids(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
                 &self.0.reborrow().missing_option_ids
+            }
+            /// The Display switch: false means the setting is hidden from the form.
+            ///
+            /// Field 16: `display`
+            #[must_use]
+            pub fn display(&self) -> bool {
+                self.0.reborrow().display
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<ProgramSettingView<'static>>>
@@ -48608,6 +51741,10 @@ pub mod __buffa {
             pub draft_version: ::core::option::Option<i32>,
             /// Field 3: `published_version`
             pub published_version: ::core::option::Option<i32>,
+            /// The rule's Display switch (default true).
+            ///
+            /// Field 4: `display`
+            pub display: bool,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ProgramRuleView<'a> {
@@ -48671,6 +51808,13 @@ pub mod __buffa {
                             ::buffa::types::decode_int32(&mut cur)?,
                         );
                     }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.display = ::buffa::types::decode_bool(&mut cur)?;
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -48703,6 +51847,7 @@ pub mod __buffa {
                     rule_type: self.rule_type.map(|s| s.to_string()),
                     draft_version: self.draft_version,
                     published_version: self.published_version,
+                    display: self.display,
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -48726,6 +51871,9 @@ pub mod __buffa {
                 if let Some(v) = self.published_version {
                     size += 1u64 + ::buffa::types::int32_encoded_len(v) as u64;
                 }
+                if self.display {
+                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -48745,6 +51893,9 @@ pub mod __buffa {
                 }
                 if let Some(v) = self.published_version {
                     ::buffa::types::put_int32_field(3u32, v, buf);
+                }
+                if self.display {
+                    ::buffa::types::put_bool_field(4u32, self.display, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -48783,6 +51934,9 @@ pub mod __buffa {
                             "publishedVersion",
                             &::buffa::json_helpers::ProtoJson(&__v),
                         )?;
+                }
+                if self.display {
+                    __map.serialize_entry("display", &self.display)?;
                 }
                 __map.end()
             }
@@ -48892,6 +52046,13 @@ pub mod __buffa {
             pub fn published_version(&self) -> ::core::option::Option<i32> {
                 self.0.reborrow().published_version
             }
+            /// The rule's Display switch (default true).
+            ///
+            /// Field 4: `display`
+            #[must_use]
+            pub fn display(&self) -> bool {
+                self.0.reborrow().display
+            }
         }
         impl ::core::convert::From<::buffa::OwnedView<ProgramRuleView<'static>>>
         for ProgramRuleOwnedView {
@@ -48944,6 +52105,17 @@ pub mod __buffa {
             /// Field 4: `settings`
             pub settings: ::buffa::MessageFieldView<
                 super::super::__buffa::view::SettingConfigListView<'a>,
+            >,
+            /// The icon drawn beside this module (a name such as "tag"). An empty string clears it, and the catalog
+            /// module's icon shows again; absent leaves it alone.
+            ///
+            /// Field 5: `icon`
+            pub icon: ::core::option::Option<&'a str>,
+            /// The rule's settings, for a rule module. Absent leaves them alone.
+            ///
+            /// Field 6: `rule`
+            pub rule: ::buffa::MessageFieldView<
+                super::super::__buffa::view::RuleConfigView<'a>,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
@@ -49029,6 +52201,38 @@ pub mod __buffa {
                             }
                         }
                     }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.icon = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    6u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.rule.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.rule = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::RuleConfigView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -49070,6 +52274,16 @@ pub mod __buffa {
                         }
                         None => ::buffa::MessageField::none(),
                     },
+                    icon: self.icon.map(|s| s.to_string()),
+                    rule: match self.rule.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::RuleConfig,
+                                ::buffa::Inline<super::super::RuleConfig>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -49096,6 +52310,17 @@ pub mod __buffa {
                 if self.settings.is_set() {
                     let __slot = __cache.reserve();
                     let inner_size = self.settings.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if let Some(ref v) = self.icon {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if self.rule.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.rule.compute_size(__cache);
                     __cache.set(__slot, inner_size);
                     size
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -49128,6 +52353,17 @@ pub mod __buffa {
                         buf,
                     );
                     self.settings.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.icon {
+                    ::buffa::types::put_string_field(5u32, v, buf);
+                }
+                if self.rule.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        6u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.rule.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -49163,6 +52399,14 @@ pub mod __buffa {
                     if let ::core::option::Option::Some(__v) = self.settings.as_option()
                     {
                         __map.serialize_entry("settings", __v)?;
+                    }
+                }
+                if let ::core::option::Option::Some(__v) = self.icon {
+                    __map.serialize_entry("icon", __v)?;
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.rule.as_option() {
+                        __map.serialize_entry("rule", __v)?;
                     }
                 }
                 __map.end()
@@ -49289,6 +52533,25 @@ pub mod __buffa {
             > {
                 &self.0.reborrow().settings
             }
+            /// The icon drawn beside this module (a name such as "tag"). An empty string clears it, and the catalog
+            /// module's icon shows again; absent leaves it alone.
+            ///
+            /// Field 5: `icon`
+            #[must_use]
+            pub fn icon(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().icon
+            }
+            /// The rule's settings, for a rule module. Absent leaves them alone.
+            ///
+            /// Field 6: `rule`
+            #[must_use]
+            pub fn rule(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::RuleConfigView<'_>,
+            > {
+                &self.0.reborrow().rule
+            }
         }
         impl ::core::convert::From<::buffa::OwnedView<ModuleConfigView<'static>>>
         for ModuleConfigOwnedView {
@@ -49313,6 +52576,267 @@ pub mod __buffa {
             type ViewHandle = ModuleConfigOwnedView;
         }
         impl ::serde::Serialize for ModuleConfigOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        #[derive(Clone, Debug, Default)]
+        pub struct RuleConfigView<'a> {
+            /// The rule's Display switch: false hides the rule from the program's pages; absent leaves it alone.
+            ///
+            /// Field 1: `display`
+            pub display: ::core::option::Option<bool>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for RuleConfigView<'a> {
+            type Owned = super::super::RuleConfig;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.display = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<super::super::RuleConfig, ::buffa::DecodeError> {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<super::super::RuleConfig, ::buffa::DecodeError> {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::RuleConfig {
+                    display: self.display,
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for RuleConfigView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if self.display.is_some() {
+                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(v) = self.display {
+                    ::buffa::types::put_bool_field(1u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for RuleConfigView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.display {
+                    __map.serialize_entry("display", &__v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for RuleConfigView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "RuleConfig";
+            const FULL_NAME: &'static str = "programs.v1.RuleConfig";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.RuleConfig";
+        }
+        ::buffa::impl_default_view_instance!(RuleConfigView);
+        ::buffa::impl_view_reborrow!(RuleConfigView);
+        /** Self-contained, `'static` owned view of a `RuleConfig` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`RuleConfigView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`RuleConfigView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct RuleConfigOwnedView(::buffa::OwnedView<RuleConfigView<'static>>);
+        impl RuleConfigOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    RuleConfigOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    RuleConfigOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::RuleConfig,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    RuleConfigOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`RuleConfigView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &RuleConfigView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::RuleConfig {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// The rule's Display switch: false hides the rule from the program's pages; absent leaves it alone.
+            ///
+            /// Field 1: `display`
+            #[must_use]
+            pub fn display(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().display
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<RuleConfigView<'static>>>
+        for RuleConfigOwnedView {
+            fn from(inner: ::buffa::OwnedView<RuleConfigView<'static>>) -> Self {
+                RuleConfigOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<RuleConfigOwnedView>
+        for ::buffa::OwnedView<RuleConfigView<'static>> {
+            fn from(wrapper: RuleConfigOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<RuleConfigView<'static>>>
+        for RuleConfigOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<RuleConfigView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::RuleConfig {
+            type View<'a> = RuleConfigView<'a>;
+            type ViewHandle = RuleConfigOwnedView;
+        }
+        impl ::serde::Serialize for RuleConfigOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -49629,7 +53153,8 @@ pub mod __buffa {
             pub id: ::core::option::Option<&'a str>,
             /// Field 2: `name`
             pub name: &'a str,
-            /// boolean | number | text | radio | checkbox | dropdown.
+            /// boolean | number | text | radio | checkbox | dropdown | percentage, or custom_option (a dropdown whose
+            /// choices you type in `custom_options`; stored and returned as dropdown).
             ///
             /// Field 3: `type`
             pub r#type: &'a str,
@@ -49652,6 +53177,15 @@ pub mod __buffa {
                 'a,
                 super::super::__buffa::view::OptionConfigView<'a>,
             >,
+            /// The Display switch (default true): false hides the setting from the form.
+            ///
+            /// Field 8: `display`
+            pub display: ::core::option::Option<bool>,
+            /// The custom choices of a radio / checkbox / dropdown as plain labels (the code is made from each
+            /// label). The same as `options`; send one of the two, not both, and not with a library_id.
+            ///
+            /// Field 9: `custom_options`
+            pub custom_options: ::buffa::RepeatedView<'a, &'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for SettingConfigView<'a> {
@@ -49750,6 +53284,13 @@ pub mod __buffa {
                         )?;
                         view.library_id = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    8u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.display = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
                     7u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -49769,6 +53310,17 @@ pub mod __buffa {
                                     __sub_ctx,
                                 )?,
                             );
+                    }
+                    9u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.custom_options.push(__elem);
                     }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
@@ -49818,6 +53370,12 @@ pub mod __buffa {
                         .iter()
                         .map(|v| v.to_owned_from_source(__buffa_src))
                         .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
+                    display: self.display,
+                    custom_options: self
+                        .custom_options
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect(),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -49865,6 +53423,12 @@ pub mod __buffa {
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
+                if self.display.is_some() {
+                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
+                for v in &self.custom_options {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -49906,6 +53470,12 @@ pub mod __buffa {
                         buf,
                     );
                     v.write_to(__cache, buf);
+                }
+                if let Some(v) = self.display {
+                    ::buffa::types::put_bool_field(8u32, v, buf);
+                }
+                for v in &self.custom_options {
+                    ::buffa::types::put_string_field(9u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -49953,6 +53523,12 @@ pub mod __buffa {
                 }
                 if !self.options.is_empty() {
                     __map.serialize_entry("options", &*self.options)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.display {
+                    __map.serialize_entry("display", &__v)?;
+                }
+                if !self.custom_options.is_empty() {
+                    __map.serialize_entry("customOptions", &*self.custom_options)?;
                 }
                 __map.end()
             }
@@ -50061,7 +53637,8 @@ pub mod __buffa {
             pub fn name(&self) -> &'_ str {
                 self.0.reborrow().name
             }
-            /// boolean | number | text | radio | checkbox | dropdown.
+            /// boolean | number | text | radio | checkbox | dropdown | percentage, or custom_option (a dropdown whose
+            /// choices you type in `custom_options`; stored and returned as dropdown).
             ///
             /// Field 3: `type`
             #[must_use]
@@ -50102,6 +53679,21 @@ pub mod __buffa {
                 super::super::__buffa::view::OptionConfigView<'_>,
             > {
                 &self.0.reborrow().options
+            }
+            /// The Display switch (default true): false hides the setting from the form.
+            ///
+            /// Field 8: `display`
+            #[must_use]
+            pub fn display(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().display
+            }
+            /// The custom choices of a radio / checkbox / dropdown as plain labels (the code is made from each
+            /// label). The same as `options`; send one of the two, not both, and not with a library_id.
+            ///
+            /// Field 9: `custom_options`
+            #[must_use]
+            pub fn custom_options(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().custom_options
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<SettingConfigView<'static>>>
@@ -51900,6 +55492,22 @@ pub mod __buffa {
                 'a,
                 super::super::__buffa::view::ModuleConfigView<'a>,
             >,
+            /// The merchant-facing text.
+            ///
+            /// Field 8: `about`
+            pub about: ::core::option::Option<&'a str>,
+            /// Up to 5 short selling points.
+            ///
+            /// Field 9: `highlights`
+            pub highlights: ::buffa::RepeatedView<'a, &'a str>,
+            /// Field 10: `branding`
+            pub branding: ::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramBrandingView<'a>,
+            >,
+            /// Field 11: `renewal`
+            pub renewal: ::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramRenewalView<'a>,
+            >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for CreateProgramRequestView<'a> {
@@ -51973,6 +55581,63 @@ pub mod __buffa {
                         )?;
                         view.level = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    8u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.about = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    10u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.branding.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.branding = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::ProgramBrandingView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    11u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.renewal.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.renewal = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::ProgramRenewalView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
                     6u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -52003,6 +55668,17 @@ pub mod __buffa {
                                     __sub_ctx,
                                 )?,
                             );
+                    }
+                    9u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.highlights.push(__elem);
                     }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
@@ -52044,6 +55720,26 @@ pub mod __buffa {
                         .iter()
                         .map(|v| v.to_owned_from_source(__buffa_src))
                         .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
+                    about: self.about.map(|s| s.to_string()),
+                    highlights: self.highlights.iter().map(|s| s.to_string()).collect(),
+                    branding: match self.branding.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::ProgramBranding,
+                                ::buffa::Inline<super::super::ProgramBranding>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    renewal: match self.renewal.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::ProgramRenewal,
+                                ::buffa::Inline<super::super::ProgramRenewal>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -52079,6 +55775,28 @@ pub mod __buffa {
                 for v in &self.module_configs {
                     let __slot = __cache.reserve();
                     let inner_size = v.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if let Some(ref v) = self.about {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                for v in &self.highlights {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if self.branding.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.branding.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if self.renewal.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.renewal.compute_size(__cache);
                     __cache.set(__slot, inner_size);
                     size
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -52121,6 +55839,28 @@ pub mod __buffa {
                     );
                     v.write_to(__cache, buf);
                 }
+                if let Some(ref v) = self.about {
+                    ::buffa::types::put_string_field(8u32, v, buf);
+                }
+                for v in &self.highlights {
+                    ::buffa::types::put_string_field(9u32, v, buf);
+                }
+                if self.branding.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        10u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.branding.write_to(__cache, buf);
+                }
+                if self.renewal.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        11u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.renewal.write_to(__cache, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -52162,6 +55902,23 @@ pub mod __buffa {
                 }
                 if !self.module_configs.is_empty() {
                     __map.serialize_entry("moduleConfigs", &*self.module_configs)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.about {
+                    __map.serialize_entry("about", __v)?;
+                }
+                if !self.highlights.is_empty() {
+                    __map.serialize_entry("highlights", &*self.highlights)?;
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.branding.as_option()
+                    {
+                        __map.serialize_entry("branding", __v)?;
+                    }
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.renewal.as_option() {
+                        __map.serialize_entry("renewal", __v)?;
+                    }
                 }
                 __map.end()
             }
@@ -52306,6 +56063,38 @@ pub mod __buffa {
                 super::super::__buffa::view::ModuleConfigView<'_>,
             > {
                 &self.0.reborrow().module_configs
+            }
+            /// The merchant-facing text.
+            ///
+            /// Field 8: `about`
+            #[must_use]
+            pub fn about(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().about
+            }
+            /// Up to 5 short selling points.
+            ///
+            /// Field 9: `highlights`
+            #[must_use]
+            pub fn highlights(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().highlights
+            }
+            /// Field 10: `branding`
+            #[must_use]
+            pub fn branding(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramBrandingView<'_>,
+            > {
+                &self.0.reborrow().branding
+            }
+            /// Field 11: `renewal`
+            #[must_use]
+            pub fn renewal(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramRenewalView<'_>,
+            > {
+                &self.0.reborrow().renewal
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<CreateProgramRequestView<'static>>>
@@ -52743,6 +56532,22 @@ pub mod __buffa {
                 'a,
                 super::super::__buffa::view::ModuleConfigView<'a>,
             >,
+            /// An empty string clears the merchant-facing text.
+            ///
+            /// Field 8: `about`
+            pub about: ::core::option::Option<&'a str>,
+            /// Field 9: `highlights`
+            pub highlights: ::buffa::MessageFieldView<
+                super::super::__buffa::view::HighlightListView<'a>,
+            >,
+            /// Field 10: `branding`
+            pub branding: ::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramBrandingView<'a>,
+            >,
+            /// Field 11: `renewal`
+            pub renewal: ::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramRenewalView<'a>,
+            >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for UpdateProgramRequestView<'a> {
@@ -52823,6 +56628,88 @@ pub mod __buffa {
                         )?;
                         view.path = ::buffa::types::borrow_str(&mut cur)?;
                     }
+                    8u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.about = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    9u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.highlights.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.highlights = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::HighlightListView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    10u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.branding.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.branding = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::ProgramBrandingView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    11u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.renewal.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.renewal = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::ProgramRenewalView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
                     7u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -52883,6 +56770,34 @@ pub mod __buffa {
                         .iter()
                         .map(|v| v.to_owned_from_source(__buffa_src))
                         .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
+                    about: self.about.map(|s| s.to_string()),
+                    highlights: match self.highlights.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::HighlightList,
+                                ::buffa::Inline<super::super::HighlightList>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    branding: match self.branding.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::ProgramBranding,
+                                ::buffa::Inline<super::super::ProgramBranding>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    renewal: match self.renewal.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::ProgramRenewal,
+                                ::buffa::Inline<super::super::ProgramRenewal>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -52925,6 +56840,33 @@ pub mod __buffa {
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
+                if let Some(ref v) = self.about {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if self.highlights.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.highlights.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if self.branding.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.branding.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if self.renewal.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.renewal.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -52961,6 +56903,33 @@ pub mod __buffa {
                         buf,
                     );
                     v.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.about {
+                    ::buffa::types::put_string_field(8u32, v, buf);
+                }
+                if self.highlights.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        9u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.highlights.write_to(__cache, buf);
+                }
+                if self.branding.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        10u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.branding.write_to(__cache, buf);
+                }
+                if self.renewal.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        11u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.renewal.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -53003,6 +56972,28 @@ pub mod __buffa {
                 }
                 if !self.modules.is_empty() {
                     __map.serialize_entry("modules", &*self.modules)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.about {
+                    __map.serialize_entry("about", __v)?;
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .highlights
+                        .as_option()
+                    {
+                        __map.serialize_entry("highlights", __v)?;
+                    }
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.branding.as_option()
+                    {
+                        __map.serialize_entry("branding", __v)?;
+                    }
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.renewal.as_option() {
+                        __map.serialize_entry("renewal", __v)?;
+                    }
                 }
                 __map.end()
             }
@@ -53145,6 +57136,40 @@ pub mod __buffa {
                 super::super::__buffa::view::ModuleConfigView<'_>,
             > {
                 &self.0.reborrow().modules
+            }
+            /// An empty string clears the merchant-facing text.
+            ///
+            /// Field 8: `about`
+            #[must_use]
+            pub fn about(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().about
+            }
+            /// Field 9: `highlights`
+            #[must_use]
+            pub fn highlights(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::HighlightListView<'_>,
+            > {
+                &self.0.reborrow().highlights
+            }
+            /// Field 10: `branding`
+            #[must_use]
+            pub fn branding(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramBrandingView<'_>,
+            > {
+                &self.0.reborrow().branding
+            }
+            /// Field 11: `renewal`
+            #[must_use]
+            pub fn renewal(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::ProgramRenewalView<'_>,
+            > {
+                &self.0.reborrow().renewal
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<UpdateProgramRequestView<'static>>>
@@ -113603,6 +117628,9 @@ pub mod __buffa {
         reg.register_json_any(super::__GET_MODULE_CATALOG_ITEM_REQUEST_JSON_ANY);
         reg.register_json_any(super::__GET_MODULE_CATALOG_ITEM_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_JSON_ANY);
+        reg.register_json_any(super::__PROGRAM_BRANDING_JSON_ANY);
+        reg.register_json_any(super::__PROGRAM_RENEWAL_JSON_ANY);
+        reg.register_json_any(super::__HIGHLIGHT_LIST_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_DOMAIN_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_LAST_ACTIVITY_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_STATS_JSON_ANY);
@@ -113612,6 +117640,7 @@ pub mod __buffa {
         reg.register_json_any(super::__SETTING_OPTION_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_RULE_JSON_ANY);
         reg.register_json_any(super::__MODULE_CONFIG_JSON_ANY);
+        reg.register_json_any(super::__RULE_CONFIG_JSON_ANY);
         reg.register_json_any(super::__SETTING_CONFIG_LIST_JSON_ANY);
         reg.register_json_any(super::__SETTING_CONFIG_JSON_ANY);
         reg.register_json_any(super::__OPTION_CONFIG_JSON_ANY);
@@ -113815,6 +117844,18 @@ pub use self::__buffa::view::ProgramView;
 #[doc(inline)]
 pub use self::__buffa::view::ProgramOwnedView;
 #[doc(inline)]
+pub use self::__buffa::view::ProgramBrandingView;
+#[doc(inline)]
+pub use self::__buffa::view::ProgramBrandingOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::ProgramRenewalView;
+#[doc(inline)]
+pub use self::__buffa::view::ProgramRenewalOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::HighlightListView;
+#[doc(inline)]
+pub use self::__buffa::view::HighlightListOwnedView;
+#[doc(inline)]
 pub use self::__buffa::view::ProgramDomainView;
 #[doc(inline)]
 pub use self::__buffa::view::ProgramDomainOwnedView;
@@ -113850,6 +117891,10 @@ pub use self::__buffa::view::ProgramRuleOwnedView;
 pub use self::__buffa::view::ModuleConfigView;
 #[doc(inline)]
 pub use self::__buffa::view::ModuleConfigOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::RuleConfigView;
+#[doc(inline)]
+pub use self::__buffa::view::RuleConfigOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::SettingConfigListView;
 #[doc(inline)]

@@ -41,9 +41,24 @@ pub fn to_presenter(module_catalog_item: ModuleCatalogItem) -> ModuleCatalogItem
         selectable: module_catalog_item.selectable,
         allow_components: module_catalog_item.allow_components,
         default_mode: module_catalog_item.default_mode,
+        has_children: module_catalog_item.has_children,
+        children_count: module_catalog_item.children_count,
+        icon: module_catalog_item.icon,
         create_time: format_datetime(module_catalog_item.create_time),
         update_time: format_datetime(module_catalog_item.update_time),
     }
+}
+
+/// The search box sends the text itself; `module=text` (the programs list's form) is accepted too.
+pub fn module_search_text(raw: &str) -> String {
+    let raw = raw.trim();
+    raw.strip_prefix("module=").unwrap_or(raw).trim().trim_matches('"').to_string()
+}
+
+/// `a,b,c` or `[a,b,c]` as a list of keys / ids.
+pub fn module_keys(raw: &str) -> Vec<String> {
+    raw.trim().trim_start_matches('[').trim_end_matches(']').split(',')
+        .map(|key| key.trim().trim_matches('"').to_string()).filter(|key| !key.is_empty()).collect()
 }
 
 pub struct ListModuleCatalogMapper;
@@ -54,6 +69,10 @@ impl ListModuleCatalogMapper {
             parent_id: parse::optional_uuid("parent_id", payload.parent_id.as_deref())?,
             page_size: payload.max_page_size,
             page_token: parse::optional_uuid("page_token", payload.page_token.as_deref())?,
+            search: payload.search.map(|text| module_search_text(&text)),
+            keys: payload.keys.map(|text| module_keys(&text)).unwrap_or_default(),
+            program: payload.program,
+            checked: payload.checked,
         })
     }
 

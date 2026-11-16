@@ -14,6 +14,79 @@ use crate::domain::program_setting::ModuleChange;
 pub const PROGRAM_LEVELS: [&str; 3] = ["user", "organization", "location"];
 pub const DEFAULT_PROGRAM_LEVEL: &str = "location";
 
+/// The badge of a program: its colours and icon. Each part is optional.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Branding {
+    /// `#RRGGBB`, the badge background.
+    pub brand_color: Option<String>,
+    /// `#RRGGBB`, the text on the badge.
+    pub text_color: Option<String>,
+    /// An icon name, e.g. `credit_card`.
+    pub logo_icon: Option<String>,
+}
+
+/// The renewal defaults of a program.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Renewal {
+    pub term_months: i32,
+    pub grace_period_days: i32,
+    /// Days before the term ends.
+    pub reminder_days: i32,
+    pub auto_renew: bool,
+}
+
+impl Default for Renewal {
+    fn default() -> Self {
+        Self { term_months: 12, grace_period_days: 30, reminder_days: 30, auto_renew: false }
+    }
+}
+
+/// A partial badge change: a sent part replaces that part (an empty text clears it), an absent
+/// part is kept.
+#[derive(Debug, Clone, Default)]
+pub struct BrandingPatch {
+    pub brand_color: Option<String>,
+    pub text_color: Option<String>,
+    pub logo_icon: Option<String>,
+}
+
+impl BrandingPatch {
+    pub fn apply(self, current: &Branding) -> Branding {
+        Branding {
+            brand_color: self.brand_color.or_else(|| current.brand_color.clone()),
+            text_color: self.text_color.or_else(|| current.text_color.clone()),
+            logo_icon: self.logo_icon.or_else(|| current.logo_icon.clone()),
+        }
+    }
+}
+
+/// A partial renewal change: a sent part replaces that part, an absent part is kept.
+#[derive(Debug, Clone, Default)]
+pub struct RenewalPatch {
+    pub term_months: Option<i32>,
+    pub grace_period_days: Option<i32>,
+    pub reminder_days: Option<i32>,
+    pub auto_renew: Option<bool>,
+}
+
+impl RenewalPatch {
+    pub fn apply(self, current: &Renewal) -> Renewal {
+        Renewal {
+            term_months: self.term_months.unwrap_or(current.term_months),
+            grace_period_days: self.grace_period_days.unwrap_or(current.grace_period_days),
+            reminder_days: self.reminder_days.unwrap_or(current.reminder_days),
+            auto_renew: self.auto_renew.unwrap_or(current.auto_renew),
+        }
+    }
+}
+
+pub const MAX_HIGHLIGHTS: usize = 5;
+const MAX_HIGHLIGHT_LEN: usize = 100;
+const MAX_ABOUT_LEN: usize = 1000;
+const MAX_ICON_LEN: usize = 64;
+const MAX_TERM_MONTHS: i32 = 120;
+const MAX_DAYS: i32 = 3650;
+
 /// A program (e.g. KBB, CPO, Credit Line). `Serialize`/`Deserialize` are for a
 /// future cache, not an API response shape.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,6 +95,12 @@ pub struct Program {
     pub name: String,
     pub slug: String,               // IMMUTABLE
     pub description: Option<String>,
+    /// The merchant-facing text (`description` is the internal one).
+    pub about: Option<String>,
+    /// Up to 5 short selling points, in order.
+    pub highlights: Vec<String>,
+    pub branding: Branding,
+    pub renewal: Renewal,
     pub level: String,
     pub active: bool,
     pub config_version: i32,        // OUTPUT_ONLY — bumped on every configuration change
@@ -113,6 +192,10 @@ pub struct NewProgram {
     pub name: String,
     pub slug: String,
     pub description: Option<String>,
+    pub about: Option<String>,
+    pub highlights: Vec<String>,
+    pub branding: Branding,
+    pub renewal: Renewal,
     pub level: String,
     /// The modules the admin picked, each optionally with its mode and settings. Ancestors, the
     /// descendants of a picked group, and the default modules (Overview) are added by the
@@ -126,6 +209,14 @@ pub struct UpdateProgram {
     pub name: Option<String>,
     /// `Some(None)` clears the description.
     pub description: Option<Option<String>>,
+    /// `Some(None)` clears the merchant-facing text.
+    pub about: Option<Option<String>>,
+    /// `Some` replaces the whole list.
+    pub highlights: Option<Vec<String>>,
+    /// `Some` replaces the badge.
+    pub branding: Option<Branding>,
+    /// `Some` replaces the renewal defaults.
+    pub renewal: Option<Renewal>,
     pub level: Option<String>,
     pub active: Option<bool>,
     /// Module changes: a new key adds the module, `mode` sets what a leaf is, `settings`
@@ -157,6 +248,79 @@ pub fn validate_slug(slug: &str) -> Result<(), ApplicationError> {
         ));
     }
 
+    Ok(())
+}
+
+fn unprocessable(message: String) -> ApplicationError {
+    ApplicationError::unprocessable_entity(&message)
+}
+
+/// `#RRGGBB`.
+fn valid_color(value: &str) -> bool {
+    value.len() == 7 && value.starts_with('#') && value[1..].chars().all(|c| c.is_ascii_hexdigit())
+}
+
+/// Trims the merchant-facing text; empty reads as absent.
+pub fn clean_about(about: Option<String>) -> Result<Option<String>, ApplicationError> {
+    let about = about.map(|a| a.trim().to_string()).filter(|a| !a.is_empty());
+    if let Some(text) = &about
+        && text.chars().count() > MAX_ABOUT_LEN
+    {
+        return Err(unprocessable(format!("about must be at most {MAX_ABOUT_LEN} characters")));
+    }
+    Ok(about)
+}
+
+/// Trims each highlight and drops empty ones; at most 5 remain.
+pub fn clean_highlights(highlights: Vec<String>) -> Result<Vec<String>, ApplicationError> {
+    let cleaned: Vec<String> = highlights.into_iter().map(|h| h.trim().to_string()).filter(|h| !h.is_empty()).collect();
+    if cleaned.len() > MAX_HIGHLIGHTS {
+        return Err(unprocessable(format!("highlights takes at most {MAX_HIGHLIGHTS} items")));
+    }
+    if cleaned.iter().any(|h| h.chars().count() > MAX_HIGHLIGHT_LEN) {
+        return Err(unprocessable(format!("a highlight must be at most {MAX_HIGHLIGHT_LEN} characters")));
+    }
+    Ok(cleaned)
+}
+
+/// Colours must be `#RRGGBB` (stored upper-case); an empty value reads as absent.
+pub fn clean_branding(branding: Branding) -> Result<Branding, ApplicationError> {
+    let color = |name: &str, value: Option<String>| -> Result<Option<String>, ApplicationError> {
+        match value.map(|v| v.trim().to_string()).filter(|v| !v.is_empty()) {
+            None => Ok(None),
+            Some(v) if valid_color(&v) => Ok(Some(v.to_uppercase())),
+            Some(v) => Err(unprocessable(format!("branding.{name} {v:?} must look like #1B62F6"))),
+        }
+    };
+    let logo_icon = branding.logo_icon.map(|v| v.trim().to_string()).filter(|v| !v.is_empty());
+    if let Some(icon) = &logo_icon
+        && (icon.chars().count() > MAX_ICON_LEN
+            || !icon.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-'))
+    {
+        return Err(unprocessable(format!(
+            "branding.logo_icon must be an icon name of letters, digits, '_' or '-' (up to {MAX_ICON_LEN})"
+        )));
+    }
+    Ok(Branding {
+        brand_color: color("brand_color", branding.brand_color)?,
+        text_color: color("text_color", branding.text_color)?,
+        logo_icon,
+    })
+}
+
+pub fn validate_renewal(renewal: &Renewal) -> Result<(), ApplicationError> {
+    if !(1..=MAX_TERM_MONTHS).contains(&renewal.term_months) {
+        return Err(unprocessable(format!("renewal.term_months must be 1-{MAX_TERM_MONTHS}")));
+    }
+    if !(0..=MAX_DAYS).contains(&renewal.grace_period_days) {
+        return Err(unprocessable(format!("renewal.grace_period_days must be 0-{MAX_DAYS}")));
+    }
+    if !(0..=MAX_DAYS).contains(&renewal.reminder_days) {
+        return Err(unprocessable(format!("renewal.reminder_days must be 0-{MAX_DAYS}")));
+    }
+    if renewal.reminder_days > renewal.term_months * 30 {
+        return Err(unprocessable("renewal.reminder_days cannot be longer than the renewal term".to_string()));
+    }
     Ok(())
 }
 
@@ -215,6 +379,51 @@ pub trait ProgramRepository: Send + Sync {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn branding_takes_hex_colours_and_an_icon_name() {
+        let ok = clean_branding(Branding {
+            brand_color: Some(" #1b62f6 ".into()),
+            text_color: Some("#FFFFFF".into()),
+            logo_icon: Some("credit_card".into()),
+        })
+        .unwrap();
+        assert_eq!(ok.brand_color.as_deref(), Some("#1B62F6"));
+        for bad in ["1B62F6", "#12345", "#GGGGGG", "blue"] {
+            let b = Branding { brand_color: Some(bad.into()), ..Default::default() };
+            assert!(clean_branding(b).is_err(), "{bad}");
+        }
+        assert!(clean_branding(Branding { logo_icon: Some("bad icon!".into()), ..Default::default() }).is_err());
+        assert_eq!(clean_branding(Branding { brand_color: Some("  ".into()), ..Default::default() }).unwrap(), Branding::default());
+    }
+
+    #[test]
+    fn highlights_are_trimmed_and_capped_at_five() {
+        let h = clean_highlights(vec![" a ".into(), "".into(), "b".into()]).unwrap();
+        assert_eq!(h, vec!["a", "b"]);
+        assert!(clean_highlights((0..6).map(|i| i.to_string()).collect()).is_err());
+        assert!(clean_highlights(vec!["x".repeat(101)]).is_err());
+    }
+
+    #[test]
+    fn renewal_defaults_and_limits() {
+        assert_eq!(Renewal::default(), Renewal { term_months: 12, grace_period_days: 30, reminder_days: 30, auto_renew: false });
+        assert!(validate_renewal(&Renewal::default()).is_ok());
+        assert!(validate_renewal(&Renewal { term_months: 0, ..Default::default() }).is_err());
+        assert!(validate_renewal(&Renewal { grace_period_days: -1, ..Default::default() }).is_err());
+        assert!(validate_renewal(&Renewal { term_months: 1, reminder_days: 31, ..Default::default() }).is_err());
+    }
+
+    #[test]
+    fn a_patch_keeps_what_it_does_not_send() {
+        let current = Renewal { term_months: 6, grace_period_days: 10, reminder_days: 5, auto_renew: true };
+        let next = RenewalPatch { term_months: Some(24), ..Default::default() }.apply(&current);
+        assert_eq!(next, Renewal { term_months: 24, grace_period_days: 10, reminder_days: 5, auto_renew: true });
+        let b = Branding { brand_color: Some("#111111".into()), text_color: Some("#222222".into()), logo_icon: None };
+        let merged = BrandingPatch { text_color: Some("#333333".into()), ..Default::default() }.apply(&b);
+        assert_eq!(merged.brand_color.as_deref(), Some("#111111"));
+        assert_eq!(merged.text_color.as_deref(), Some("#333333"));
+    }
+
     use super::*;
 
     #[test]

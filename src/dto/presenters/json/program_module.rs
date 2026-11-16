@@ -19,6 +19,8 @@ pub struct ProgramModulePresenter {
     pub allow_components: bool,
     pub requires_publish: bool,
     pub enabled: bool,
+    /// The icon drawn beside the module: the program's own, else the catalog module's. Null when neither is set.
+    pub icon: Option<String>,
     /// `rule`, `settings`, or null until the admin chooses (always null when the
     /// module is not configurable).
     pub mode: Option<String>,
@@ -49,6 +51,8 @@ pub struct ProgramSettingPresenter {
     /// or `dropdown`.
     pub render: String,
     pub required: bool,
+    /// The Display switch: false means the setting is hidden from the form.
+    pub display: bool,
     #[serde(rename = "default")]
     pub default_value: Option<serde_json::Value>,
     pub position: i32,
@@ -83,4 +87,6 @@ pub struct ProgramRulePresenter {
     pub rule_type: Option<String>,
     pub draft_version: Option<i32>,
     pub published_version: Option<i32>,
+    /// The rule's Display switch.
+    pub display: bool,
 }

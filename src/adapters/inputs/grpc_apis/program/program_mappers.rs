@@ -1,6 +1,6 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
     CreateProgramRequest, CreateProgramResponse, DeleteProgramRequest, GetProgramRequest, GetProgramResponse,
-    ListProgramsRequest, ListProgramsResponse, ModuleConfig, ProgramDomain, ProgramLastActivity, ProgramListSummary, ProgramStats, OptionConfig, Program as GrpcProgram, SettingConfig, UndeleteProgramRequest,
+    ListProgramsRequest, ListProgramsResponse, ModuleConfig, ProgramBranding, ProgramDomain, ProgramLastActivity, ProgramListSummary, ProgramRenewal, ProgramStats, OptionConfig, Program as GrpcProgram, SettingConfig, UndeleteProgramRequest,
     UndeleteProgramResponse, UpdateProgramRequest, UpdateProgramResponse,
 };
 use crate::adapters::inputs::grpc_apis::program_module::program_module_mappers::to_grpc_program_module;
@@ -17,7 +17,7 @@ use crate::application::usecases::program::update_program::{UpdateProgramInput, 
 use crate::application::utils::datetime::format_datetime;
 use crate::domain::aep::ResourceIdentifier;
 use crate::adapters::inputs::http_apis::program::program_mappers::shown_state;
-use crate::domain::program::{Program, ProgramListItem};
+use crate::domain::program::{Branding, BrandingPatch, Program, ProgramListItem, Renewal, RenewalPatch};
 use crate::domain::program_setting::{ModuleChange, ModuleMode, OptionInput, SettingInput, SettingType};
 
 fn to_option(config: OptionConfig) -> OptionInput {
@@ -25,15 +25,34 @@ fn to_option(config: OptionConfig) -> OptionInput {
 }
 
 fn to_setting(config: SettingConfig) -> Result<SettingInput, ApplicationError> {
+    let options = {
+        if !config.options.is_empty() && !config.custom_options.is_empty() {
+            return Err(ApplicationError::validation_error(&format!(
+                "setting {:?}: send `options` or `custom_options`, not both",
+                config.name
+            )));
+        }
+        if config.custom_options.is_empty() {
+            config.options.into_iter().map(to_option).collect()
+        } else {
+            config
+                .custom_options
+                .into_iter()
+                .map(|label| OptionInput { code: None, label: label.trim().to_string() })
+                .filter(|option| !option.label.is_empty())
+                .collect()
+        }
+    };
     Ok(SettingInput {
         id: parse::optional_uuid("settings.id", config.id.as_deref())?,
         name: config.name,
         field_type: SettingType::parse(&config.r#type)?,
         required: config.required.unwrap_or(false),
+        display: config.display.unwrap_or(true),
         // An unset or null default means "no default".
         default_value: config.default_value.into_option().map(buffa_value_to_json).filter(|v| !v.is_null()),
         library_id: parse::optional_uuid("settings.library_id", config.library_id.as_deref())?,
-        options: config.options.into_iter().map(to_option).collect(),
+        options,
     })
 }
 
@@ -45,6 +64,8 @@ pub fn to_module_changes(configs: Vec<ModuleConfig>) -> Result<Vec<ModuleChange>
             Ok(ModuleChange {
                 key: config.key,
                 enabled: config.enabled,
+                icon: config.icon,
+                rule_display: config.rule.into_option().and_then(|rule| rule.display),
                 mode: config.mode.as_deref().map(ModuleMode::parse).transpose()?,
                 settings: config
                     .settings
@@ -63,6 +84,23 @@ pub fn to_grpc_program(program: Program) -> GrpcProgram {
         name: program.name,
         slug: program.slug,
         description: program.description,
+        about: program.about,
+        highlights: program.highlights,
+        branding: Some(ProgramBranding {
+            brand_color: program.branding.brand_color,
+            text_color: program.branding.text_color,
+            logo_icon: program.branding.logo_icon,
+            ..Default::default()
+        })
+        .into(),
+        renewal: Some(ProgramRenewal {
+            term_months: Some(program.renewal.term_months),
+            grace_period_days: Some(program.renewal.grace_period_days),
+            reminder_days: Some(program.renewal.reminder_days),
+            auto_renew: Some(program.renewal.auto_renew),
+            ..Default::default()
+        })
+        .into(),
         level: program.level,
         active: program.active,
         config_version: program.config_version,
@@ -152,6 +190,22 @@ impl CreateProgramGrpcMapper {
             name: request.name,
             slug: request.slug,
             description: request.description,
+            about: request.about,
+            highlights: request.highlights,
+            branding: request
+                .branding
+                .into_option()
+                .map(|b| Branding { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon })
+                .unwrap_or_default(),
+            renewal: request.renewal.into_option().map(|r| {
+                RenewalPatch {
+                    term_months: r.term_months,
+                    grace_period_days: r.grace_period_days,
+                    reminder_days: r.reminder_days,
+                    auto_renew: r.auto_renew,
+                }
+                .apply(&Renewal::default())
+            }),
             level: request.level,
             modules: {
                 // Plain keys first, then the richer entries (the same module in both is rejected).
@@ -182,6 +236,20 @@ impl UpdateProgramGrpcMapper {
             name: request.name,
             // gRPC has no null: an empty string clears the description.
             description: request.description.map(|d| if d.is_empty() { None } else { Some(d) }),
+            // An empty string clears the merchant-facing text.
+            about: request.about.map(|a| if a.is_empty() { None } else { Some(a) }),
+            highlights: request.highlights.into_option().map(|list| list.items),
+            branding: request.branding.into_option().map(|b| BrandingPatch {
+                brand_color: b.brand_color,
+                text_color: b.text_color,
+                logo_icon: b.logo_icon,
+            }),
+            renewal: request.renewal.into_option().map(|r| RenewalPatch {
+                term_months: r.term_months,
+                grace_period_days: r.grace_period_days,
+                reminder_days: r.reminder_days,
+                auto_renew: r.auto_renew,
+            }),
             level: request.level,
             active: request.active,
             modules: (!request.modules.is_empty()).then(|| to_module_changes(request.modules)).transpose()?,

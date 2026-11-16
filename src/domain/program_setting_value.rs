@@ -11,7 +11,7 @@ use std::collections::HashSet;
 use uuid::Uuid;
 
 use crate::application::errors::application_error::ApplicationError;
-use crate::domain::program_setting::{OptionsSource, SettingType};
+use crate::domain::program_setting::{OptionsSource, SettingType, is_percentage};
 
 pub const MAX_VALUES_PER_REQUEST: usize = 200;
 pub const MAX_TEXT_LEN: usize = 10_000;
@@ -124,6 +124,7 @@ pub fn validate_value(
     let valid = match definition.field_type {
         SettingType::Boolean => value.is_boolean().then_some(()).ok_or("must be true or false"),
         SettingType::Number => value.is_number().then_some(()).ok_or("must be a number"),
+        SettingType::Percentage => is_percentage(&value).then_some(()).ok_or("must be a number from 0 to 100"),
         SettingType::Text => match value.as_str() {
             Some(text) if text.chars().count() <= MAX_TEXT_LEN => Ok(()),
             Some(_) => Err("is too long"),

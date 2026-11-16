@@ -485,7 +485,7 @@ change. Files are data: no `config_version` bump. The program must have the modu
 | Swagger | `docker compose up -d swagger`, then http://localhost:8082 |
 | Unit tests | `cargo test --lib` (86 tests) |
 | Proto | `buf lint proto`, then `buf generate proto --path proto/programs/v1`, then `buf build proto --path proto/programs/v1 -o src/adapters/generated/grpc_services/programs.binpb`. Never run a plain `buf generate`: it would read the remote repository. |
-| API tests | Import `postman/programs.postman_collection.json` and the environment file. `newman run` on the main collection runs 1002 assertions with the parked modules off; with `APP__FEATURES__ENROLLMENT_REVIEW=true`, also run `postman/enrollment-review.postman_collection.json` (327 assertions). Each module has a folder and a "negative checks" folder; the negative folders set up their own data, so any request can be sent alone. |
+| API tests | Import `postman/programs.postman_collection.json` and the environment file. `newman run` on the main collection runs 1031 assertions with the parked modules off; with `APP__FEATURES__ENROLLMENT_REVIEW=true`, also run `postman/enrollment-review.postman_collection.json` (327 assertions). Each module has a folder and a "negative checks" folder; the negative folders set up their own data, so any request can be sent alone. |
 | Parked modules | Requirements, Approval steps, Applications and Signoffs are off by default: `APP__FEATURES__ENROLLMENT_REVIEW=true` turns them on. See [parked-enrollment-review.md](parked-enrollment-review.md). |
 | OpenAPI | `spectral lint openapi.yaml` (one accepted false positive on the Overview's operation id) |
 

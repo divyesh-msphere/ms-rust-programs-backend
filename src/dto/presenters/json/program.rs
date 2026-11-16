@@ -8,6 +8,10 @@ pub struct ProgramPresenter {
     pub name: String,
     pub slug: String,
     pub description: Option<String>,
+    pub about: Option<String>,
+    pub highlights: Vec<String>,
+    pub branding: BrandingPresenter,
+    pub renewal: RenewalPresenter,
     pub level: String,
     pub active: bool,
     pub config_version: i32,
@@ -18,6 +22,21 @@ pub struct ProgramPresenter {
     /// List rows only.
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub stats: Option<ProgramStatsPresenter>,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct BrandingPresenter {
+    pub brand_color: Option<String>,
+    pub text_color: Option<String>,
+    pub logo_icon: Option<String>,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct RenewalPresenter {
+    pub term_months: i32,
+    pub grace_period_days: i32,
+    pub reminder_days: i32,
+    pub auto_renew: bool,
 }
 
 #[derive(Debug, Serialize, Clone)]

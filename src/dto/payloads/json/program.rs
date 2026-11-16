@@ -18,12 +18,40 @@ pub struct CreateProgramBodyPayload {
     /// Lowercase letters, digits and single hyphens. Immutable after create.
     pub slug: String,
     pub description: Option<String>,
+    /// The merchant-facing text (`description` is the internal one).
+    pub about: Option<String>,
+    /// Up to 5 short selling points shown next to the summary.
+    pub highlights: Option<Vec<String>>,
+    pub branding: Option<BrandingPayload>,
+    /// Omitted parts take the defaults: 12 months, 30 days grace, 30 days reminder, no auto-renew.
+    pub renewal: Option<RenewalPayload>,
     /// `user`, `organization` or `location` (default).
     pub level: Option<String>,
     /// The modules the admin picked: a plain key (`enrollment.stores.enrolled_stores_control_panel`) or an
     /// object with the key plus what the admin made of the leaf (`mode`, `settings`). Ancestors, the
     /// descendants of a picked group and Overview are added automatically.
     pub modules: Option<Vec<ModulePayload>>,
+}
+
+/// The badge. On update a sent part replaces that part (an empty text clears it).
+#[derive(Debug, Deserialize, Clone, Default)]
+pub struct BrandingPayload {
+    /// `#RRGGBB`, the badge background.
+    pub brand_color: Option<String>,
+    /// `#RRGGBB`, the text on the badge.
+    pub text_color: Option<String>,
+    /// An icon name, e.g. `credit_card`.
+    pub logo_icon: Option<String>,
+}
+
+/// The renewal defaults. On update a sent part replaces that part.
+#[derive(Debug, Deserialize, Clone, Default)]
+pub struct RenewalPayload {
+    pub term_months: Option<i32>,
+    pub grace_period_days: Option<i32>,
+    /// Days before the term ends.
+    pub reminder_days: Option<i32>,
+    pub auto_renew: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -63,6 +91,13 @@ pub struct UpdateProgramBodyPayload {
     pub name: Option<String>,
     #[serde(default, deserialize_with = "present_or_null")]
     pub description: Option<Option<String>>,
+    /// `null` clears the merchant-facing text.
+    #[serde(default, deserialize_with = "present_or_null")]
+    pub about: Option<Option<String>>,
+    /// Replaces the whole list.
+    pub highlights: Option<Vec<String>>,
+    pub branding: Option<BrandingPayload>,
+    pub renewal: Option<RenewalPayload>,
     pub level: Option<String>,
     pub active: Option<bool>,
     /// Module changes: a new key adds the module; `mode` sets what a leaf is; `settings` REPLACES that
@@ -106,9 +141,21 @@ pub struct ModuleConfigPayload {
     pub enabled: Option<bool>,
     /// What the admin made this leaf: `rule` or `settings`.
     pub mode: Option<String>,
+    /// The icon drawn beside this module (a name such as `tag`, `shield`). An empty text clears it, and
+    /// the catalog module's icon shows again. Absent leaves it alone.
+    pub icon: Option<String>,
+    /// The rule's Display switch, for a rule module: `{"display": false}` hides the rule from the program's
+    /// pages. Absent leaves it alone.
+    pub rule: Option<RuleConfigPayload>,
     /// For `mode: settings`. Present REPLACES the module's settings (items with an `id` are kept and
     /// updated, items without one are created, the rest are removed); absent leaves them alone.
     pub settings: Option<Vec<SettingPayload>>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct RuleConfigPayload {
+    pub display: Option<bool>,
 }
 
 /// One setting. The read-only fields a manifest returns (`key`, `render`, `position`, ...) are
@@ -122,6 +169,8 @@ pub struct SettingPayload {
     #[serde(rename = "type")]
     pub field_type: String,
     pub required: Option<bool>,
+    /// The Display switch (default true): false hides the setting from the form.
+    pub display: Option<bool>,
     /// The starting value (a boolean, number, text, option code, or list of option codes).
     #[serde(default, rename = "default")]
     pub default_value: Option<Value>,
@@ -129,6 +178,10 @@ pub struct SettingPayload {
     pub library_id: Option<String>,
     /// The admin's own options (when there is no library).
     pub options: Option<Vec<OptionPayload>>,
+    /// The custom choices of a radio / checkbox / dropdown, the way the form collects them: a text
+    /// `"Weekly, Monthly"` (comma-separated), or a list of labels `["Weekly","Monthly"]`, or a list of
+    /// `{label, code?}`. The same as `options`; send one of the two, not both, and not with a `library_id`.
+    pub custom_options: Option<Value>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

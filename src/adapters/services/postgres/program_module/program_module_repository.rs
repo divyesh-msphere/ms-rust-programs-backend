@@ -15,7 +15,7 @@ use uuid::Uuid;
 
 pub const COLUMNS: &str = "pm.module_id, md.key, md.name, md.kind, md.parent_id, \
     md.ancestry::text AS ancestry, md.source, md.handler_key, md.api_base, md.ui_component, \
-    md.allow_components, md.requires_publish, pm.enabled, pm.mode, pm.position, pm.update_time";
+    md.allow_components, md.requires_publish, pm.enabled, COALESCE(pm.icon, md.icon) AS icon, pm.mode, pm.position, pm.update_time";
 
 #[derive(Debug, FromRow)]
 struct FieldRow {
@@ -27,6 +27,7 @@ struct FieldRow {
     options_source: Option<String>,
     library_id: Option<Uuid>,
     required: bool,
+    display: bool,
     default_value: Option<Value>,
     position: i32,
 }
@@ -52,6 +53,7 @@ struct RuleRow {
     rule_type: Option<String>,
     draft_version: Option<i32>,
     published_version: Option<i32>,
+    display: bool,
 }
 
 /// Shared with the program repository so `create` / `update` return the manifest from inside
@@ -91,7 +93,7 @@ pub async fn fetch_modules(
 
     if modules.iter().any(|m| m.mode.as_deref() == Some("rule")) {
         let rules = sqlx::query_as::<_, RuleRow>(
-            "SELECT module_id, rule_type, draft_version, published_version FROM rule_sets WHERE program_id = $1",
+            "SELECT module_id, rule_type, draft_version, published_version, display FROM rule_sets WHERE program_id = $1",
         )
         .bind(program_id)
         .fetch_all(&mut *conn)
@@ -103,6 +105,7 @@ pub async fn fetch_modules(
                     rule_type: r.rule_type,
                     draft_version: r.draft_version,
                     published_version: r.published_version,
+                    display: r.display,
                 })
             })
             .collect();
@@ -120,7 +123,7 @@ async fn load_settings(
 ) -> Result<HashMap<Uuid, Vec<ProgramSetting>>, sqlx::Error> {
     // The partial index (program_id, module_id, position, id) WHERE state = 'ACTIVE'.
     let fields = sqlx::query_as::<_, FieldRow>(
-        "SELECT id, module_id, key, name, field_type, options_source, library_id, required, \
+        "SELECT id, module_id, key, name, field_type, options_source, library_id, required, display, \
                 default_value, position \
          FROM program_fields WHERE program_id = $1 AND state = 'ACTIVE' \
          ORDER BY module_id, position, id",
@@ -178,6 +181,7 @@ async fn load_settings(
             name: field.name,
             field_type,
             required: field.required,
+            display: field.display,
             default_value: field.default_value,
             position: field.position,
             options_source: source,

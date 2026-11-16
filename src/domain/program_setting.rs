@@ -50,10 +50,13 @@ pub enum SettingType {
     Radio,
     Checkbox,
     Dropdown,
+    /// A number from 0 to 100 (a percent).
+    Percentage,
 }
 
 impl SettingType {
-    pub const ALL: [&'static str; 6] = ["boolean", "number", "text", "radio", "checkbox", "dropdown"];
+    pub const ALL: [&'static str; 7] =
+        ["boolean", "number", "text", "radio", "checkbox", "dropdown", "percentage"];
 
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -63,6 +66,7 @@ impl SettingType {
             SettingType::Radio => "radio",
             SettingType::Checkbox => "checkbox",
             SettingType::Dropdown => "dropdown",
+            SettingType::Percentage => "percentage",
         }
     }
 
@@ -73,9 +77,11 @@ impl SettingType {
             "text" => Ok(SettingType::Text),
             "radio" => Ok(SettingType::Radio),
             "checkbox" => Ok(SettingType::Checkbox),
-            "dropdown" => Ok(SettingType::Dropdown),
+            // The form's "custom option" type: a dropdown whose choices the admin typed (`custom_options`).
+            "dropdown" | "custom_option" | "custom_options" => Ok(SettingType::Dropdown),
+            "percentage" => Ok(SettingType::Percentage),
             other => Err(ApplicationError::unprocessable_entity(&format!(
-                "type {other:?} must be one of: {}",
+                "type {other:?} must be one of: {} (or custom_option: a dropdown with your own choices)",
                 Self::ALL.join(", ")
             ))),
         }
@@ -96,8 +102,14 @@ impl SettingType {
             SettingType::Radio => "radio_group",
             SettingType::Checkbox => "checkbox_group",
             SettingType::Dropdown => "dropdown",
+            SettingType::Percentage => "percentage_input",
         }
     }
+}
+
+/// A percentage is a number from 0 to 100 (decimals allowed).
+pub fn is_percentage(value: &Value) -> bool {
+    value.as_f64().is_some_and(|n| (0.0..=100.0).contains(&n))
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -138,6 +150,8 @@ pub struct SettingInput {
     pub name: String,
     pub field_type: SettingType,
     pub required: bool,
+    /// The Display switch: false hides the setting from the form (the setting itself is kept).
+    pub display: bool,
     pub default_value: Option<Value>,
     /// The global-settings library that is the ONLY source of the options.
     pub library_id: Option<Uuid>,
@@ -154,16 +168,23 @@ pub struct ModuleChange {
     /// `Some` REPLACES the module's settings: items with an `id` are kept and updated,
     /// items without one are created, and the rest are removed. `None` leaves them alone.
     pub settings: Option<Vec<SettingInput>>,
+    /// The icon drawn beside this module in the program. `Some("")` clears it (the catalog's icon
+    /// shows again); `None` leaves it alone.
+    pub icon: Option<String>,
+    /// The rule's Display switch (a rule module only): `Some(false)` hides the rule from the program's pages.
+    pub rule_display: Option<bool>,
 }
+
+pub const MAX_ICON_LEN: usize = 64;
 
 impl ModuleChange {
     pub fn plain(key: String) -> Self {
-        Self { key, enabled: None, mode: None, settings: None }
+        Self { key, enabled: None, mode: None, settings: None, icon: None, rule_display: None }
     }
 
     /// True when this entry does more than name a module to include.
     pub fn has_changes(&self) -> bool {
-        self.enabled.is_some() || self.mode.is_some() || self.settings.is_some()
+        self.enabled.is_some() || self.mode.is_some() || self.settings.is_some() || self.icon.is_some() || self.rule_display.is_some()
     }
 }
 
@@ -189,6 +210,8 @@ pub struct ProgramSetting {
     pub name: String,
     pub field_type: SettingType,
     pub required: bool,
+    /// The Display switch: false hides the setting from the form (the setting itself is kept).
+    pub display: bool,
     pub default_value: Option<Value>,
     pub position: i32,
     pub options_source: Option<OptionsSource>,
@@ -210,6 +233,8 @@ pub struct ProgramRule {
     pub rule_type: Option<String>,
     pub draft_version: Option<i32>,
     pub published_version: Option<i32>,
+    /// The rule's Display switch (default true).
+    pub display: bool,
 }
 
 // ---------------------------------------------------------------------------------------
@@ -273,6 +298,9 @@ fn check_default(setting: &SettingInput, codes: &HashSet<String>) -> Result<(), 
         }
         SettingType::Number if !default.is_number() => {
             Err(unprocessable(format!("setting {name:?}: default must be a number")))
+        }
+        SettingType::Percentage if !is_percentage(default) => {
+            Err(unprocessable(format!("setting {name:?}: default must be a number from 0 to 100")))
         }
         SettingType::Text if !default.is_string() => {
             Err(unprocessable(format!("setting {name:?}: default must be text")))
@@ -374,6 +402,12 @@ pub fn validate_changes(changes: &[ModuleChange]) -> Result<(), ApplicationError
             return Err(unprocessable(format!("module {:?} is listed twice", change.key)));
         }
 
+        if let Some(icon) = &change.icon
+            && icon.trim().chars().count() > MAX_ICON_LEN
+        {
+            return Err(unprocessable(format!("module {:?}: icon is at most {MAX_ICON_LEN} characters", change.key)));
+        }
+
         let Some(settings) = &change.settings else { continue };
         if change.mode == Some(ModuleMode::Rule) {
             return Err(unprocessable(format!(
@@ -424,6 +458,17 @@ pub fn library_ids(changes: &[ModuleChange]) -> Vec<Uuid> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_percentage_is_a_number_from_0_to_100() {
+        let mut s = setting("Discount limit", SettingType::Percentage);
+        s.default_value = Some(json!(12.5));
+        assert!(validate_changes(&module(vec![s.clone()])).is_ok());
+        for bad in [json!(101), json!(-1), json!("10")] {
+            s.default_value = Some(bad);
+            assert!(validate_changes(&module(vec![s.clone()])).is_err());
+        }
+    }
+
     use super::*;
     use serde_json::json;
 
@@ -433,6 +478,7 @@ mod tests {
             name: name.to_string(),
             field_type,
             required: false,
+            display: true,
             default_value: None,
             library_id: None,
             options: vec![],
@@ -459,7 +505,10 @@ mod tests {
     #[test]
     fn each_type_has_a_render_hint() {
         let rendered: Vec<&str> = SettingType::ALL.iter().map(|t| SettingType::parse(t).unwrap().render()).collect();
-        assert_eq!(rendered, ["yes_no", "number_input", "text_input", "radio_group", "checkbox_group", "dropdown"]);
+        assert_eq!(
+            rendered,
+            ["yes_no", "number_input", "text_input", "radio_group", "checkbox_group", "dropdown", "percentage_input"]
+        );
         assert!(SettingType::parse("slider").is_err());
     }
 

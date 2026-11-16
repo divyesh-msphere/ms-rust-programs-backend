@@ -3,6 +3,7 @@ use crate::adapters::generated::grpc_services::buffa::programs::v1::{
     ListModuleCatalogResponse, ModuleCatalogItem as GrpcModuleCatalogItem,
     ModuleCatalogTreeNode as GrpcModuleCatalogTreeNode,
 };
+use crate::adapters::inputs::http_apis::module_catalog_item::module_catalog_item_mappers::module_search_text;
 use crate::adapters::inputs::shared::parse;
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::mappers::grpc_api_mapper::GrpcApiMapper;
@@ -40,6 +41,9 @@ fn to_grpc_module_catalog_item(module_catalog_item: ModuleCatalogItem) -> GrpcMo
         selectable: module_catalog_item.selectable,
         allow_components: module_catalog_item.allow_components,
         default_mode: module_catalog_item.default_mode,
+        has_children: module_catalog_item.has_children,
+        children_count: module_catalog_item.children_count,
+        icon: module_catalog_item.icon,
         create_time: format_datetime(module_catalog_item.create_time),
         update_time: format_datetime(module_catalog_item.update_time),
         ..Default::default()
@@ -61,6 +65,10 @@ impl
             parent_id: parse::optional_uuid("parent_id", request.parent_id.as_deref())?,
             page_size: request.max_page_size,
             page_token: parse::optional_uuid("page_token", request.page_token.as_deref())?,
+            search: request.search.map(|text| module_search_text(&text)),
+            program: request.program,
+            checked: request.checked,
+            keys: request.keys.into_iter().map(|key| key.trim().to_string()).filter(|key| !key.is_empty()).collect(),
         })
     }
 
@@ -120,6 +128,9 @@ fn to_grpc_tree_node(node: ModuleCatalogItemNode) -> GrpcModuleCatalogTreeNode {
         selectable: module_catalog_item.selectable,
         allow_components: module_catalog_item.allow_components,
         default_mode: module_catalog_item.default_mode,
+        has_children: module_catalog_item.has_children,
+        children_count: module_catalog_item.children_count,
+        icon: module_catalog_item.icon,
         create_time: format_datetime(module_catalog_item.create_time),
         update_time: format_datetime(module_catalog_item.update_time),
         children: node.children.into_iter().map(to_grpc_tree_node).collect(),

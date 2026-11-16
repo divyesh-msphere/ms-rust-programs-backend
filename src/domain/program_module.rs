@@ -25,6 +25,8 @@ pub struct ProgramModule {
     pub allow_components: bool,
     pub requires_publish: bool,
     pub enabled: bool,
+    /// The program's own icon for this module, else the catalog module's icon.
+    pub icon: Option<String>,
     /// What the admin made this leaf: `rule`, `settings`, or `None` until chosen
     /// (and always `None` on a module that is not configurable).
     pub mode: Option<String>,

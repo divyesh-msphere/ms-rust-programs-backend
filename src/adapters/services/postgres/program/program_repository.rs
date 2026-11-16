@@ -19,8 +19,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
-const COLUMNS: &str = "id, name, slug, description, level, active, config_version, config_hash, \
-                       state, create_time, update_time";
+const COLUMNS: &str = "id, name, slug, description, about, highlights, brand_color, text_color, logo_icon, \
+                       renewal_term_months, renewal_grace_days, renewal_reminder_days, auto_renew, \
+                       level, active, config_version, config_hash, state, create_time, update_time";
 
 pub struct ProgramRepositoryPostgresImpl {
     db_connection: Arc<PostgresDbConnection>,
@@ -142,6 +143,19 @@ fn snapshot(program: &Program) -> Value {
         "name": program.name,
         "slug": program.slug,
         "description": program.description,
+        "about": program.about,
+        "highlights": program.highlights,
+        "branding": {
+            "brand_color": program.branding.brand_color,
+            "text_color": program.branding.text_color,
+            "logo_icon": program.branding.logo_icon,
+        },
+        "renewal": {
+            "term_months": program.renewal.term_months,
+            "grace_period_days": program.renewal.grace_period_days,
+            "reminder_days": program.renewal.reminder_days,
+            "auto_renew": program.renewal.auto_renew,
+        },
         "level": program.level,
         "active": program.active,
         "config_version": program.config_version,
@@ -387,8 +401,11 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         check_keys(&mut tx, id, &keys).await?;
 
         let insert = format!(
-            "INSERT INTO programs (id, name, slug, description, level, config_hash) \
-             VALUES ($1, $2, $3, $4, $5, md5($1::text || ':1')) RETURNING {COLUMNS}"
+            "INSERT INTO programs (id, name, slug, description, level, config_hash, about, highlights, \
+                                   brand_color, text_color, logo_icon, renewal_term_months, \
+                                   renewal_grace_days, renewal_reminder_days, auto_renew) \
+             VALUES ($1, $2, $3, $4, $5, md5($1::text || ':1'), $6, $7, $8, $9, $10, $11, $12, $13, $14) \
+             RETURNING {COLUMNS}"
         );
         let model = sqlx::query_as::<_, ProgramDbModel>(&insert)
             .bind(id)
@@ -396,6 +413,15 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             .bind(&input.slug)
             .bind(&input.description)
             .bind(&input.level)
+            .bind(&input.about)
+            .bind(&input.highlights)
+            .bind(&input.branding.brand_color)
+            .bind(&input.branding.text_color)
+            .bind(&input.branding.logo_icon)
+            .bind(input.renewal.term_months)
+            .bind(input.renewal.grace_period_days)
+            .bind(input.renewal.reminder_days)
+            .bind(input.renewal.auto_renew)
             .fetch_one(&mut *tx)
             .await
             .map_err(|err| create_conflict(err, &input.slug))?;
@@ -467,6 +493,13 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         };
         let level = input.level.clone().unwrap_or_else(|| current.level.clone());
         let active = input.active.unwrap_or(current.active);
+        let about = match &input.about {
+            Some(value) => value.clone(),
+            None => current.about.clone(),
+        };
+        let highlights = input.highlights.clone().unwrap_or_else(|| current.highlights.clone());
+        let branding = input.branding.clone().unwrap_or_else(|| current.branding.clone());
+        let renewal = input.renewal.clone().unwrap_or_else(|| current.renewal.clone());
 
         // Module changes first: they may fail, and then nothing else should have happened.
         let module_changes = input.modules.as_deref().filter(|changes| !changes.is_empty());
@@ -488,7 +521,9 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         let update = format!(
             "UPDATE programs SET name = $2, description = $3, level = $4, active = $5, \
                     config_version = $6, config_hash = md5(id::text || ':' || $6::text), \
-                    update_time = now() \
+                    about = $7, highlights = $8, brand_color = $9, text_color = $10, logo_icon = $11, \
+                    renewal_term_months = $12, renewal_grace_days = $13, renewal_reminder_days = $14, \
+                    auto_renew = $15, update_time = now() \
              WHERE id = $1 RETURNING {COLUMNS}"
         );
         let model = sqlx::query_as::<_, ProgramDbModel>(&update)
@@ -498,6 +533,15 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             .bind(&level)
             .bind(active)
             .bind(config_version)
+            .bind(&about)
+            .bind(&highlights)
+            .bind(&branding.brand_color)
+            .bind(&branding.text_color)
+            .bind(&branding.logo_icon)
+            .bind(renewal.term_months)
+            .bind(renewal.grace_period_days)
+            .bind(renewal.reminder_days)
+            .bind(renewal.auto_renew)
             .fetch_one(&mut *tx)
             .await
             .map_err(db_error)?;
