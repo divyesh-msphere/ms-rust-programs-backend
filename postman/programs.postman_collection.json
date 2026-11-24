@@ -1420,7 +1420,7 @@
             "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Credit Line Details\",\n  \"slug\": \"details-{{$timestamp}}\",\n  \"description\": \"Net-30 credit line.\",\n  \"about\": \"Buy parts now and pay in 30 days.\",\n  \"highlights\": [\n    \"Net-30 payment terms\",\n    \"Monthly statements\"\n  ],\n  \"branding\": {\n    \"brand_color\": \"#1b62f6\",\n    \"text_color\": \"#FFFFFF\",\n    \"logo_icon\": \"credit_card\"\n  },\n  \"renewal\": {\n    \"term_months\": 12,\n    \"grace_period_days\": 30,\n    \"reminder_days\": 30,\n    \"auto_renew\": false\n  },\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Discount limit\",\n          \"type\": \"percentage\",\n          \"display\": true,\n          \"default\": 10\n        },\n        {\n          \"name\": \"Internal note\",\n          \"type\": \"text\",\n          \"display\": false\n        }\n      ]\n    }\n  ]\n}",
+              "raw": "{\n  \"name\": \"Credit Line Details\",\n  \"slug\": \"details-{{$timestamp}}\",\n  \"description\": \"Net-30 credit line.\",\n  \"about\": \"Buy parts now and pay in 30 days.\",\n  \"highlights\": [\n    \"Net-30 payment terms\",\n    \"Monthly statements\"\n  ],\n  \"branding\": {\n    \"brand_color\": \"#1b62f6\",\n    \"text_color\": \"#FFFFFF\",\n    \"logo_icon\": \"credit_card\"\n  },\n  \"renewal\": {\n    \"term_months\": 12,\n    \"grace_period_days\": 30,\n    \"reminder_days\": 30,\n    \"auto_renew\": false\n  },\n  \"renewal_enabled\": true,\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Discount limit\",\n          \"type\": \"percentage\",\n          \"display\": true,\n          \"default\": 10\n        },\n        {\n          \"name\": \"Internal note\",\n          \"type\": \"text\",\n          \"display\": false\n        }\n      ]\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1436,7 +1436,7 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const p = pm.response.json();",
-                  "pm.test('about, highlights, branding (upper-cased), renewal come back', () => { pm.expect(p.about).to.eql('Buy parts now and pay in 30 days.'); pm.expect(p.highlights).to.eql(['Net-30 payment terms','Monthly statements']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#FFFFFF',logo_icon:'credit_card'}); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });",
+                  "pm.test('about, highlights, branding (upper-cased), renewal come back', () => { pm.expect(p.about).to.eql('Buy parts now and pay in 30 days.'); pm.expect(p.highlights).to.eql(['Net-30 payment terms','Monthly statements']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#FFFFFF',logo_icon:'credit_card'}); pm.expect(p.renewal_enabled).to.eql(true); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });",
                   "pm.test('settings carry display and the percentage type', () => { const s = p.modules.flatMap(m => m.settings || []); const limit = s.find(x => x.name === 'Discount limit'); const note = s.find(x => x.name === 'Internal note'); pm.expect(limit.type).to.eql('percentage'); pm.expect(limit.render).to.eql('percentage_input'); pm.expect(limit.display).to.eql(true); pm.expect(note.display).to.eql(false); });",
                   "pm.collectionVariables.set('detailsSlug', p.slug);"
                 ]
@@ -1489,7 +1489,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.test('empty details and the Figma renewal defaults', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql([]); pm.expect(p.branding).to.eql({brand_color:null,text_color:null,logo_icon:null}); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });"
+                  "pm.test('empty details: the renewal flag is off and no renewal object is sent', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql([]); pm.expect(p.branding).to.eql({brand_color:null,text_color:null,logo_icon:null}); pm.expect(p.renewal_enabled).to.eql(false); pm.expect(p).to.not.have.property('renewal'); });"
                 ]
               }
             }
@@ -1745,7 +1745,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.test('a sent part replaces that part, the rest is kept', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql(['Only one']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#000000',logo_icon:'credit_card'}); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:true}); });"
+                  "pm.test('a sent part replaces that part, the rest is kept', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql(['Only one']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#000000',logo_icon:'credit_card'}); pm.expect(p.renewal_enabled).to.eql(true); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:true}); });"
                 ]
               }
             }

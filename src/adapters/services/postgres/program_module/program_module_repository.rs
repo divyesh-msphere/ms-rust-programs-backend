@@ -28,6 +28,7 @@ struct FieldRow {
     library_id: Option<Uuid>,
     required: bool,
     display: bool,
+    multiple: bool,
     default_value: Option<Value>,
     position: i32,
 }
@@ -73,7 +74,7 @@ pub async fn fetch_modules(
     let query = format!(
         "SELECT {COLUMNS} FROM program_modules pm \
          JOIN module_definitions md ON md.id = pm.module_id \
-         WHERE pm.program_id = $1 AND (NOT $2 OR pm.enabled \
+         WHERE pm.program_id = $1 AND (NOT $2 OR pm.enabled OR md.source = 'default' \
                OR EXISTS (SELECT 1 FROM program_modules c JOIN module_definitions cd ON cd.id = c.module_id \
                           WHERE c.program_id = pm.program_id AND c.enabled AND cd.ancestry <@ md.ancestry)) \
          ORDER BY nlevel(md.ancestry), pm.position, md.id"
@@ -85,6 +86,10 @@ pub async fn fetch_modules(
         .await?;
 
     let mut modules: Vec<ProgramModule> = models.into_iter().map(ProgramModuleDbMapper::to_entity).collect();
+    // A default module (Overview, Program Level, Danger Zone) is always on, whatever its row says.
+    for module in modules.iter_mut().filter(|m| m.source == "default") {
+        module.enabled = true;
+    }
     if enabled_only {
         // The list is the enabled modules plus the parents they hang under, so the tree stays connected:
         // each parent is reported as enabled, whatever its own switch says.
@@ -132,7 +137,7 @@ async fn load_settings(
 ) -> Result<HashMap<Uuid, Vec<ProgramSetting>>, sqlx::Error> {
     // The partial index (program_id, module_id, position, id) WHERE state = 'ACTIVE'.
     let fields = sqlx::query_as::<_, FieldRow>(
-        "SELECT id, module_id, key, name, field_type, options_source, library_id, required, display, \
+        "SELECT id, module_id, key, name, field_type, options_source, library_id, required, display, multiple, \
                 default_value, position \
          FROM program_fields WHERE program_id = $1 AND state = 'ACTIVE' \
          ORDER BY module_id, position, id",
@@ -191,16 +196,14 @@ async fn load_settings(
             field_type,
             required: field.required,
             display: field.display,
+            multiple: field.multiple,
             default_value: field.default_value,
             position: field.position,
             options_source: source,
             library_id: field.library_id,
             options: options_by_field.remove(&field.id).unwrap_or_default(),
-            library_error: None,
             value: saved.as_ref().and_then(|row| row.value.clone()),
             option_ids: saved.map(|row| row.option_ids).unwrap_or_default(),
-            // Filled in by the use case once library options are known.
-            missing_option_ids: Vec::new(),
         });
     }
     Ok(by_module)
@@ -227,16 +230,5 @@ impl ProgramModuleRepository for ProgramModuleRepositoryPostgresImpl {
             error!("DB error: {:?}", err);
             ApplicationError::internal_error(Some(err))
         })
-    }
-
-    async fn library_ids_in_use(&self) -> Result<Vec<Uuid>, ApplicationError> {
-        // The partial index on library_id (live settings only).
-        sqlx::query_scalar("SELECT DISTINCT library_id FROM program_fields WHERE library_id IS NOT NULL AND state = 'ACTIVE'")
-            .fetch_all(self.db_connection.get_pool())
-            .await
-            .map_err(|err| {
-                error!("DB error: {:?}", err);
-                ApplicationError::internal_error(Some(err))
-            })
     }
 }

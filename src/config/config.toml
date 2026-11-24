@@ -13,17 +13,6 @@ username = "postgres"
 password = "12341234"
 max_connections = 10
 
-# Library-backed settings read their options from global-settings. Override any value with
-# APP__GLOBAL_SETTINGS__BASE_URL, APP__GLOBAL_SETTINGS__ENABLED, ...
-[global_settings]
-base_url = "https://api.dev.mobilesentrix.com/global-settings"
-enabled = true
-timeout_ms = 1500
-cache_seconds = 30
-client_id = ""
-client_secret = ""
-# token (JWT) lives in the git-ignored src/config/config.local.toml.
-
 # Object storage for Documents (S3 or MinIO: `docker compose up -d minio`). File bytes go browser <-> storage
 # through presigned URLs; this service keeps only the metadata. Override any value with APP__STORAGE__ENDPOINT, ...
 [storage]

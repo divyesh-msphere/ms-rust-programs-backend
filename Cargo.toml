@@ -36,7 +36,7 @@ sqlx = { version = "0.8.6", features = [
 ] }
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "sync", "signal", "time"] }
-uuid = { version = "1.23.1", features = ["serde", "v4", "v7"] }
+uuid = { version = "1.23.1", features = ["serde", "v1", "v4", "v7"] }
 ms-telemetry-rs = { git = "ssh://git@github.com/Mobilesentrix/ms-telemetry-rs.git", tag = "v0.1.1" }
 zen-engine = { git = "ssh://git@github.com/Mobilesentrix/zen.git", branch = "feat/database-node" }
 tracing-actix-web = "0.7.21"

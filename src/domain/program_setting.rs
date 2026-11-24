@@ -41,7 +41,7 @@ impl ModuleMode {
         }
     }
 }
-
+    
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SettingType {
     Boolean,
@@ -52,11 +52,15 @@ pub enum SettingType {
     Dropdown,
     /// A number from 0 to 100 (a percent).
     Percentage,
+    /// The admin's own typed choices, pick ONE (`custom_options`; never a library).
+    CustomSingle,
 }
 
 impl SettingType {
-    pub const ALL: [&'static str; 7] =
-        ["boolean", "number", "text", "radio", "checkbox", "dropdown", "percentage"];
+    pub const ALL: [&'static str; 8] = [
+        "boolean", "number", "text", "radio", "checkbox", "dropdown", "percentage",
+        "custom_option_single",
+    ];
 
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -67,6 +71,7 @@ impl SettingType {
             SettingType::Checkbox => "checkbox",
             SettingType::Dropdown => "dropdown",
             SettingType::Percentage => "percentage",
+            SettingType::CustomSingle => "custom_option_single",
         }
     }
 
@@ -80,8 +85,9 @@ impl SettingType {
             // The form's "custom option" type: a dropdown whose choices the admin typed (`custom_options`).
             "dropdown" | "custom_option" | "custom_options" => Ok(SettingType::Dropdown),
             "percentage" => Ok(SettingType::Percentage),
+            "custom_option_single" => Ok(SettingType::CustomSingle),
             other => Err(ApplicationError::unprocessable_entity(&format!(
-                "type {other:?} must be one of: {} (or custom_option: a dropdown with your own choices)",
+                "type {other:?} must be one of: {} (custom_option_single takes your own typed choices)",
                 Self::ALL.join(", ")
             ))),
         }
@@ -89,7 +95,46 @@ impl SettingType {
 
     /// Radio, checkbox and dropdown pick from a list of options.
     pub fn is_choice(&self) -> bool {
-        matches!(self, SettingType::Radio | SettingType::Checkbox | SettingType::Dropdown)
+        matches!(
+            self,
+            SettingType::Radio
+                | SettingType::Checkbox
+                | SettingType::Dropdown
+                | SettingType::CustomSingle
+        )
+    }
+
+    /// The admin's own typed choices (no library).
+    pub fn is_custom(&self) -> bool {
+        matches!(self, SettingType::CustomSingle)
+    }
+
+    /// Takes more than one option by default.
+    pub fn is_multi(&self) -> bool {
+        matches!(self, SettingType::Checkbox)
+    }
+
+    /// The `multiple` flag a setting ends up with. Only a dropdown is free to choose; a radio and a
+    /// custom_option_single are always single, a checkbox always multiple,
+    /// and a non-choice type is never multiple.
+    pub fn resolve_multiple(&self, requested: Option<bool>) -> Result<bool, ApplicationError> {
+        let fixed = match self {
+            SettingType::Radio | SettingType::CustomSingle => Some(false),
+            SettingType::Checkbox => Some(true),
+            SettingType::Dropdown => None,
+            _ => return match requested {
+                Some(true) => Err(unprocessable(format!("`multiple` only applies to choice settings, not {}", self.as_str()))),
+                _ => Ok(false),
+            },
+        };
+        match (fixed, requested) {
+            (Some(fixed), Some(asked)) if fixed != asked => Err(unprocessable(format!(
+                "a {} is always multiple: {fixed}",
+                self.as_str()
+            ))),
+            (Some(fixed), _) => Ok(fixed),
+            (None, asked) => Ok(asked.unwrap_or(false)),
+        }
     }
 
     /// The control the frontend draws: a Yes/No switch for a boolean, a dropdown for a
@@ -103,6 +148,7 @@ impl SettingType {
             SettingType::Checkbox => "checkbox_group",
             SettingType::Dropdown => "dropdown",
             SettingType::Percentage => "percentage_input",
+            SettingType::CustomSingle => "custom_single_select",
         }
     }
 }
@@ -157,6 +203,15 @@ pub struct SettingInput {
     pub library_id: Option<Uuid>,
     /// The admin's own values (the ONLY source when there is no library).
     pub options: Vec<OptionInput>,
+    /// What the caller sent for `multiple` (`None` means the type's own default).
+    pub multiple: Option<bool>,
+}
+
+impl SettingInput {
+    /// Whether the setting takes many options (false for every non-choice type).
+    pub fn is_multiple(&self) -> bool {
+        self.field_type.resolve_multiple(self.multiple).unwrap_or(false)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -212,19 +267,17 @@ pub struct ProgramSetting {
     pub required: bool,
     /// The Display switch: false hides the setting from the form (the setting itself is kept).
     pub display: bool,
+    /// True when more than one option may be picked (checkbox, or a multiple dropdown).
+    pub multiple: bool,
     pub default_value: Option<Value>,
     pub position: i32,
     pub options_source: Option<OptionsSource>,
     pub library_id: Option<Uuid>,
     pub options: Vec<SettingOption>,
-    /// Set when the library's options could not be read: `not_found` or `unavailable`.
-    pub library_error: Option<String>,
     /// The saved value of a boolean / number / text setting (`None` until one is saved).
     pub value: Option<Value>,
     /// The saved choice of a radio / checkbox / dropdown setting (option ids).
     pub option_ids: Vec<Uuid>,
-    /// Saved options that are no longer on offer (deactivated, or gone from the library).
-    pub missing_option_ids: Vec<Uuid>,
 }
 
 /// The rule engine is a front-end component; this is only the leaf's rule-set summary.
@@ -305,12 +358,12 @@ fn check_default(setting: &SettingInput, codes: &HashSet<String>) -> Result<(), 
         SettingType::Text if !default.is_string() => {
             Err(unprocessable(format!("setting {name:?}: default must be text")))
         }
-        SettingType::Radio | SettingType::Dropdown => match default.as_str() {
+        SettingType::Radio | SettingType::Dropdown | SettingType::CustomSingle if !setting.is_multiple() => match default.as_str() {
             Some(code) if !manual_choice || codes.contains(code) => Ok(()),
             Some(code) => Err(unprocessable(format!("setting {name:?}: default {code:?} is not one of its options"))),
             None => Err(unprocessable(format!("setting {name:?}: default must be one option code"))),
         },
-        SettingType::Checkbox => match default.as_array() {
+        SettingType::Checkbox | SettingType::Dropdown => match default.as_array() {
             Some(items) => {
                 for item in items {
                     match item.as_str() {
@@ -339,10 +392,18 @@ fn validate_setting(setting: &SettingInput) -> Result<(), ApplicationError> {
         return Err(unprocessable(format!("setting name {name:?} must contain a letter or digit")));
     }
 
+    setting.field_type.resolve_multiple(setting.multiple)?;
+
     let mut codes = HashSet::new();
 
     if setting.field_type.is_choice() {
         let has_library = setting.library_id.is_some();
+        if has_library && setting.field_type.is_custom() {
+            return Err(unprocessable(format!(
+                "setting {name:?}: a {} takes your own options, not a library_id",
+                setting.field_type.as_str()
+            )));
+        }
         let has_options = !setting.options.is_empty();
         if has_library && has_options {
             return Err(unprocessable(format!(
@@ -479,6 +540,7 @@ mod tests {
             field_type,
             required: false,
             display: true,
+            multiple: None,
             default_value: None,
             library_id: None,
             options: vec![],
@@ -490,7 +552,7 @@ mod tests {
     }
 
     fn module(settings: Vec<SettingInput>) -> Vec<ModuleChange> {
-        vec![ModuleChange { key: "m".into(), enabled: None, mode: Some(ModuleMode::Settings), settings: Some(settings) }]
+        vec![ModuleChange { key: "m".into(), enabled: None, mode: Some(ModuleMode::Settings), settings: Some(settings), icon: None, rule_display: None }]
     }
 
     #[test]
@@ -507,7 +569,8 @@ mod tests {
         let rendered: Vec<&str> = SettingType::ALL.iter().map(|t| SettingType::parse(t).unwrap().render()).collect();
         assert_eq!(
             rendered,
-            ["yes_no", "number_input", "text_input", "radio_group", "checkbox_group", "dropdown", "percentage_input"]
+            ["yes_no", "number_input", "text_input", "radio_group", "checkbox_group", "dropdown", "percentage_input",
+                "custom_single_select"]
         );
         assert!(SettingType::parse("slider").is_err());
     }
@@ -594,7 +657,7 @@ mod tests {
     #[test]
     fn rule_modules_cannot_carry_settings_and_modules_are_unique() {
         let rule_with_settings = vec![ModuleChange {
-            key: "m".into(), enabled: None, mode: Some(ModuleMode::Rule), settings: Some(vec![]),
+            key: "m".into(), enabled: None, mode: Some(ModuleMode::Rule), settings: Some(vec![]), icon: None, rule_display: None,
         }];
         assert!(validate_changes(&rule_with_settings).is_err());
 

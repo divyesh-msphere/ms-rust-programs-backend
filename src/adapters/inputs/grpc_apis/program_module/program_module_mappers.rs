@@ -22,6 +22,7 @@ fn to_grpc_setting(setting: ProgramSetting) -> GrpcProgramSetting {
         render: setting.field_type.render().to_string(),
         required: setting.required,
         display: setting.display,
+        multiple: setting.multiple,
         default_value: setting.default_value.map(json_to_buffa_value).into(),
         position: setting.position,
         options_source: setting.options_source.map(|s| s.as_str().to_string()),
@@ -38,10 +39,8 @@ fn to_grpc_setting(setting: ProgramSetting) -> GrpcProgramSetting {
                 ..Default::default()
             })
             .collect(),
-        library_error: setting.library_error,
         value: setting.value.map(json_to_buffa_value).into(),
         option_ids: setting.option_ids.into_iter().map(|id| id.to_string()).collect(),
-        missing_option_ids: setting.missing_option_ids.into_iter().map(|id| id.to_string()).collect(),
         ..Default::default()
     }
 }
@@ -97,7 +96,6 @@ impl
         Ok(ListProgramModulesInput {
             program: ResourceIdentifier::parse(&request.program),
             enabled_only: request.enabled_only.unwrap_or(true),
-            include_options: request.include_options.unwrap_or(true),
         })
     }
 

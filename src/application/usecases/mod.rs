@@ -1,5 +1,4 @@
 use crate::domain::document::DocumentPolicy;
-use crate::domain::library_catalog::LibraryCatalog;
 use crate::domain::object_storage::ObjectStorage;
 use crate::infrastructure::repositories::Repositories;
 use std::sync::Arc;
@@ -46,7 +45,6 @@ pub struct UseCases {
 impl UseCases {
     pub fn new(
         repositories: Arc<Repositories>,
-        library_catalog: Arc<dyn LibraryCatalog>,
         object_storage: Arc<dyn ObjectStorage>,
         document_policy: DocumentPolicy,
     ) -> Self {
@@ -54,16 +52,14 @@ impl UseCases {
             module_catalog_item: module_catalog_item::ModuleCatalogItemUseCases::new(
                 repositories.module_catalog_item_repository.clone(),
             ),
-            program: program::ProgramUseCases::new(repositories.program_repository.clone(), library_catalog.clone()),
+            program: program::ProgramUseCases::new(repositories.program_repository.clone()),
             program_module: program_module::ProgramModuleUseCases::new(
                 repositories.program_repository.clone(),
                 repositories.program_module_repository.clone(),
-                library_catalog.clone(),
             ),
             program_setting_value: program_setting_value::ProgramSettingValueUseCases::new(
                 repositories.program_repository.clone(),
                 repositories.program_setting_value_repository.clone(),
-                library_catalog,
             ),
             program_overview: program_overview::ProgramOverviewUseCases::new(
                 repositories.program_repository.clone(),

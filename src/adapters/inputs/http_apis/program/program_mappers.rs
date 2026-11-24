@@ -42,12 +42,13 @@ pub fn to_presenter(program: Program) -> ProgramPresenter {
             text_color: program.branding.text_color,
             logo_icon: program.branding.logo_icon,
         },
-        renewal: RenewalPresenter {
+        renewal_enabled: program.renewal.enabled,
+        renewal: program.renewal.enabled.then(|| RenewalPresenter {
             term_months: program.renewal.term_months,
             grace_period_days: program.renewal.grace_period_days,
             reminder_days: program.renewal.reminder_days,
             auto_renew: program.renewal.auto_renew,
-        },
+        }),
         level: program.level,
         active: program.active,
         config_version: program.config_version,
@@ -95,6 +96,7 @@ fn to_setting(payload: SettingPayload) -> Result<SettingInput, ApplicationError>
         field_type: SettingType::parse(&payload.field_type)?,
         required: payload.required.unwrap_or(false),
         display: payload.display.unwrap_or(true),
+        multiple: payload.multiple,
         default_value: payload.default_value,
         library_id: parse::optional_uuid("settings[].library_id", payload.library_id.as_deref())?,
         options,
@@ -240,12 +242,14 @@ impl CreateProgramMapper {
                 .branding
                 .map(|b| Branding { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon })
                 .unwrap_or_default(),
-            renewal: body.renewal.map(|r| {
+            renewal: (body.renewal.is_some() || body.renewal_enabled.is_some()).then(|| {
+                let r = body.renewal.unwrap_or_default();
                 RenewalPatch {
                     term_months: r.term_months,
                     grace_period_days: r.grace_period_days,
                     reminder_days: r.reminder_days,
                     auto_renew: r.auto_renew,
+                    enabled: body.renewal_enabled,
                 }
                 .apply(&Renewal::default())
             }),
@@ -281,11 +285,15 @@ impl UpdateProgramMapper {
             branding: body
                 .branding
                 .map(|b| BrandingPatch { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon }),
-            renewal: body.renewal.map(|r| RenewalPatch {
-                term_months: r.term_months,
-                grace_period_days: r.grace_period_days,
-                reminder_days: r.reminder_days,
-                auto_renew: r.auto_renew,
+            renewal: (body.renewal.is_some() || body.renewal_enabled.is_some()).then(|| {
+                let r = body.renewal.unwrap_or_default();
+                RenewalPatch {
+                    term_months: r.term_months,
+                    grace_period_days: r.grace_period_days,
+                    reminder_days: r.reminder_days,
+                    auto_renew: r.auto_renew,
+                    enabled: body.renewal_enabled,
+                }
             }),
             level: body.level,
             active: body.active,

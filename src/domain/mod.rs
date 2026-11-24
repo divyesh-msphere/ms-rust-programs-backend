@@ -3,7 +3,6 @@ pub mod application;
 pub mod approval_step;
 pub mod document;
 pub mod enrollment;
-pub mod library_catalog;
 pub mod module_catalog_item;
 pub mod object_storage;
 pub mod program;

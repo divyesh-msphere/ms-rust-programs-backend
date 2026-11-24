@@ -1,8 +1,6 @@
 use crate::application::errors::application_error::ApplicationError;
-use crate::application::services::library_options::active_option_ids;
 use crate::application::usecases::interface::UseCase;
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::library_catalog::{CatalogError, LibraryCatalog};
 use crate::domain::program::ProgramRepository;
 use crate::domain::program_setting_value::{
     ProgramSettingValueRepository, StoredValue, ValueInput, too_many, validate_value,
@@ -18,16 +16,14 @@ const MAX_REPORTED_ERRORS: usize = 10;
 pub struct BatchUpdateSettingValuesUseCase {
     program_repository: Arc<dyn ProgramRepository>,
     setting_value_repository: Arc<dyn ProgramSettingValueRepository>,
-    library_catalog: Arc<dyn LibraryCatalog>,
 }
 
 impl BatchUpdateSettingValuesUseCase {
     pub fn new(
         program_repository: Arc<dyn ProgramRepository>,
         setting_value_repository: Arc<dyn ProgramSettingValueRepository>,
-        library_catalog: Arc<dyn LibraryCatalog>,
     ) -> Self {
-        Self { program_repository, setting_value_repository, library_catalog }
+        Self { program_repository, setting_value_repository }
     }
 }
 
@@ -94,21 +90,6 @@ impl UseCase<BatchUpdateSettingValuesOutput, BatchUpdateSettingValuesInput> for 
             )));
         }
 
-        // The options a library-backed choice may pick from, read through the cache BEFORE the
-        // transaction opens (no outside call ever runs inside one).
-        let library_ids: Vec<Uuid> = definitions
-            .values()
-            .filter(|d| d.options_source == Some(OptionsSource::Library))
-            .filter_map(|d| d.library_id)
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect();
-        let libraries = if library_ids.is_empty() || !self.library_catalog.enabled() {
-            HashMap::new()
-        } else {
-            active_option_ids(&self.library_catalog, library_ids).await
-        };
-
         let mut changes = Vec::with_capacity(input.values.len());
         let mut errors: Vec<String> = Vec::new();
         for (id, value) in &input.values {
@@ -117,21 +98,9 @@ impl UseCase<BatchUpdateSettingValuesOutput, BatchUpdateSettingValuesInput> for 
             let valid_options: Option<HashSet<Uuid>> = match definition.options_source {
                 None => None,
                 Some(OptionsSource::Manual) => Some(definition.manual_option_ids.clone()),
-                Some(OptionsSource::Library) => match definition.library_id.and_then(|lib| libraries.get(&lib)) {
-                    Some(Ok(active)) => Some(active.clone()),
-                    Some(Err(CatalogError::NotFound)) => {
-                        errors.push(format!("{:?}: its library no longer exists in global-settings", definition.name));
-                        continue;
-                    }
-                    Some(Err(CatalogError::Unavailable(reason))) => {
-                        return Err(ApplicationError::failed_precondition(&format!(
-                            "global-settings is unavailable, so {:?} cannot be checked: {reason}",
-                            definition.name
-                        )));
-                    }
-                    // Integration switched off: the options cannot be checked, so they are taken as given.
-                    None => Some(value.option_ids.clone().unwrap_or_default().into_iter().collect()),
-                },
+                // Library options live in global-settings, which this service does not call: the
+                // chosen ids are stored as given.
+                Some(OptionsSource::Library) => Some(value.option_ids.clone().unwrap_or_default().into_iter().collect()),
             };
 
             match validate_value(definition, value, valid_options.as_ref()) {

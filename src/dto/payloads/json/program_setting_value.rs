@@ -36,3 +36,28 @@ pub struct SettingValuePayload {
     pub value: Option<Value>,
     pub option_ids: Option<Vec<String>>,
 }
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct BatchUpdateModuleSettingsBodyPayload {
+    /// The program's `config_version` as the caller last read it (409 when stale); omit to skip the check.
+    pub version: Option<i32>,
+    /// Settings of one or more modules, saved together in ONE transaction.
+    pub modules: Vec<ModuleSettingsPayload>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ModuleSettingsPayload {
+    /// The module's key, e.g. `catalog_pricing.pricing.discount_rules`.
+    pub key: String,
+    pub settings: Vec<ModuleSettingPayload>,
+}
+
+/// One setting: named by `id` or by its `key` in the module (exactly one), with `value` for a
+/// boolean / number / text / percentage setting or `option_ids` for a choice. Neither clears it.
+#[derive(Debug, Deserialize, Clone)]
+pub struct ModuleSettingPayload {
+    pub id: Option<String>,
+    pub key: Option<String>,
+    pub value: Option<Value>,
+    pub option_ids: Option<Vec<String>>,
+}

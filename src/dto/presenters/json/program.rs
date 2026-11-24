@@ -11,7 +11,11 @@ pub struct ProgramPresenter {
     pub about: Option<String>,
     pub highlights: Vec<String>,
     pub branding: BrandingPresenter,
-    pub renewal: RenewalPresenter,
+    /// Whether the program renews at all.
+    pub renewal_enabled: bool,
+    /// Only sent when `renewal_enabled` is true.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub renewal: Option<RenewalPresenter>,
     pub level: String,
     pub active: bool,
     pub config_version: i32,

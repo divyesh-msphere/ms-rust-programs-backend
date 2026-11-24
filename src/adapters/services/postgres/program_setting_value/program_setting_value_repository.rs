@@ -26,6 +26,7 @@ struct DefinitionRow {
     key: String,
     name: String,
     field_type: String,
+    multiple: bool,
     required: bool,
     options_source: Option<String>,
     library_id: Option<Uuid>,
@@ -67,7 +68,7 @@ impl ProgramSettingValueRepository for ProgramSettingValueRepositoryPostgresImpl
         // One statement: the settings, their module key, and the ids of their own ACTIVE
         // options (the options a manual choice may pick from).
         let rows = sqlx::query_as::<_, DefinitionRow>(
-            "SELECT pf.id, md.key AS module_key, pf.key, pf.name, pf.field_type, pf.required, \
+            "SELECT pf.id, md.key AS module_key, pf.key, pf.name, pf.field_type, pf.multiple, pf.required, \
                     pf.options_source, pf.library_id, \
                     COALESCE(array_agg(fo.id) FILTER (WHERE fo.active), '{}') AS manual_option_ids \
              FROM program_fields pf \
@@ -92,12 +93,33 @@ impl ProgramSettingValueRepository for ProgramSettingValueRepositoryPostgresImpl
                     name: row.name,
                     field_type: SettingType::parse(&row.field_type).ok()?,
                     required: row.required,
+                    multiple: row.multiple,
                     options_source: row.options_source.as_deref().map(OptionsSource::parse),
                     library_id: row.library_id,
                     manual_option_ids: row.manual_option_ids.into_iter().collect(),
                 })
             })
             .collect())
+    }
+
+    async fn setting_ids_by_key(
+        &self,
+        program_id: Uuid,
+        keys: &[(String, String)],
+    ) -> Result<std::collections::HashMap<(String, String), Uuid>, ApplicationError> {
+        let module_keys: Vec<String> = keys.iter().map(|(m, _)| m.clone()).collect();
+        let rows: Vec<(String, String, Uuid)> = sqlx::query_as(
+            "SELECT md.key, pf.key, pf.id FROM program_fields pf \
+             JOIN module_definitions md ON md.id = pf.module_id \
+             WHERE pf.program_id = $1 AND pf.state = 'ACTIVE' AND md.key = ANY($2)",
+        )
+        .bind(program_id)
+        .bind(&module_keys)
+        .fetch_all(self.db_connection.get_pool())
+        .await
+        .map_err(db_error)?;
+        let wanted: std::collections::HashSet<&(String, String)> = keys.iter().collect();
+        Ok(rows.into_iter().filter(|(m, k, _)| wanted.contains(&(m.clone(), k.clone()))).map(|(m, k, id)| ((m, k), id)).collect())
     }
 
     async fn list(&self, program_id: Uuid, module_key: Option<&str>) -> Result<(i32, Vec<StoredValue>), ApplicationError> {

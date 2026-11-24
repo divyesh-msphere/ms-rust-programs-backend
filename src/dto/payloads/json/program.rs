@@ -23,8 +23,10 @@ pub struct CreateProgramBodyPayload {
     /// Up to 5 short selling points shown next to the summary.
     pub highlights: Option<Vec<String>>,
     pub branding: Option<BrandingPayload>,
-    /// Omitted parts take the defaults: 12 months, 30 days grace, 30 days reminder, no auto-renew.
+    /// Omitted parts stay null (term, grace, reminder) or false (auto_renew).
     pub renewal: Option<RenewalPayload>,
+    /// Whether the program renews at all (false when omitted).
+    pub renewal_enabled: Option<bool>,
     /// `user`, `organization` or `location` (default).
     pub level: Option<String>,
     /// The modules the admin picked: a plain key (`enrollment.stores.enrolled_stores_control_panel`) or an
@@ -98,6 +100,7 @@ pub struct UpdateProgramBodyPayload {
     pub highlights: Option<Vec<String>>,
     pub branding: Option<BrandingPayload>,
     pub renewal: Option<RenewalPayload>,
+    pub renewal_enabled: Option<bool>,
     pub level: Option<String>,
     pub active: Option<bool>,
     /// Module changes: a new key adds the module; `mode` sets what a leaf is; `settings` REPLACES that
@@ -171,6 +174,9 @@ pub struct SettingPayload {
     pub required: Option<bool>,
     /// The Display switch (default true): false hides the setting from the form.
     pub display: Option<bool>,
+    /// More than one option may be picked. Only a `dropdown` is free to choose (default false); a
+    /// checkbox is always true, a radio and custom_option_single always false.
+    pub multiple: Option<bool>,
     /// The starting value (a boolean, number, text, option code, or list of option codes).
     #[serde(default, rename = "default")]
     pub default_value: Option<Value>,

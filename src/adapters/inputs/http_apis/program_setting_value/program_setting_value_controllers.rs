@@ -1,19 +1,21 @@
 use crate::adapters::inputs::http_apis::program_setting_value::program_setting_value_mappers::{
-    BatchUpdateSettingValuesMapper, ListSettingValuesMapper,
+    BatchUpdateModuleSettingsMapper, BatchUpdateSettingValuesMapper, ListSettingValuesMapper,
 };
 use crate::adapters::inputs::http_apis::shared::actor::actor_from;
 use crate::adapters::inputs::http_apis::shared::error_response::ErrorResponse;
 use crate::adapters::inputs::shared::app_state::AppState;
 use crate::application::usecases::interface::UseCase;
 use crate::dto::payloads::json::program_setting_value::{
-    BatchUpdateSettingValuesBodyPayload, BatchUpdateSettingValuesPathPayload, ListSettingValuesPathPayload,
+    BatchUpdateModuleSettingsBodyPayload, BatchUpdateSettingValuesBodyPayload, BatchUpdateSettingValuesPathPayload, ListSettingValuesPathPayload,
     ListSettingValuesQueryPayload,
 };
 use actix_web::{HttpRequest, HttpResponse, get, post, web};
 use ms_telemetry_rs::tracing::{info, instrument};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(list_setting_values).service(batch_update_setting_values);
+    cfg.service(list_setting_values)
+        .service(batch_update_setting_values)
+        .service(batch_update_module_settings);
 }
 
 /// The saved values of a program's settings, with the version to send back on a save.
@@ -56,6 +58,31 @@ pub async fn batch_update_setting_values(
         .use_cases
         .program_setting_value
         .batch_update_setting_values
+        .execute(Some(usecase_input))
+        .await
+        .map_err(ErrorResponse::map_response_error)?;
+
+    Ok(HttpResponse::Ok().json(BatchUpdateSettingValuesMapper::output_success(result)))
+}
+
+/// Saves settings of several modules in ONE request and ONE transaction. Each setting is named by its
+/// id or by its key inside the module.
+#[instrument(skip(data, req, body))]
+#[post("/{program}/module-settings:batchUpdate")]
+pub async fn batch_update_module_settings(
+    req: HttpRequest,
+    data: web::Data<AppState>,
+    path: web::Path<BatchUpdateSettingValuesPathPayload>,
+    body: web::Json<BatchUpdateModuleSettingsBodyPayload>,
+) -> Result<HttpResponse, ErrorResponse> {
+    info!("BatchUpdateModuleSettingsController called");
+
+    let usecase_input = BatchUpdateModuleSettingsMapper::input(path.into_inner(), body.into_inner(), actor_from(&req))
+        .map_err(ErrorResponse::map_response_error)?;
+    let result = data
+        .use_cases
+        .program_setting_value
+        .batch_update_module_settings
         .execute(Some(usecase_input))
         .await
         .map_err(ErrorResponse::map_response_error)?;

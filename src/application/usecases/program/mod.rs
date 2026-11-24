@@ -1,4 +1,3 @@
-use crate::domain::library_catalog::LibraryCatalog;
 use crate::domain::program::ProgramRepository;
 use std::sync::Arc;
 
@@ -26,12 +25,12 @@ pub struct ProgramUseCases {
 }
 
 impl ProgramUseCases {
-    pub fn new(program_repository: Arc<dyn ProgramRepository>, library_catalog: Arc<dyn LibraryCatalog>) -> Self {
+    pub fn new(program_repository: Arc<dyn ProgramRepository>) -> Self {
         Self {
             list_programs: ListProgramsUseCase::new(program_repository.clone()),
             get_program: GetProgramUseCase::new(program_repository.clone()),
-            create_program: CreateProgramUseCase::new(program_repository.clone(), library_catalog.clone()),
-            update_program: UpdateProgramUseCase::new(program_repository.clone(), library_catalog),
+            create_program: CreateProgramUseCase::new(program_repository.clone()),
+            update_program: UpdateProgramUseCase::new(program_repository.clone()),
             delete_program: DeleteProgramUseCase::new(program_repository.clone()),
             undelete_program: UndeleteProgramUseCase::new(program_repository),
         }

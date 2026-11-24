@@ -49,6 +49,7 @@ fn to_setting(config: SettingConfig) -> Result<SettingInput, ApplicationError> {
         field_type: SettingType::parse(&config.r#type)?,
         required: config.required.unwrap_or(false),
         display: config.display.unwrap_or(true),
+        multiple: config.multiple,
         // An unset or null default means "no default".
         default_value: config.default_value.into_option().map(buffa_value_to_json).filter(|v| !v.is_null()),
         library_id: parse::optional_uuid("settings.library_id", config.library_id.as_deref())?,
@@ -93,14 +94,18 @@ pub fn to_grpc_program(program: Program) -> GrpcProgram {
             ..Default::default()
         })
         .into(),
-        renewal: Some(ProgramRenewal {
-            term_months: program.renewal.term_months,
-            grace_period_days: program.renewal.grace_period_days,
-            reminder_days: program.renewal.reminder_days,
-            auto_renew: Some(program.renewal.auto_renew),
-            ..Default::default()
-        })
-        .into(),
+        renewal_enabled: program.renewal.enabled,
+        renewal: program
+            .renewal
+            .enabled
+            .then(|| ProgramRenewal {
+                term_months: program.renewal.term_months,
+                grace_period_days: program.renewal.grace_period_days,
+                reminder_days: program.renewal.reminder_days,
+                auto_renew: Some(program.renewal.auto_renew),
+                ..Default::default()
+            })
+            .into(),
         level: program.level,
         active: program.active,
         config_version: program.config_version,
@@ -197,12 +202,14 @@ impl CreateProgramGrpcMapper {
                 .into_option()
                 .map(|b| Branding { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon })
                 .unwrap_or_default(),
-            renewal: request.renewal.into_option().map(|r| {
+            renewal: (request.renewal.is_set() || request.renewal_enabled.is_some()).then(|| {
+                let r = request.renewal.into_option().unwrap_or_default();
                 RenewalPatch {
                     term_months: r.term_months,
                     grace_period_days: r.grace_period_days,
                     reminder_days: r.reminder_days,
                     auto_renew: r.auto_renew,
+                    enabled: request.renewal_enabled,
                 }
                 .apply(&Renewal::default())
             }),
@@ -244,11 +251,15 @@ impl UpdateProgramGrpcMapper {
                 text_color: b.text_color,
                 logo_icon: b.logo_icon,
             }),
-            renewal: request.renewal.into_option().map(|r| RenewalPatch {
-                term_months: r.term_months,
-                grace_period_days: r.grace_period_days,
-                reminder_days: r.reminder_days,
-                auto_renew: r.auto_renew,
+            renewal: (request.renewal.is_set() || request.renewal_enabled.is_some()).then(|| {
+                let r = request.renewal.into_option().unwrap_or_default();
+                RenewalPatch {
+                    term_months: r.term_months,
+                    grace_period_days: r.grace_period_days,
+                    reminder_days: r.reminder_days,
+                    auto_renew: r.auto_renew,
+                    enabled: request.renewal_enabled,
+                }
             }),
             level: request.level,
             active: request.active,

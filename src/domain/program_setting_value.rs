@@ -7,7 +7,7 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde_json::Value;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
 
 use crate::application::errors::application_error::ApplicationError;
@@ -25,6 +25,8 @@ pub struct SettingDefinition {
     pub name: String,
     pub field_type: SettingType,
     pub required: bool,
+    /// More than one option may be picked.
+    pub multiple: bool,
     pub options_source: Option<OptionsSource>,
     pub library_id: Option<Uuid>,
     /// The admin's own ACTIVE options (empty for a library or a plain setting).
@@ -104,7 +106,7 @@ pub fn validate_value(
         if ids.is_empty() {
             return clear("choose at least one option");
         }
-        if definition.field_type != SettingType::Checkbox && ids.len() > 1 {
+        if !definition.multiple && ids.len() > 1 {
             return Err(format!("{name:?} takes one option, not {}", ids.len()));
         }
         let allowed = valid_options.ok_or_else(|| format!("{name:?}: its options could not be read"))?;
@@ -137,12 +139,6 @@ pub fn validate_value(
     Ok(ValueChange::Set { setting_id: id, value: Some(value), option_ids: Vec::new(), library_id: None })
 }
 
-/// The saved options that are no longer offered.
-pub fn missing_options(saved: &[Uuid], offered: &[Uuid]) -> Vec<Uuid> {
-    let offered: HashSet<&Uuid> = offered.iter().collect();
-    saved.iter().filter(|id| !offered.contains(id)).copied().collect()
-}
-
 pub fn too_many(count: usize) -> Result<(), ApplicationError> {
     if count > MAX_VALUES_PER_REQUEST {
         Err(ApplicationError::validation_error(&format!("at most {MAX_VALUES_PER_REQUEST} values per request")))
@@ -155,6 +151,13 @@ pub fn too_many(count: usize) -> Result<(), ApplicationError> {
 pub trait ProgramSettingValueRepository: Send + Sync {
     /// The definitions of these settings, when they are live settings of this program.
     async fn definitions(&self, program_id: Uuid, setting_ids: &[Uuid]) -> Result<Vec<SettingDefinition>, ApplicationError>;
+
+    /// The ids of live settings of this program, found by (module key, setting key).
+    async fn setting_ids_by_key(
+        &self,
+        program_id: Uuid,
+        keys: &[(String, String)],
+    ) -> Result<HashMap<(String, String), Uuid>, ApplicationError>;
 
     /// The program's `config_version` and its saved values (optionally one module's).
     async fn list(&self, program_id: Uuid, module_key: Option<&str>) -> Result<(i32, Vec<StoredValue>), ApplicationError>;
@@ -184,6 +187,7 @@ mod tests {
             name: "Setting".into(),
             field_type,
             required,
+            multiple: field_type.is_multi(),
             options_source: field_type.is_choice().then_some(OptionsSource::Manual),
             library_id: None,
             manual_option_ids: HashSet::new(),
@@ -277,14 +281,6 @@ mod tests {
             validate_value(&d, &options(&[a]), Some(&allowed)),
             Ok(ValueChange::Set { setting_id: d.id, value: None, option_ids: vec![a], library_id: Some(lib) })
         );
-    }
-
-    #[test]
-    fn finds_saved_options_that_are_no_longer_offered() {
-        let (a, b, c) = (Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4());
-        assert_eq!(missing_options(&[a, b, c], &[a, c]), vec![b]);
-        assert!(missing_options(&[a], &[a, b]).is_empty());
-        assert!(missing_options(&[], &[a]).is_empty());
     }
 
     #[test]

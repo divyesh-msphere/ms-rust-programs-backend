@@ -6,7 +6,10 @@ use crate::adapters::inputs::http_apis::shared::route_not_found::not_found_handl
 use crate::adapters::inputs::http_apis::shared::routes::routes;
 use actix_cors::Cors;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
-use actix_web::middleware::Condition;
+use actix_web::middleware::{Condition, from_fn};
+use crate::adapters::services::activity::middleware::activity_log;
+use crate::adapters::services::activity::publisher::ActivityPublisher;
+use ms_telemetry_rs::TelemetryConfig;
 use actix_web::{App, Error, HttpServer, middleware, web};
 use tracing::{info, Span};
 use std::net::TcpListener;
@@ -39,6 +42,13 @@ pub async fn http_server(
     mut shutdown: watch::Receiver<bool>,
 ) -> Result<(), std::io::Error> {
     let deps = Dependencies::load().await;
+    let activity = web::Data::new(match TelemetryConfig::load_config("src/config/otel_config.toml") {
+        Ok(cfg) => ActivityPublisher::new(&cfg).await,
+        Err(err) => {
+            tracing::warn!("activity: otel config not loaded ({err}), events are only logged");
+            ActivityPublisher::new(&TelemetryConfig::default()).await
+        }
+    });
     let port = listner.local_addr().unwrap().port();
     info!("Starting HTTP server on port {}", port);
 
@@ -64,10 +74,12 @@ pub async fn http_server(
 
         App::new()
             .app_data(data.clone())
+            .app_data(activity.clone())
             .app_data(web::JsonConfig::default().error_handler(json_error_handler))
             .app_data(web::QueryConfig::default().error_handler(query_error_handler))
             .configure(routes(deps.application_config.features.enrollment_review))
             .default_service(web::route().to(not_found_handler))
+            .wrap(from_fn(activity_log))
             .wrap(TracingLogger::<HealthSkippingRootSpanBuilder>::new())
             .wrap(middleware::NormalizePath::new(
                 middleware::TrailingSlash::Trim,

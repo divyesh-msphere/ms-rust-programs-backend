@@ -55,6 +55,8 @@ pub struct ProgramSettingPresenter {
     pub required: bool,
     /// The Display switch: false means the setting is hidden from the form.
     pub display: bool,
+    /// True when more than one option may be picked.
+    pub multiple: bool,
     #[serde(rename = "default")]
     pub default_value: Option<serde_json::Value>,
     pub position: i32,
@@ -63,15 +65,10 @@ pub struct ProgramSettingPresenter {
     pub library_id: Option<String>,
     /// Empty for boolean / number / text.
     pub options: Vec<SettingOptionPresenter>,
-    /// `not_found` or `unavailable` when the library's options could not be read.
-    pub library_error: Option<String>,
     /// The saved value of a boolean / number / text setting; null until one is saved.
     pub value: Option<serde_json::Value>,
     /// The saved choice of a radio / checkbox / dropdown setting.
     pub option_ids: Vec<String>,
-    /// Saved options that are no longer on offer (deactivated, or gone from their library):
-    /// warn the admin and let them pick again.
-    pub missing_option_ids: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Clone)]

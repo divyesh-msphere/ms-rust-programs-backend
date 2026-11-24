@@ -1,11 +1,15 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
-    BatchUpdateSettingValuesRequest, BatchUpdateSettingValuesResponse, SettingValue as GrpcSettingValue,
+    BatchUpdateModuleSettingsRequest, BatchUpdateModuleSettingsResponse, BatchUpdateSettingValuesRequest,
+    BatchUpdateSettingValuesResponse, SettingValue as GrpcSettingValue,
     ListSettingValuesRequest, ListSettingValuesResponse,
 };
 use crate::adapters::inputs::grpc_apis::shared::json_struct::{buffa_value_to_json, json_to_buffa_value};
 use crate::adapters::inputs::shared::parse;
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::mappers::grpc_api_mapper::GrpcApiMapper;
+use crate::application::usecases::program_setting_value::batch_update_module_settings::{
+    BatchUpdateModuleSettingsInput, ModuleSettingItem, ModuleSettingsInput,
+};
 use crate::application::usecases::program_setting_value::batch_update_setting_values::{
     BatchUpdateSettingValuesInput, BatchUpdateSettingValuesOutput,
 };
@@ -80,6 +84,50 @@ impl BatchUpdateSettingValuesGrpcMapper {
 
     pub fn output_success(output: BatchUpdateSettingValuesOutput) -> BatchUpdateSettingValuesResponse {
         BatchUpdateSettingValuesResponse {
+            version: output.version,
+            changed: i32::try_from(output.changed).unwrap_or(i32::MAX),
+            results: output.values.into_iter().map(to_grpc_setting_value).collect(),
+            ..Default::default()
+        }
+    }
+}
+
+pub struct BatchUpdateModuleSettingsGrpcMapper;
+
+impl BatchUpdateModuleSettingsGrpcMapper {
+    pub fn input(request: BatchUpdateModuleSettingsRequest, actor: String) -> Result<BatchUpdateModuleSettingsInput, ApplicationError> {
+        let mut modules = Vec::with_capacity(request.modules.len());
+        for module in request.modules {
+            let mut settings = Vec::with_capacity(module.settings.len());
+            for item in module.settings {
+                let value = if item.clear {
+                    ValueInput::default()
+                } else {
+                    ValueInput {
+                        value: item.value.into_option().map(buffa_value_to_json),
+                        option_ids: (!item.option_ids.is_empty())
+                            .then(|| item.option_ids.iter().map(|raw| parse::uuid("modules.settings.option_ids", raw)).collect::<Result<Vec<_>, _>>())
+                            .transpose()?,
+                    }
+                };
+                settings.push(ModuleSettingItem {
+                    id: parse::optional_uuid("modules.settings.setting_id", item.setting_id.as_deref())?,
+                    key: item.key.map(|k| k.trim().to_string()).filter(|k| !k.is_empty()),
+                    value,
+                });
+            }
+            modules.push(ModuleSettingsInput { key: module.key.trim().to_string(), settings });
+        }
+        Ok(BatchUpdateModuleSettingsInput {
+            program: ResourceIdentifier::parse(&request.program),
+            version: request.version,
+            modules,
+            actor,
+        })
+    }
+
+    pub fn output_success(output: BatchUpdateSettingValuesOutput) -> BatchUpdateModuleSettingsResponse {
+        BatchUpdateModuleSettingsResponse {
             version: output.version,
             changed: i32::try_from(output.changed).unwrap_or(i32::MAX),
             results: output.values.into_iter().map(to_grpc_setting_value).collect(),

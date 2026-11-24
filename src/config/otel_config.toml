@@ -32,5 +32,5 @@ key = ""                # Your NKEY public key (if auth = true)
 seed = ""               # Your NKEY private seed (if auth = true)
 
 [nats.stream]
-name = "AUDIT_STREAM"   # The JetStream stream to push to
-subject = "audit.events.>" # The specific subject topic
+name = "ACTIVITY"       # The activity pipeline stream
+subject = "events.activity.ms-programs" # events.activity.<service_name>

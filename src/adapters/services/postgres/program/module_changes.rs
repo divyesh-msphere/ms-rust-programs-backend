@@ -53,7 +53,7 @@ pub async fn ensure_modules(conn: &mut PgConnection, program_id: Uuid, keys: &[S
     let had_notifications = has_notifications(conn, program_id).await?;
     sqlx::query(
         "INSERT INTO program_modules (program_id, module_id, enabled, position, mode) \
-         SELECT $1, md.id, false, md.position, md.default_mode FROM module_definitions md \
+         SELECT $1, md.id, (md.source = 'default'), md.position, md.default_mode FROM module_definitions md \
          WHERE md.source = 'default' \
             OR EXISTS (SELECT 1 FROM module_definitions u WHERE u.source = 'premade' AND u.universal \
                        AND u.ancestry <@ md.ancestry) \
@@ -456,7 +456,7 @@ async fn replace_settings(
                 }
                 sqlx::query(
                     "UPDATE program_fields SET name = $2, field_type = $3, options_source = $4, library_id = $5, \
-                            required = $6, default_value = $7, position = $8, display = $9, update_time = now() \
+                            required = $6, default_value = $7, position = $8, display = $9, multiple = $10, update_time = now() \
                      WHERE id = $1",
                 )
                 .bind(id)
@@ -468,6 +468,7 @@ async fn replace_settings(
                 .bind(&input.default_value)
                 .bind(position as i32)
                 .bind(input.display)
+                .bind(input.is_multiple())
                 .execute(&mut *conn)
                 .await
                 .map_err(db_error)?;
@@ -477,8 +478,8 @@ async fn replace_settings(
                 let id = Uuid::now_v7();
                 sqlx::query(
                     "INSERT INTO program_fields \
-                        (id, program_id, module_id, name, key, field_type, options_source, library_id, required, default_value, position, display) \
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+                        (id, program_id, module_id, name, key, field_type, options_source, library_id, required, default_value, position, display, multiple) \
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
                 )
                 .bind(id)
                 .bind(program_id)
@@ -492,6 +493,7 @@ async fn replace_settings(
                 .bind(&input.default_value)
                 .bind(position as i32)
                 .bind(input.display)
+                .bind(input.is_multiple())
                 .execute(&mut *conn)
                 .await
                 .map_err(|err| {

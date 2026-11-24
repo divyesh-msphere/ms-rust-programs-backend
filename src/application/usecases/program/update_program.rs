@@ -1,8 +1,6 @@
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::interface::UseCase;
-use crate::application::services::library_options::{resolve_options, validate_libraries};
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::library_catalog::LibraryCatalog;
 use crate::domain::program::{
     BrandingPatch, Program, ProgramRepository, RenewalPatch, UpdateProgram, clean_about, clean_branding,
     clean_highlights, validate_level, validate_renewal,
@@ -16,12 +14,11 @@ const MAX_NAME_LEN: usize = 120;
 
 pub struct UpdateProgramUseCase {
     program_repository: Arc<dyn ProgramRepository>,
-    library_catalog: Arc<dyn LibraryCatalog>,
 }
 
 impl UpdateProgramUseCase {
-    pub fn new(program_repository: Arc<dyn ProgramRepository>, library_catalog: Arc<dyn LibraryCatalog>) -> Self {
-        Self { program_repository, library_catalog }
+    pub fn new(program_repository: Arc<dyn ProgramRepository>) -> Self {
+        Self { program_repository }
     }
 }
 
@@ -74,8 +71,6 @@ impl UseCase<UpdateProgramOutput, UpdateProgramInput> for UpdateProgramUseCase {
 
         if let Some(changes) = &input.modules {
             validate_changes(changes)?;
-            // Libraries are checked BEFORE the transaction opens: no outside call runs inside one.
-            validate_libraries(&self.library_catalog, changes).await?;
         }
 
         let existing = self
@@ -122,14 +117,6 @@ impl UseCase<UpdateProgramOutput, UpdateProgramInput> for UpdateProgramUseCase {
             )
             .instrument(info_span!("UpdateProgramUseCase::update"))
             .await?;
-
-        let modules = match modules {
-            Some(mut modules) => {
-                resolve_options(&self.library_catalog, &mut modules).await;
-                Some(modules)
-            }
-            None => None,
-        };
 
         Ok(UpdateProgramOutput { program, modules })
     }

@@ -1,8 +1,9 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
-    BatchUpdateSettingValuesRequest, BatchUpdateSettingValuesResponse, ListSettingValuesRequest, ListSettingValuesResponse,
+    BatchUpdateModuleSettingsRequest, BatchUpdateModuleSettingsResponse, BatchUpdateSettingValuesRequest,
+    BatchUpdateSettingValuesResponse, ListSettingValuesRequest, ListSettingValuesResponse,
 };
 use crate::adapters::inputs::grpc_apis::program_setting_value::program_setting_value_mappers::{
-    BatchUpdateSettingValuesGrpcMapper, ListSettingValuesGrpcMapper,
+    BatchUpdateModuleSettingsGrpcMapper, BatchUpdateSettingValuesGrpcMapper, ListSettingValuesGrpcMapper,
 };
 use crate::adapters::inputs::grpc_apis::shared::error_response::GrpcErrorResponse;
 use crate::adapters::inputs::shared::app_state::AppState;
@@ -57,5 +58,24 @@ impl ProgramSettingValueServiceImpl {
             .map_err(GrpcErrorResponse::map_response_error)?;
 
         Response::ok(BatchUpdateSettingValuesGrpcMapper::output_success(output))
+    }
+
+    pub async fn batch_update_module_settings(
+        &self,
+        actor: String,
+        request: ServiceRequest<'_, BatchUpdateModuleSettingsRequest>,
+    ) -> ServiceResult<BatchUpdateModuleSettingsResponse> {
+        let input = BatchUpdateModuleSettingsGrpcMapper::input(request.to_owned_message(), actor)
+            .map_err(GrpcErrorResponse::map_response_error)?;
+        let output = self
+            .app_state
+            .use_cases
+            .program_setting_value
+            .batch_update_module_settings
+            .execute(Some(input))
+            .await
+            .map_err(GrpcErrorResponse::map_response_error)?;
+
+        Response::ok(BatchUpdateModuleSettingsGrpcMapper::output_success(output))
     }
 }

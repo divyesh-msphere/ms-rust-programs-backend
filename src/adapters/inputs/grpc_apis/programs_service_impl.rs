@@ -123,6 +123,9 @@ impl ProgramsService for ProgramsServiceImpl {
     async fn list_setting_values(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListSettingValuesRequest>) -> ServiceResult<ListSettingValuesResponse> {
         self.program_setting_value.list_setting_values(request).await
     }
+    async fn batch_update_module_settings(&self, ctx: RequestContext, request: ServiceRequest<'_, BatchUpdateModuleSettingsRequest>) -> ServiceResult<BatchUpdateModuleSettingsResponse> {
+        self.program_setting_value.batch_update_module_settings(actor_from(&ctx), request).await
+    }
     async fn batch_update_setting_values(&self, ctx: RequestContext, request: ServiceRequest<'_, BatchUpdateSettingValuesRequest>) -> ServiceResult<BatchUpdateSettingValuesResponse> {
         self.program_setting_value.batch_update_setting_values(actor_from(&ctx), request).await
     }

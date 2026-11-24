@@ -117,6 +117,13 @@ service ProgramsService {
       resource_fields: [{field: "path" pattern: "programs/*"}]
     };
   }
+  rpc BatchUpdateModuleSettings(BatchUpdateModuleSettingsRequest) returns (BatchUpdateModuleSettingsResponse) {
+    option (msapi.v1.sso_permission) = {
+      permission: "programs.programs"
+      action: "writer"
+      resource_fields: [{field: "path" pattern: "programs/*"}]
+    };
+  }
   rpc BatchUpdateSettingValues(BatchUpdateSettingValuesRequest) returns (BatchUpdateSettingValuesResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"

@@ -19,8 +19,8 @@ servers:
 - url: http://localhost:8090
   description: Local (Swagger UI on :8082 needs APP__CORS_ALLOWED_ORIGIN=http://localhost:8082)
   x-name: local
-- url: http://10.10.29.50:8090
-  description: LAN (Swagger UI on http://10.10.29.50:8082 needs APP__CORS_ALLOWED_ORIGIN to include it)
+- url: http://10.10.25.114:8090
+  description: LAN (Swagger UI on http://10.10.25.114:8082 needs APP__CORS_ALLOWED_ORIGIN to include it)
   x-name: lan
 - url: https://api.dev.mobilesentrix.com/programs
   description: Development environment
@@ -221,6 +221,10 @@ paths:
                   $ref: '#/components/schemas/ProgramBranding'
                 renewal:
                   $ref: '#/components/schemas/ProgramRenewal'
+                renewal_enabled:
+                  type: boolean
+                  default: false
+                  description: Whether the program renews at all.
                 level:
                   type: string
                   enum:
@@ -335,6 +339,10 @@ paths:
                   $ref: '#/components/schemas/ProgramBranding'
                 renewal:
                   $ref: '#/components/schemas/ProgramRenewal'
+                renewal_enabled:
+                  type: boolean
+                  default: false
+                  description: Whether the program renews at all.
                 level:
                   type: string
                   enum:
@@ -522,14 +530,6 @@ paths:
           default: true
         description: 'Only modules the program has switched on, plus every parent above them (reported as
           `enabled: true`), so the tree stays connected.'
-      - name: include_options
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: true
-        description: Fill library-backed settings with their library's options. They come from memory
-          in most cases; pass `false` to skip them entirely.
       responses:
         '200':
           $ref: '#/components/responses/ProgramModulesResponse'
@@ -723,6 +723,66 @@ paths:
                     01a143f1-c42e-73c8-8046-a168ed0886aa:
                       option_ids:
                       - d600279b-b182-4012-ac5a-e4b1063a7cd4
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUpdateSettingValuesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/module-settings:batchUpdate:
+    post:
+      operationId: :BatchUpdateModuleSettings
+      summary: Save the settings of several modules
+      tags:
+      - setting-values
+      description: |-
+        Saves the values of settings in one or more modules in ONE request and ONE transaction, so any caller can save settings knowing only the module key and the setting. Each setting is named by its `id` or by its `key` inside the module (exactly one of the two), with `value` for a boolean / number / text / percentage setting or `option_ids` for a choice (radio, checkbox, dropdown, custom_option_single). Neither field clears the value; a required setting cannot be cleared.
+
+        The server knows each setting's type, so no type is sent: the wrong field for the type is rejected with a message that names the setting. A setting must belong to the module it is listed under. ALL the problems are reported together and nothing is saved if any is wrong.
+
+        It is the same save as `setting-values:batchUpdate`: only values that differ are written, a change bumps `config_version` and writes an audit entry, and `version` (the `config_version` you last read) rejects a stale save with 409.
+      parameters:
+      - name: program
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The program's ID (UUID) or its slug.
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - modules
+              properties:
+                version:
+                  type: integer
+                  format: int32
+                modules:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: '#/components/schemas/ModuleSettingsPatch'
       responses:
         '200':
           description: Successful response
@@ -3070,8 +3130,15 @@ components:
           description: Up to 5 short selling points, in order.
         branding:
           $ref: '#/components/schemas/ProgramBranding'
+        renewal_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the program renews at all.
         renewal:
-          $ref: '#/components/schemas/ProgramRenewal'
+          allOf:
+          - $ref: '#/components/schemas/ProgramRenewal'
+          readOnly: true
+          description: Only sent when `renewal_enabled` is true.
         level:
           type: string
           enum:
@@ -3672,11 +3739,14 @@ components:
           - checkbox
           - dropdown
           - percentage
+          - custom_option_single
           - custom_option
           description: 'Decides the control: boolean = Yes/No, number, text, radio, checkbox, dropdown,
-            percentage (a number from 0 to 100, decimals allowed). `custom_option` is a dropdown whose choices
-            you type (send them as `custom_options`); it is stored and returned as `dropdown`. A type cannot
-            change once the setting has saved values.'
+            percentage (a number from 0 to 100, decimals allowed). `custom_option_single`
+            takes your own typed choices (send them as `options` or `custom_options`, never a `library_id`).
+            For several choices use a `dropdown` with `multiple: true`. `custom_option` is the older name for a single-choice dropdown of
+            your own choices (stored and returned as `dropdown`). A type cannot change once the setting has
+            saved values.'
         required:
           type: boolean
           default: false
@@ -3685,6 +3755,12 @@ components:
           default: true
           description: The Display switch. `false` hides the setting from the form; the setting itself is
             kept.
+        multiple:
+          type: boolean
+          description: 'More than one option may be picked. Only a `dropdown` is free to choose (default
+            `false`). A `checkbox` is always `true`, a `radio` and
+            `custom_option_single` always `false`; a conflicting value is rejected. Non-choice types
+            take no `multiple`.'
         default:
           description: 'The starting value: a boolean, number, text (a number from 0 to 100 for a percentage), an option code (radio / dropdown),
             or a list of option codes (checkbox). Must match the type; for manual options it must be one
@@ -3799,6 +3875,7 @@ components:
           - checkbox
           - dropdown
           - percentage
+          - custom_option_single
         render:
           type: string
           enum:
@@ -3809,12 +3886,16 @@ components:
           - checkbox_group
           - dropdown
           - percentage_input
+          - custom_single_select
           description: The control to draw.
         required:
           type: boolean
         display:
           type: boolean
           description: 'The Display switch: `false` means the setting is hidden from the form.'
+        multiple:
+          type: boolean
+          description: True when more than one option may be picked (`option_ids` can hold several).
         default:
           nullable: true
         position:
@@ -3835,16 +3916,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SettingOption'
-          description: Manual options from our database, or the library's active options read live from
-            global-settings (served from memory, refreshed in the background and cleared the moment global-settings
-            reports a change). Empty for boolean / number / text.
-        library_error:
-          type: string
-          enum:
-          - not_found
-          - unavailable
-          nullable: true
-          description: Set when the library's options could not be read; the rest of the page still loads.
+          description: Manual options from our database. A library-backed setting returns only its
+            `library_id`; the frontend loads the library's options itself. Empty for boolean / number / text.
         value:
           description: The saved value of a boolean / number / text setting; null until one is saved.
         option_ids:
@@ -3853,13 +3926,6 @@ components:
             type: string
             format: uuid
           description: The saved choice of a radio / checkbox / dropdown setting.
-        missing_option_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: Saved options that are no longer on offer (deactivated, or gone from their library).
-            Warn the admin and let them choose again; they can no longer be chosen.
     ProgramRule:
       type: object
       description: 'A rule leaf''s rule-set summary. The rule engine itself is a front-end component;
@@ -3885,6 +3951,39 @@ components:
         for a radio / checkbox / dropdown. A `null` entry, or an entry with neither field, clears the
         value.'
       properties:
+        value:
+          description: A boolean, number or text (any JSON value; `null` clears).
+        option_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ModuleSettingsPatch:
+      type: object
+      required:
+      - key
+      - settings
+      properties:
+        key:
+          type: string
+          description: The module's key, for example `catalog_pricing.pricing.discount_rules`.
+        settings:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ModuleSettingPatch'
+    ModuleSettingPatch:
+      type: object
+      description: 'One setting, named by `id` or by its `key` in the module (exactly one). `value` is for
+        a boolean / number / text / percentage setting, `option_ids` for a choice. Neither field clears the
+        value.'
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: The setting's key in the module, for example `max_days`.
         value:
           description: A boolean, number or text (any JSON value; `null` clears).
         option_ids:

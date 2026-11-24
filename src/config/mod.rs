@@ -13,9 +13,6 @@ pub struct ApplicationConfig {
     /// calls. Set with `APP__CORS_ALLOWED_ORIGIN`.
     #[serde(default)]
     pub cors_allowed_origin: String,
-    /// The global-settings service: where library-backed settings read their options.
-    #[serde(default)]
-    pub global_settings: GlobalSettingsConfig,
     /// Object storage for the Documents module (S3 or any S3-compatible server such as MinIO).
     #[serde(default)]
     pub storage: StorageConfig,
@@ -111,52 +108,6 @@ impl Default for StorageConfig {
             max_files_per_program: default_storage_max_files_per_program(),
             allowed_content_types: default_storage_allowed_content_types(),
             scan_webhook_secret: String::new(),
-        }
-    }
-}
-
-/// Calls to global-settings are server to server, so they use the service headers
-/// (`X-Client-ID` / `X-Client-Secret`), never the browser's session.
-#[derive(Debug, Deserialize, Clone)]
-pub struct GlobalSettingsConfig {
-    /// Base URL of the global-settings API, e.g. `http://localhost:8000`.
-    #[serde(default = "default_gs_base_url")]
-    pub base_url: String,
-    /// `false` skips every call: a `library_id` is stored as given (not validated) and no
-    /// options are resolved. For environments where global-settings is not reachable.
-    #[serde(default = "default_gs_enabled")]
-    pub enabled: bool,
-    /// Per-call budget. A library read sits on the page-load path, so it is short.
-    #[serde(default = "default_gs_timeout_ms")]
-    pub timeout_ms: u64,
-    /// How long a fetched library (with its options) is reused before it is read again.
-    #[serde(default = "default_gs_cache_seconds")]
-    pub cache_seconds: u64,
-    #[serde(default)]
-    pub client_id: String,
-    #[serde(default)]
-    pub client_secret: String,
-    /// JWT sent as `Authorization: Bearer` on global-settings calls ONLY. Keep it in the
-    /// git-ignored `src/config/config.local.toml` (or `APP__GLOBAL_SETTINGS__TOKEN`), never in config.toml.
-    #[serde(default)]
-    pub token: String,
-}
-
-fn default_gs_base_url() -> String { "http://localhost:8000".to_string() }
-fn default_gs_enabled() -> bool { true }
-fn default_gs_timeout_ms() -> u64 { 1500 }
-fn default_gs_cache_seconds() -> u64 { 30 }
-
-impl Default for GlobalSettingsConfig {
-    fn default() -> Self {
-        Self {
-            base_url: default_gs_base_url(),
-            enabled: default_gs_enabled(),
-            timeout_ms: default_gs_timeout_ms(),
-            cache_seconds: default_gs_cache_seconds(),
-            client_id: String::new(),
-            client_secret: String::new(),
-            token: String::new(),
         }
     }
 }

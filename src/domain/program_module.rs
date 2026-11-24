@@ -45,8 +45,4 @@ pub trait ProgramModuleRepository: Send + Sync {
     /// Every module of the program, enabled or not, parents before children
     /// (shallowest first), then by the program's own `position`.
     async fn list(&self, program_id: Uuid, enabled_only: bool) -> Result<Vec<ProgramModule>, ApplicationError>;
-
-    /// Every global-settings library some live setting reads its options from (used at startup
-    /// to warm the library cache, so the first page load is as fast as the rest).
-    async fn library_ids_in_use(&self) -> Result<Vec<Uuid>, ApplicationError>;
 }

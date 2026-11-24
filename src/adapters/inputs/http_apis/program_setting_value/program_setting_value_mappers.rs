@@ -1,5 +1,8 @@
 use crate::adapters::inputs::shared::parse;
 use crate::application::errors::application_error::ApplicationError;
+use crate::application::usecases::program_setting_value::batch_update_module_settings::{
+    BatchUpdateModuleSettingsInput, ModuleSettingItem, ModuleSettingsInput,
+};
 use crate::application::usecases::program_setting_value::batch_update_setting_values::{
     BatchUpdateSettingValuesInput, BatchUpdateSettingValuesOutput,
 };
@@ -10,7 +13,7 @@ use crate::application::utils::datetime::format_datetime;
 use crate::domain::aep::ResourceIdentifier;
 use crate::domain::program_setting_value::{StoredValue, ValueInput};
 use crate::dto::payloads::json::program_setting_value::{
-    BatchUpdateSettingValuesBodyPayload, BatchUpdateSettingValuesPathPayload, ListSettingValuesPathPayload,
+    BatchUpdateModuleSettingsBodyPayload, BatchUpdateSettingValuesBodyPayload, BatchUpdateSettingValuesPathPayload, ListSettingValuesPathPayload,
     ListSettingValuesQueryPayload,
 };
 use crate::dto::presenters::json::program_setting_value::{
@@ -86,5 +89,40 @@ impl BatchUpdateSettingValuesMapper {
             changed: output.changed,
             results: output.values.into_iter().map(to_presenter).collect(),
         }
+    }
+}
+
+pub struct BatchUpdateModuleSettingsMapper;
+
+impl BatchUpdateModuleSettingsMapper {
+    pub fn input(
+        path: BatchUpdateSettingValuesPathPayload,
+        body: BatchUpdateModuleSettingsBodyPayload,
+        actor: String,
+    ) -> Result<BatchUpdateModuleSettingsInput, ApplicationError> {
+        let mut modules = Vec::with_capacity(body.modules.len());
+        for module in body.modules {
+            let mut settings = Vec::with_capacity(module.settings.len());
+            for item in module.settings {
+                settings.push(ModuleSettingItem {
+                    id: parse::optional_uuid("settings[].id", item.id.as_deref())?,
+                    key: item.key.map(|k| k.trim().to_string()).filter(|k| !k.is_empty()),
+                    value: ValueInput {
+                        value: item.value,
+                        option_ids: item
+                            .option_ids
+                            .map(|ids| ids.iter().map(|raw| parse::uuid("option_ids", raw)).collect::<Result<Vec<_>, _>>())
+                            .transpose()?,
+                    },
+                });
+            }
+            modules.push(ModuleSettingsInput { key: module.key.trim().to_string(), settings });
+        }
+        Ok(BatchUpdateModuleSettingsInput {
+            program: ResourceIdentifier::parse(&path.program),
+            version: body.version,
+            modules,
+            actor,
+        })
     }
 }

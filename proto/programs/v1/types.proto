@@ -164,7 +164,10 @@ message Program {
   // Up to 5 short selling points, in order.
   repeated string highlights = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   ProgramBranding branding = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  ProgramRenewal renewal = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Only set when `renewal_enabled` is true.
+  optional ProgramRenewal renewal = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // Whether the program renews at all (false until turned on).
+  bool renewal_enabled = 19 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // The badge of a program. In a request a sent part replaces that part (an empty text clears it).
@@ -185,6 +188,7 @@ message ProgramRenewal {
   // Days before the term ends.
   optional int32 reminder_days = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional bool auto_renew = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  reserved 5;
 }
 
 // The highlights of an update: present replaces the whole list (an empty list clears it).
@@ -278,16 +282,16 @@ message ProgramSetting {
   optional string options_source = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string library_id = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   repeated SettingOption options = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  // "not_found" or "unavailable" when the library's options could not be read.
-  optional string library_error = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  reserved 12;
   // The saved value of a boolean / number / text setting; unset until one is saved.
   optional google.protobuf.Value value = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // The saved choice of a radio / checkbox / dropdown setting (option ids).
   repeated string option_ids = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  // Saved options that are no longer on offer (deactivated, or gone from their library).
-  repeated string missing_option_ids = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  reserved 15;
   // The Display switch: false means the setting is hidden from the form.
   bool display = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // True when more than one option may be picked.
+  bool multiple = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message SettingOption {
@@ -340,8 +344,9 @@ message SettingConfig {
   // Present for an existing setting.
   optional string id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  // boolean | number | text | radio | checkbox | dropdown | percentage, or custom_option (a dropdown whose
-  // choices you type in `custom_options`; stored and returned as dropdown).
+  // boolean | number | text | radio | checkbox | dropdown | percentage | custom_option_single (your own typed
+  // choices, pick one; for several use dropdown with multiple=true). custom_option is the older
+  // name for a single-choice dropdown of your own choices (stored and returned as dropdown).
   string type = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   optional bool required = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // The starting value: a boolean, number, text, option code, or list of option codes.
@@ -355,6 +360,9 @@ message SettingConfig {
   // The custom choices of a radio / checkbox / dropdown as plain labels (the code is made from each
   // label). The same as `options`; send one of the two, not both, and not with a library_id.
   repeated string custom_options = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // More than one option may be picked. Only a dropdown is free to choose (default false); a checkbox and
+  // checkbox is always true, a radio and custom_option_single always false.
+  optional bool multiple = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
 message OptionConfig {
@@ -413,6 +421,7 @@ message CreateProgramRequest {
   repeated string highlights = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramBranding branding = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramRenewal renewal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional bool renewal_enabled = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message CreateProgramResponse {
   Program program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -437,6 +446,7 @@ message UpdateProgramRequest {
   optional HighlightList highlights = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramBranding branding = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramRenewal renewal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional bool renewal_enabled = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message UpdateProgramResponse {
   Program program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -558,8 +568,7 @@ message ListProgramModulesRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Only modules the program has switched on. Defaults to true.
   optional bool enabled_only = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // Fill library-backed settings with their library's options. Defaults to true.
-  optional bool include_options = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  reserved 4;
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
@@ -615,6 +624,39 @@ message BatchUpdateSettingValuesRequest {
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
+// One module's settings in a BatchUpdateModuleSettings request.
+message ModuleSettingsUpdate {
+  // The module's key, e.g. catalog_pricing.pricing.discount_rules.
+  string key = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  repeated ModuleSettingUpdate settings = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+
+// One setting, named by `setting_id` or by its `key` inside the module (exactly one). `value` is for
+// boolean / number / text / percentage, `option_ids` for a choice. Neither (or `clear`) clears it.
+message ModuleSettingUpdate {
+  optional string setting_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string key = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional google.protobuf.Value value = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  repeated string option_ids = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  bool clear = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// Saves settings of several modules in ONE transaction.
+message BatchUpdateModuleSettingsRequest {
+  string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The config_version as the caller last read it (ABORTED when stale); unset skips the check.
+  optional int32 version = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  repeated ModuleSettingsUpdate modules = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
+  string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+}
+message BatchUpdateModuleSettingsResponse {
+  int32 version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // How many values actually changed (a value sent unchanged is not a change).
+  int32 changed = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated SettingValue results = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
 message BatchUpdateSettingValuesResponse {
   int32 version = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // How many values actually changed (a value sent unchanged is not a change).

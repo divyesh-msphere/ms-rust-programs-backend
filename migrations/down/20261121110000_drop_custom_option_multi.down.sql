@@ -1,0 +1,1 @@
+-- no-op: custom_option_multi is not restored

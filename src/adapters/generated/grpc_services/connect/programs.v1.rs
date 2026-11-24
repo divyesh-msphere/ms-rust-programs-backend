@@ -184,6 +184,18 @@ pub type OwnedListSettingValuesResponseView = ::buffa::view::OwnedView<
         'static,
     >,
 >;
+///Shorthand for `OwnedView<BatchUpdateModuleSettingsRequestView<'static>>`.
+pub type OwnedBatchUpdateModuleSettingsRequestView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsRequestView<
+        'static,
+    >,
+>;
+///Shorthand for `OwnedView<BatchUpdateModuleSettingsResponseView<'static>>`.
+pub type OwnedBatchUpdateModuleSettingsResponseView = ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsResponseView<
+        'static,
+    >,
+>;
 ///Shorthand for `OwnedView<BatchUpdateSettingValuesRequestView<'static>>`.
 pub type OwnedBatchUpdateSettingValuesRequestView = ::buffa::view::OwnedView<
     crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateSettingValuesRequestView<
@@ -1408,6 +1420,48 @@ impl ::connectrpc::Encodable<
 >
 for ::buffa::view::OwnedView<
     crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::ListSettingValuesResponseView<
+        'static,
+    >,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self.reborrow(), codec)
+    }
+    /// An `OwnedView` still holds the buffer it was decoded from, so
+    /// its large fields can be handed to the response body by
+    /// reference count instead of copied. The bare view impl above
+    /// cannot do this: it has borrows but no buffer to name.
+    fn encode_segments(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::connectrpc::EncodedBody, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body_segments(
+            self.reborrow(),
+            self.bytes(),
+            codec,
+        )
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsResponse,
+>
+for crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsResponseView<
+    '_,
+> {
+    fn encode(
+        &self,
+        codec: ::connectrpc::CodecFormat,
+    ) -> ::std::result::Result<::buffa::bytes::Bytes, ::connectrpc::ConnectError> {
+        ::connectrpc::__codegen::encode_view_body(self, codec)
+    }
+}
+impl ::connectrpc::Encodable<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsResponse,
+>
+for ::buffa::view::OwnedView<
+    crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsResponseView<
         'static,
     >,
 > {
@@ -3756,6 +3810,12 @@ pub const PROGRAMS_SERVICE_LIST_SETTING_VALUES_SPEC: ::connectrpc::Spec = ::conn
         ::connectrpc::StreamType::Unary,
     )
     .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
+/// Static [`Spec`](::connectrpc::Spec) for the `BatchUpdateModuleSettings` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
+pub const PROGRAMS_SERVICE_BATCH_UPDATE_MODULE_SETTINGS_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
+        "/programs.v1.ProgramsService/BatchUpdateModuleSettings",
+        ::connectrpc::StreamType::Unary,
+    )
+    .with_idempotency_level(::connectrpc::IdempotencyLevel::Unknown);
 /// Static [`Spec`](::connectrpc::Spec) for the `BatchUpdateSettingValues` RPC, as seen by the server; the generated client passes it with [`origin`](::connectrpc::Spec::origin) `Client` (compare across sides with [`Spec::same_method`](::connectrpc::Spec::same_method)).
 pub const PROGRAMS_SERVICE_BATCH_UPDATE_SETTING_VALUES_SPEC: ::connectrpc::Spec = ::connectrpc::Spec::server(
         "/programs.v1.ProgramsService/BatchUpdateSettingValues",
@@ -4514,6 +4574,29 @@ pub trait ProgramsService: Send + Sync + 'static {
         Output = ::connectrpc::ServiceResult<
             impl ::connectrpc::Encodable<
                 crate::adapters::generated::grpc_services::buffa::programs::v1::ListSettingValuesResponse,
+            > + Send + use<'a, Self>,
+        >,
+    > + Send;
+    /// Handle the BatchUpdateModuleSettings RPC.
+    ///
+    /// `'a` lets the response body borrow from `&self` (e.g. server-resident state).
+    ///
+    /// `request` is borrowed from the request body and is valid for the
+    /// duration of the call; message fields are read directly on it
+    /// (zero-copy). The response cannot borrow from `request` — use
+    /// `.to_owned_message()` (or copy the specific fields) for anything
+    /// returned, stored, or moved into `tokio::spawn`.
+    fn batch_update_module_settings<'a>(
+        &'a self,
+        ctx: ::connectrpc::RequestContext,
+        request: ::connectrpc::ServiceRequest<
+            '_,
+            crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsRequest,
+        >,
+    ) -> impl ::std::future::Future<
+        Output = ::connectrpc::ServiceResult<
+            impl ::connectrpc::Encodable<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsResponse,
             > + Send + use<'a, Self>,
         >,
     > + Send;
@@ -6322,6 +6405,35 @@ impl<S: ProgramsService> ProgramsServiceExt for S {
             .with_spec(PROGRAMS_SERVICE_LIST_SETTING_VALUES_SPEC)
             .route_view(
                 PROGRAMS_SERVICE_SERVICE_NAME,
+                "BatchUpdateModuleSettings",
+                {
+                    let svc = ::std::sync::Arc::clone(&self);
+                    ::connectrpc::view_handler_fn(move |
+                        ctx,
+                        req: ::buffa::view::OwnedView<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsRequestView<
+                                'static,
+                            >,
+                        >,
+                        format|
+                    {
+                        let svc = ::std::sync::Arc::clone(&svc);
+                        async move {
+                            let sreq = ::connectrpc::ServiceRequest::<
+                                crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsRequest,
+                            >::from_parts(req.reborrow(), req.bytes());
+                            svc.batch_update_module_settings(ctx, sreq)
+                                .await?
+                                .encode::<
+                                    crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsResponse,
+                                >(format)
+                        }
+                    })
+                },
+            )
+            .with_spec(PROGRAMS_SERVICE_BATCH_UPDATE_MODULE_SETTINGS_SPEC)
+            .route_view(
+                PROGRAMS_SERVICE_SERVICE_NAME,
                 "BatchUpdateSettingValues",
                 {
                     let svc = ::std::sync::Arc::clone(&self);
@@ -8115,6 +8227,12 @@ impl<T: ProgramsService> ::connectrpc::Dispatcher for ProgramsServiceServer<T> {
                         .with_spec(PROGRAMS_SERVICE_LIST_SETTING_VALUES_SPEC),
                 )
             }
+            "BatchUpdateModuleSettings" => {
+                Some(
+                    ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
+                        .with_spec(PROGRAMS_SERVICE_BATCH_UPDATE_MODULE_SETTINGS_SPEC),
+                )
+            }
             "BatchUpdateSettingValues" => {
                 Some(
                     ::connectrpc::dispatcher::codegen::MethodDescriptor::unary(false)
@@ -8817,6 +8935,28 @@ impl<T: ProgramsService> ::connectrpc::Dispatcher for ProgramsServiceServer<T> {
                         .await?
                         .encode::<
                             crate::adapters::generated::grpc_services::buffa::programs::v1::ListSettingValuesResponse,
+                        >(format)
+                })
+            }
+            "BatchUpdateModuleSettings" => {
+                let svc = ::std::sync::Arc::clone(&self.inner);
+                Box::pin(async move {
+                    let body = ::connectrpc::dispatcher::codegen::request_proto_bytes::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsRequest,
+                    >(request.encoded()?, format)?;
+                    let req: crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsRequestView<
+                        '_,
+                    > = ::connectrpc::dispatcher::codegen::decode_borrowed_request_view(
+                        &body,
+                        ctx.decode_options(),
+                    )?;
+                    let req = ::connectrpc::ServiceRequest::<
+                        crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsRequest,
+                    >::from_parts(&req, &body);
+                    svc.batch_update_module_settings(ctx, req)
+                        .await?
+                        .encode::<
+                            crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsResponse,
                         >(format)
                 })
             }
@@ -10900,6 +11040,51 @@ where
                 &self.transport,
                 &self.config,
                 PROGRAMS_SERVICE_LIST_SETTING_VALUES_SPEC
+                    .with_origin(::connectrpc::SpecOrigin::Client),
+                request,
+                options,
+            )
+            .await
+    }
+    /// Call the BatchUpdateModuleSettings RPC. Sends a request to /programs.v1.ProgramsService/BatchUpdateModuleSettings.
+    pub async fn batch_update_module_settings(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsRequest,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        self.batch_update_module_settings_with_options(
+                request,
+                ::connectrpc::client::CallOptions::default(),
+            )
+            .await
+    }
+    /// Call the BatchUpdateModuleSettings RPC with explicit per-call options. Options override [`ClientConfig`](::connectrpc::client::ClientConfig) defaults.
+    pub async fn batch_update_module_settings_with_options(
+        &self,
+        request: crate::adapters::generated::grpc_services::buffa::programs::v1::BatchUpdateModuleSettingsRequest,
+        options: ::connectrpc::client::CallOptions,
+    ) -> Result<
+        ::connectrpc::client::UnaryResponse<
+            ::buffa::view::OwnedView<
+                crate::adapters::generated::grpc_services::buffa::programs::v1::__buffa::view::BatchUpdateModuleSettingsResponseView<
+                    'static,
+                >,
+            >,
+        >,
+        ::connectrpc::ConnectError,
+    > {
+        ::connectrpc::client::call_unary(
+                &self.transport,
+                &self.config,
+                PROGRAMS_SERVICE_BATCH_UPDATE_MODULE_SETTINGS_SPEC
                     .with_origin(::connectrpc::SpecOrigin::Client),
                 request,
                 options,

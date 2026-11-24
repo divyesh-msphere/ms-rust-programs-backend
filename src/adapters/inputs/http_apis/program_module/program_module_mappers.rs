@@ -21,6 +21,7 @@ fn setting_to_presenter(setting: ProgramSetting) -> ProgramSettingPresenter {
         render: setting.field_type.render().to_string(),
         required: setting.required,
         display: setting.display,
+        multiple: setting.multiple,
         default_value: setting.default_value,
         position: setting.position,
         options_source: setting.options_source.map(|s| s.as_str().to_string()),
@@ -36,10 +37,8 @@ fn setting_to_presenter(setting: ProgramSetting) -> ProgramSettingPresenter {
                 active: o.active,
             })
             .collect(),
-        library_error: setting.library_error,
         value: setting.value,
         option_ids: setting.option_ids.into_iter().map(|id| id.to_string()).collect(),
-        missing_option_ids: setting.missing_option_ids.into_iter().map(|id| id.to_string()).collect(),
     }
 }
 
@@ -85,7 +84,6 @@ impl ListProgramModulesMapper {
         Ok(ListProgramModulesInput {
             program: ResourceIdentifier::parse(&path.program),
             enabled_only: query.enabled_only.unwrap_or(true),
-            include_options: query.include_options.unwrap_or(true),
         })
     }
 

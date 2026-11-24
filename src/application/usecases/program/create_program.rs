@@ -1,7 +1,5 @@
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::interface::UseCase;
-use crate::application::services::library_options::{resolve_options, validate_libraries};
-use crate::domain::library_catalog::LibraryCatalog;
 use crate::domain::program::{
     Branding, DEFAULT_PROGRAM_LEVEL, NewProgram, Program, ProgramRepository, Renewal, clean_about, clean_branding,
     clean_highlights, validate_level, validate_renewal, validate_slug,
@@ -16,12 +14,11 @@ const MAX_NAME_LEN: usize = 120;
 
 pub struct CreateProgramUseCase {
     program_repository: Arc<dyn ProgramRepository>,
-    library_catalog: Arc<dyn LibraryCatalog>,
 }
 
 impl CreateProgramUseCase {
-    pub fn new(program_repository: Arc<dyn ProgramRepository>, library_catalog: Arc<dyn LibraryCatalog>) -> Self {
-        Self { program_repository, library_catalog }
+    pub fn new(program_repository: Arc<dyn ProgramRepository>) -> Self {
+        Self { program_repository }
     }
 }
 
@@ -79,8 +76,6 @@ impl UseCase<CreateProgramOutput, CreateProgramInput> for CreateProgramUseCase {
             modules.push(change);
         }
         validate_changes(&modules)?;
-        // Libraries are checked BEFORE the transaction opens: no outside call runs inside one.
-        validate_libraries(&self.library_catalog, &modules).await?;
 
         let (program, modules) = self
             .program_repository
@@ -99,9 +94,6 @@ impl UseCase<CreateProgramOutput, CreateProgramInput> for CreateProgramUseCase {
             })
             .instrument(info_span!("CreateProgramUseCase::create"))
             .await?;
-
-        let mut modules = modules;
-        resolve_options(&self.library_catalog, &mut modules).await;
 
         Ok(CreateProgramOutput { program, modules })
     }

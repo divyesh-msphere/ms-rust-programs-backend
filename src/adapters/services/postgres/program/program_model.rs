@@ -17,6 +17,7 @@ pub struct ProgramDbModel {
     pub renewal_grace_days: Option<i32>,
     pub renewal_reminder_days: Option<i32>,
     pub auto_renew: bool,
+    pub renewal_enabled: bool,
     pub level: String,
     pub active: bool,
     pub config_version: i32,
