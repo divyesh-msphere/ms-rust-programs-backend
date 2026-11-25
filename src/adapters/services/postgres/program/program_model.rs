@@ -10,6 +10,7 @@ pub struct ProgramDbModel {
     pub description: Option<String>,
     pub about: Option<String>,
     pub highlights: Vec<String>,
+    pub domain: Vec<String>,
     pub brand_color: Option<String>,
     pub text_color: Option<String>,
     pub logo_icon: Option<String>,

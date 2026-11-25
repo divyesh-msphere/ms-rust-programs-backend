@@ -25,15 +25,17 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
 /// The Enrolled Stores page: newest first, with the "All websites" filter, status chips, a store-name
 /// search and the "N STORES" count (`total_size`).
 #[instrument(skip(data))]
-#[get("/{program}/enrollments")]
+#[get("/{program}/stores")]
 pub async fn list_enrollments(
     data: web::Data<AppState>,
     path: web::Path<ListEnrollmentsPathPayload>,
     query: web::Query<ListEnrollmentsQueryPayload>,
+    // The same query string as raw pairs: filter terms can arrive as plain parameters.
+    pairs: web::Query<Vec<(String, String)>>,
 ) -> Result<HttpResponse, ErrorResponse> {
     info!("ListEnrollmentsController called");
 
-    let usecase_input = ListEnrollmentsMapper::input(path.into_inner(), query.into_inner())
+    let usecase_input = ListEnrollmentsMapper::input(path.into_inner(), query.into_inner(), pairs.into_inner())
         .map_err(ErrorResponse::map_response_error)?;
     let result = data
         .use_cases
@@ -48,7 +50,7 @@ pub async fn list_enrollments(
 
 /// "Enroll store": an admin enrolls a store directly, without an application.
 #[instrument(skip(data, req, body))]
-#[post("/{program}/enrollments")]
+#[post("/{program}/stores")]
 pub async fn create_enrollment(
     req: HttpRequest,
     data: web::Data<AppState>,
@@ -74,7 +76,7 @@ pub async fn create_enrollment(
 
 /// "Bulk enroll": many stores in one request; every item gets its own outcome.
 #[instrument(skip(data, req, body))]
-#[post("/{program}/enrollments:batchCreate")]
+#[post("/{program}/stores:batchCreate")]
 pub async fn batch_create_enrollments(
     req: HttpRequest,
     data: web::Data<AppState>,
@@ -97,7 +99,7 @@ pub async fn batch_create_enrollments(
 }
 
 #[instrument(skip(data))]
-#[get("/{program}/enrollments/{enrollment}")]
+#[get("/{program}/stores/{store}")]
 pub async fn get_enrollment(
     data: web::Data<AppState>,
     path: web::Path<GetEnrollmentPayload>,
@@ -118,7 +120,7 @@ pub async fn get_enrollment(
 
 /// The status dropdown (and the customer group).
 #[instrument(skip(data, req, body))]
-#[patch("/{program}/enrollments/{enrollment}")]
+#[patch("/{program}/stores/{store}")]
 pub async fn update_enrollment(
     req: HttpRequest,
     data: web::Data<AppState>,

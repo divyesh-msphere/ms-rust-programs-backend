@@ -58,9 +58,9 @@ tags:
 - name: publications
   x-summary: Publications
   description: A published, immutable bundle the pricing service loads. Create returns an operation.
-- name: enrollments
-  x-summary: Enrollments
-  description: A store enrolled in a program. Created by the system when the last signoff is approved.
+- name: stores
+  x-summary: Stores
+  description: A store enrolled in a program on one website. Created by an admin, in bulk, or by the system when an application is approved.
 - name: document-folders
   x-summary: Document Folders
   description: A folder of program documents.
@@ -154,11 +154,25 @@ paths:
           slug) and `description` take an operator, `field.operator=value` (default `contains`):
           `contains`, `not_contains`, `equals`, `not_equals`, `starts_with`, `ends_with`, `is_empty`,
           `is_not_empty` (the last two take no value and only apply to `description`). List terms take
-          one value or `[a,b]` (ORed; the comma only separates list items): `domain` (website ids or
-          names with a live - pending, active or suspended - enrollment), `state` (`active` or
+          one value or `[a,b]` (ORed; the comma only separates list items): `domain` (`domains` also works; matches
+          the stored domain list of a program, or website ids or names with a live - pending, active or suspended - enrollment), `state` (`active` or
           `inactive`, the live switch; `status` is accepted as an alias) and `level` (`user`, `organization`, `location`).
-          Write `!=` instead of `=` to exclude: `status!=active`, `domain!=[a,b]`, `level!=user`. An empty value
+          Write `!=` instead of `=` to exclude: `status!=active`, `domain!=[a,b]`, `level!=user`. The operator
+          form works too: `status.not_equals=active` (also `.not_equal`), `domain.not_equals=[a,b]`, `level.equals=user`. An empty value
           (`domain=`, `domain=[]`) is ignored.'
+      - name: order_by
+        in: query
+        required: false
+        schema:
+          type: string
+        examples:
+          name:
+            value: name
+          name_desc:
+            value: name desc
+        description: 'Sorts the rows by name, case-insensitive: `name` or `name asc` (A to Z) and
+          `name desc` (Z to A); `-name` also means descending. Omitted keeps creation order. Page with
+          `next_page_token` as usual, the sort carries across pages; any other field returns 400.'
       responses:
         '200':
           $ref: '#/components/responses/ProgramsResponse'
@@ -217,6 +231,13 @@ paths:
                     maxLength: 100
                   description: Short selling points shown next to the summary. Empty items are dropped; more
                     than 5 returns 422.
+                domain:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    maxLength: 253
+                  description: The program's domains, e.g. domain1 and domain2. Trimmed, empty and repeated items are dropped.
                 branding:
                   $ref: '#/components/schemas/ProgramBranding'
                 renewal:
@@ -335,6 +356,13 @@ paths:
                     type: string
                     maxLength: 100
                   description: Replaces the whole list (an empty list clears it).
+                domain:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    maxLength: 253
+                  description: Replaces the whole domain list (an empty list clears it).
                 branding:
                   $ref: '#/components/schemas/ProgramBranding'
                 renewal:
@@ -1091,7 +1119,7 @@ paths:
           description: The program has operational history; archive it instead.
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/enrollments:
+  /programs/{program}/stores:
     parameters:
     - name: program
       in: path
@@ -1100,39 +1128,53 @@ paths:
         type: string
       description: The program's ID (UUID) or its slug.
     get:
-      operationId: ListEnrollments
+      operationId: ListStores
       summary: List a program's enrolled stores
       tags:
-      - enrollments
-      description: 'The Enrolled Stores page: newest first, paged by id. Filters combine: `website_id`
-        (All websites), `status` chips (comma-separated), `store` (name prefix, case-insensitive). `total_size`
-        is the "N STORES" count for the active filters. One table, no joins.'
+      - stores
+      description: 'The Enrolled Stores page: newest first, paged by id. `search` is the search box and `filter`
+        holds the operators and lists (website, status chips, BU location, customer name); they combine.
+        `total_size` is the "N STORES" count for the active filters. One table, no joins.'
       parameters:
       - $ref: '#/components/parameters/maxPageSize'
       - $ref: '#/components/parameters/pageToken'
-      - name: website_id
+      - name: search
         in: query
         required: false
         schema:
           type: string
-        description: Only this website.
-      - name: status
+        examples:
+          any:
+            value: acme
+          one_field:
+            value: bu_location=BU-1
+        description: 'The search box: bare text matches the BU location code, the website (code, name or
+          domain) and the customer name, case-insensitive; `bu_location=abc`, `website=abc` or
+          `customer_name=abc` match one field. Always a contains match; operators live in `filter`.
+          An empty value is ignored.'
+      - name: filter
         in: query
         required: false
         schema:
           type: string
-        example: active,suspended
-        description: 'Only these statuses, comma-separated: pending, active, suspended, ended. Omit for
-          all.'
-      - name: store
-        in: query
-        required: false
-        schema:
-          type: string
-        description: A prefix of the store name.
+        examples:
+          text:
+            value: bu_location.starts_with=BU&customer_name.is_empty
+          lists:
+            value: website=[w1,w2]&status=[pending,active]
+          exclude:
+            value: status!=ended
+        description: 'Terms joined with `&`, all ANDed. Each term can also be sent as its own query parameter,
+          so `?status=active&website=w1` and `?filter=status=active%26website=w1` are the same. Text terms
+          `bu_location` (its code), `website` (code, name or domain) and `customer_name` take an operator,
+          `field.operator=value` (default `contains`): `contains`, `not_contains`, `equals`, `not_equals`,
+          `starts_with`, `ends_with`, and `is_empty` / `is_not_empty` (no value, customer_name only). `website`
+          and `status` without an operator take one value or `[a,b]` and match exactly (ORed); `status` is
+          one of pending, active, suspended, ended. Write `!=` (or `.not_equals`) to exclude: `status!=ended`,
+          `website.not_equals=w1`. An empty value (`website=`, `status=[]`) is ignored.'
       responses:
         '200':
-          $ref: '#/components/responses/EnrollmentsResponse'
+          $ref: '#/components/responses/StoresResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -1140,15 +1182,15 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     post:
-      operationId: CreateEnrollment
+      operationId: CreateStore
       summary: Enroll a store
       tags:
-      - enrollments
-      description: An admin enrolls a store directly, without an application. `status` is `active` (default)
-        or `pending`. A store with a live enrollment on the website gets 409; after `ended` it can be
-        enrolled again. Without `store_name` the store shows as unresolved. The Overview counters (`active_enrollments`,
-        `enrollments_total`) move in the same transaction, together with an audit entry and an outbox
-        event.
+      - stores
+      description: An admin enrolls a store directly, without an application. Send the `bu_location`
+        (just its `code`) and the `website` (`code` required, `name` and `domain` optional);
+        `customer_name` is optional. `status` is `active` (default) or `pending`. A store with a live
+        enrollment on the website gets 409; after `ended` it can be enrolled again. The Overview counters (`active_enrollments`, `enrollments_total`)
+        move in the same transaction, together with an audit entry and an outbox event.
       parameters:
       - $ref: '#/components/parameters/clientId'
       - name: X-User-Id
@@ -1163,14 +1205,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Enrollment'
+              $ref: '#/components/schemas/Store'
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Enrollment'
+                $ref: '#/components/schemas/Store'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -1181,17 +1223,17 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/enrollments:batchCreate:
+  /programs/{program}/stores:batchCreate:
     post:
-      operationId: :BatchCreateEnrollments
+      operationId: :BatchCreateStores
       summary: Bulk enroll stores
       tags:
-      - enrollments
-      description: 'Enrolls up to 500 stores with one statement. Every item gets its own outcome, in the
-        order sent: `created`, `already_enrolled` (live enrollment exists, or the store is listed twice)
-        or `failed` (invalid item). One bad or duplicate item never fails the rest. One audit entry and
-        one outbox event cover the whole batch. The Overview counters (`active_enrollments`, `enrollments_total`)
-        move in the same transaction, together with an audit entry and an outbox event.'
+      - stores
+      description: 'Enrolls up to 500 stores with one statement; each item has the same shape as a create
+        request. Every item gets its own outcome, in the order sent: `created`, `already_enrolled` (live
+        enrollment exists, or the store is listed twice) or `failed` (invalid item). One bad or duplicate
+        item never fails the rest. One audit entry and one outbox event cover the whole batch. The Overview
+        counters (`active_enrollments`, `enrollments_total`) move in the same transaction.'
       parameters:
       - name: program
         in: path
@@ -1222,19 +1264,16 @@ paths:
                   items:
                     type: object
                     required:
-                    - store_id
-                    - website_id
+                    - bu_location
+                    - website
                     properties:
-                      store_id:
+                      bu_location:
+                        $ref: '#/components/schemas/BuLocation'
+                      website:
+                        $ref: '#/components/schemas/StoreWebsite'
+                      customer_name:
                         type: string
-                      store_name:
-                        type: string
-                      website_id:
-                        type: string
-                      website_name:
-                        type: string
-                      customer_group:
-                        type: string
+                        maxLength: 64
                       status:
                         type: string
                         enum:
@@ -1246,14 +1285,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BatchCreateEnrollmentsResponse'
+                $ref: '#/components/schemas/BatchCreateStoresResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/enrollments/{enrollment}:
+  /programs/{program}/stores/{store}:
     parameters:
     - name: program
       in: path
@@ -1261,26 +1300,26 @@ paths:
       schema:
         type: string
       description: The program's ID (UUID) or its slug.
-    - name: enrollment
+    - name: store
       in: path
       required: true
       schema:
         type: string
         format: uuid
-      description: ID of the enrollment.
+      description: ID of the store.
     get:
-      operationId: GetEnrollment
-      summary: Get an enrollment
+      operationId: GetStore
+      summary: Get a store
       tags:
-      - enrollments
-      description: One enrollment. Its contracts will be listed here when agreements are built.
+      - stores
+      description: One store. Its contracts will be listed here when agreements are built.
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Enrollment'
+                $ref: '#/components/schemas/Store'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -1288,16 +1327,18 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
-      operationId: UpdateEnrollment
-      summary: Change an enrollment's status or group
+      operationId: UpdateStore
+      summary: Change a store's status, customer name or business unit
       tags:
-      - enrollments
-      description: 'The status dropdown and the customer group. Allowed status changes: pending -> active,
-        active <-> suspended, anything -> ended; any other change gives 409. `ended` is final (enroll
-        the store again instead). Sending the current status is not a change. An empty `customer_group`
-        clears it. A request that changes nothing writes nothing. The Overview counters (`active_enrollments`,
-        `enrollments_total`) move in the same transaction, together with an audit entry and an outbox
-        event.'
+      - stores
+      description: 'The status dropdown and the customer name. Any status can move to any other (pending,
+        active, suspended, ended), so a store sent back to pending, or an ended one, can be moved again.
+        Going live again is refused with 409 when the store already has another pending, active or
+        suspended enrollment on the website. Sending the current status is not a change. An empty
+        `customer_name` clears it. `bu_location.bu` ({code, name}) replaces the business unit of the store and
+        `bu_location.bu: null` clears it (the parent of its website in the store discounts changes with it). A request that changes nothing writes nothing. The Overview counters
+        (`active_enrollments`, `enrollments_total`) move in the same transaction, together with an
+        audit entry and an outbox event.'
       parameters:
       - name: X-User-Id
         in: header
@@ -1311,17 +1352,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Enrollment'
+              $ref: '#/components/schemas/Store'
           application/merge-patch+json:
             schema:
-              $ref: '#/components/schemas/Enrollment'
+              $ref: '#/components/schemas/Store'
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Enrollment'
+                $ref: '#/components/schemas/Store'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -1346,7 +1387,9 @@ paths:
       tags:
       - store-discounts
       description: Each enrolled store (pending, active or suspended) with its discount resolved through
-        Program -> Domain -> Store, field by field, and where each field came from. Newest first, paged
+        Program -> Business unit -> Website -> Store, field by field, and where each field came from. A
+        website with nothing of its own takes the discount of its business unit (the parent), and the row
+        says so with `inherited_from_parent`. Newest first, paged
         by id; `total_size` counts the stores matching the filters. Only the page is resolved, with a
         few indexed lookups. The program must have the Store Discounts Control Panel module switched on
         (400 otherwise).
@@ -1359,6 +1402,12 @@ paths:
         schema:
           type: string
         description: Only this website (All websites = omit).
+      - name: bu_unit_code
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Only the stores of this business unit (the parent of the websites).
       - name: store
         in: query
         required: false
@@ -1534,8 +1583,8 @@ paths:
       summary: The levels above the stores
       tags:
       - store-discount-levels
-      description: The program default and every website that sets something of its own. Both are returned
-        whole, never paged. The program must have the Store Discounts Control Panel module switched on
+      description: The program default, every business unit (the parents) and every website (the children)
+        that sets something of its own. All are returned whole, never paged. The program must have the Store Discounts Control Panel module switched on
         (400 otherwise).
       responses:
         '200':
@@ -1608,7 +1657,67 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /programs/{program}/store-discount-levels/domains/{website_id}:
+  /programs/{program}/store-discount-levels/business-units/{bu_unit_code}:
+    parameters:
+    - name: program
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The program's ID (UUID) or its slug.
+    - name: bu_unit_code
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      description: The business unit (the parent of its websites) whose level is changed.
+    patch:
+      operationId: UpdateBusinessUnitDiscountLevel
+      summary: Edit a business unit's discount (the parent)
+      tags:
+      - store-discount-levels
+      description: 'Changes the BUSINESS UNIT level, field by field. Every website that carries this
+        `bu_unit_code` and sets nothing of its own takes it automatically, flagged `inherited_from_parent`,
+        including websites enrolled later; a website that set its own value keeps it. `discount: null`
+        clears it. Nothing is copied to the websites: the discount is worked out when it is read. The
+        program must have the Store Discounts Control Panel module switched on (400 otherwise). It is a
+        configuration change: it bumps `config_version`, writes an audit entry and an outbox event, in one
+        transaction. A request that changes nothing writes nothing.'
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+        description: The authenticated user, forwarded by the gateway. Recorded as the actor in the audit
+          log; `system` when absent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBusinessUnitDiscountLevelBody'
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UpdateBusinessUnitDiscountLevelBody'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscountLevel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /programs/{program}/store-discount-levels/websites/{website_id}:
     parameters:
     - name: program
       in: path
@@ -1623,14 +1732,16 @@ paths:
         type: string
         minLength: 1
         maxLength: 64
-      description: The website (domain) whose level is changed.
+      description: The website (the child) whose level is changed.
     patch:
-      operationId: UpdateDomainDiscountLevel
-      summary: Edit a website's discount
+      operationId: UpdateWebsiteDiscountLevel
+      summary: Edit a website's discount (the child)
       tags:
       - store-discount-levels
-      description: 'Changes the DOMAIN level of one website, field by field. Every store of that website
-        without its own value inherits it. `discount: null` clears it. The program must have the Store
+      description: 'Changes the WEBSITE level of one website, field by field. It wins over the business
+        unit (the parent), and only for this website; a field it does not set is still taken from the parent.
+        Every store of the website without its own value inherits it. `discount: null` clears it, and the
+        website falls back to its parent. The old path `domains/{website_id}` still works. The program must have the Store
         Discounts Control Panel module switched on (400 otherwise). It is a configuration change: it bumps
         `config_version` (the module requires publish, so the Overview shows "unpublished changes"), writes
         an audit entry and an outbox event, in one transaction. A request that changes nothing writes
@@ -1648,10 +1759,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateDomainDiscountLevelBody'
+              $ref: '#/components/schemas/UpdateWebsiteDiscountLevelBody'
           application/merge-patch+json:
             schema:
-              $ref: '#/components/schemas/UpdateDomainDiscountLevelBody'
+              $ref: '#/components/schemas/UpdateWebsiteDiscountLevelBody'
       responses:
         '200':
           description: Successful response
@@ -2789,7 +2900,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    EnrollmentsResponse:
+    StoresResponse:
       description: Successful response
       content:
         application/json:
@@ -2797,22 +2908,22 @@ components:
             type: object
             x-aep-resource:
               patterns:
-              - programs/{program}/enrollments/{enrollment}
-              singular: enrollment
-              plural: enrollments
-              type: msrestapi.com/programs/enrollment
+              - programs/{program}/stores/{store}
+              singular: store
+              plural: stores
+              type: msrestapi.com/programs/store
             properties:
               results:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Enrollment'
+                  $ref: '#/components/schemas/Store'
               next_page_token:
                 type: string
                 nullable: true
               total_size:
                 type: integer
                 format: int64
-                description: How many enrollments match the filters (the "N STORES" count).
+                description: How many stores match the filters (the "N STORES" count).
     StoreDiscountsResponse:
       description: Successful response
       content:
@@ -3128,6 +3239,11 @@ components:
           items:
             type: string
           description: Up to 5 short selling points, in order.
+        domain:
+          type: array
+          items:
+            type: string
+          description: The program's domains, e.g. domain1 and domain2.
         branding:
           $ref: '#/components/schemas/ProgramBranding'
         renewal_enabled:
@@ -3382,17 +3498,79 @@ components:
           description: Present when `mode` is `settings`.
         rule:
           $ref: '#/components/schemas/ProgramRule'
-    Enrollment:
+    BuLocation:
+      type: object
+      description: The BU location a store belongs to.
+      required:
+      - code
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Its unique code.
+        name:
+          type: string
+          nullable: true
+          maxLength: 200
+          description: The name of the location. Optional on create (also in a bulk item); an empty string
+            is the same as none. On update send `bu_location.name` to replace it, or an empty string to
+            clear it. `null` in the answer when it was not known at enroll time.
+        bu:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/BusinessUnit'
+          description: The business unit of the location, `{code, name}`. Optional on create (also in a
+            bulk item). On update send `bu_location.bu` to replace it, or `null` to clear it. Returned on
+            every store read (list, get, create, update), `null` when none was sent.
+    StoreWebsite:
+      type: object
+      description: The website a store is enrolled on.
+      required:
+      - code
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Its unique code.
+        name:
+          type: string
+          nullable: true
+          maxLength: 200
+        domain:
+          type: string
+          nullable: true
+          maxLength: 253
+          example: w1.example.com
+    BusinessUnit:
+      type: object
+      description: The business unit of a store. Its code is also the PARENT of the website in the store
+        discounts, so the website inherits the discount set on the business unit until it sets one of its own.
+      required:
+      - code
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 64
+          example: BU1
+        name:
+          type: string
+          nullable: true
+          maxLength: 200
+          example: Business One
+    Store:
       type: object
       description: A store enrolled in a program on one website (a row of the Enrolled Stores page). Created
         by an admin, in bulk, or automatically when an application is approved. A store can have one live
         (pending, active or suspended) enrollment per program and website.
       x-aep-resource:
         patterns:
-        - programs/{program}/enrollments/{enrollment}
-        singular: enrollment
-        plural: enrollments
-        type: msrestapi.com/programs/enrollment
+        - programs/{program}/stores/{store}
+        singular: store
+        plural: stores
+        type: msrestapi.com/programs/store
       properties:
         path:
           type: string
@@ -3407,31 +3585,15 @@ components:
           nullable: true
           readOnly: true
           description: The application that produced it, when there was one.
-        store_id:
-          type: string
-          minLength: 1
-          maxLength: 64
-        store_name:
-          type: string
-          nullable: true
-          maxLength: 200
-          description: '`null` = show "Unresolved store".'
-        store_resolved:
-          type: boolean
-          readOnly: true
-          description: '`false` when no store name was known at enroll time.'
-        website_id:
-          type: string
-          minLength: 1
-          maxLength: 64
-        website_name:
-          type: string
-          nullable: true
-          maxLength: 200
-        customer_group:
+        bu_location:
+          $ref: '#/components/schemas/BuLocation'
+        website:
+          $ref: '#/components/schemas/StoreWebsite'
+        customer_name:
           type: string
           nullable: true
           maxLength: 64
+          description: Optional.
         status:
           type: string
           enum:
@@ -3439,18 +3601,19 @@ components:
           - active
           - suspended
           - ended
-          description: 'On create: `pending` or `active` (default). Changes: pending -> active, active
-            <-> suspended, anything -> ended (final).'
+          description: 'On create: `pending` or `active` (default). Afterwards any status can move to any
+            other.'
         actions:
           type: array
           readOnly: true
           items:
             type: string
             enum:
+            - pending
             - active
             - suspended
             - ended
-          description: The status changes allowed from here (the Actions dropdown).
+          description: The status changes allowed from here (the Actions dropdown), which is every other status.
         enrolled_time:
           type: string
           format: date-time
@@ -3476,8 +3639,8 @@ components:
           format: date-time
           readOnly: true
       required:
-      - store_id
-      - website_id
+      - bu_location
+      - website
     AuditLog:
       type: object
       description: Who changed what, with before and after. Read-only; backs History and View changes.
@@ -4262,12 +4425,12 @@ components:
           items:
             $ref: '#/components/schemas/AuditLog'
           description: The latest 10 changes, newest first.
-    BatchEnrollmentItemResult:
+    BatchStoreItemResult:
       type: object
       properties:
-        store_id:
+        bu_location_code:
           type: string
-        website_id:
+        website_code:
           type: string
         outcome:
           type: string
@@ -4275,14 +4438,14 @@ components:
           - created
           - already_enrolled
           - failed
-        enrollment_id:
+        id:
           type: string
           format: uuid
-          description: Only when `created`.
+          description: The new store's id. Only when `created`.
         error:
           type: string
           description: Only when `failed`.
-    BatchCreateEnrollmentsResponse:
+    BatchCreateStoresResponse:
       type: object
       properties:
         created:
@@ -4291,7 +4454,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/BatchEnrollmentItemResult'
+            $ref: '#/components/schemas/BatchStoreItemResult'
           description: One per item, in the order sent.
     DiscountConfig:
       type: object
@@ -4367,25 +4530,29 @@ components:
           type: string
           enum:
           - program
-          - domain
+          - business_unit
+          - website
           - store
         type:
           type: string
           enum:
           - program
-          - domain
+          - business_unit
+          - website
           - store
         amount:
           type: string
           enum:
           - program
-          - domain
+          - business_unit
+          - website
           - store
         currency_code:
           type: string
           enum:
           - program
-          - domain
+          - business_unit
+          - website
           - store
     StoreDiscount:
       type: object
@@ -4420,6 +4587,14 @@ components:
           type: string
           nullable: true
           readOnly: true
+        bu:
+          readOnly: true
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/BusinessUnit'
+          description: The business unit of the store, `{code, name}`, from the store enrollment (stores
+            come only from enrollments). It is the parent whose discount the website inherits; `null`
+            when the store was enrolled without one.
         enrollment_status:
           type: string
           enum:
@@ -4435,10 +4610,17 @@ components:
           type: string
           enum:
           - program
-          - domain
+          - business_unit
+          - website
           - store
           readOnly: true
-          description: 'The Set At column: the highest level that set anything. `program` = "From program".'
+          description: 'The Set At column: the highest level that set anything. `program` = "From program",
+            `business_unit` = set by the parent.'
+        inherited_from_parent:
+          type: boolean
+          readOnly: true
+          description: '"Parent set": at least one field is taken from the business unit, not set on the
+            website.'
         store_override:
           $ref: '#/components/schemas/DiscountConfig'
         inherited:
@@ -4473,8 +4655,23 @@ components:
           description: programs/{program}/store-discount-levels
         program:
           $ref: '#/components/schemas/DiscountConfig'
-        domains:
+        business_units:
           type: array
+          description: The parents. A business unit that sets something is inherited by its websites.
+          items:
+            type: object
+            properties:
+              bu_unit_code:
+                type: string
+              name:
+                type: string
+                nullable: true
+                description: From the stores enrolled with this business unit.
+              discount:
+                $ref: '#/components/schemas/DiscountConfig'
+        websites:
+          type: array
+          description: The children that set something of their own.
           items:
             type: object
             properties:
@@ -4487,7 +4684,8 @@ components:
       x-aep-resource:
         patterns:
         - programs/{program}/store-discount-levels/program
-        - programs/{program}/store-discount-levels/domains/{website_id}
+        - programs/{program}/store-discount-levels/business-units/{bu_unit_code}
+        - programs/{program}/store-discount-levels/websites/{website_id}
         singular: discount-level
         plural: discount-levels
         type: msrestapi.com/programs/discount-level
@@ -4500,8 +4698,12 @@ components:
           type: string
           enum:
           - program
-          - domain
+          - business_unit
+          - website
         website_id:
+          type: string
+          nullable: true
+        bu_unit_code:
           type: string
           nullable: true
         discount:
@@ -4527,15 +4729,36 @@ components:
             is required.
       required:
       - discount
-    UpdateDomainDiscountLevelBody:
+    UpdateWebsiteDiscountLevelBody:
       type: object
       description: 'Request body: the change under `discount`. `path` is read-only and ignored on input.'
       x-aep-resource:
         patterns:
-        - programs/{program}/store-discount-levels/domains/{website_id}
-        singular: domain-level
-        plural: domain-levels
-        type: msrestapi.com/programs/domain-level
+        - programs/{program}/store-discount-levels/websites/{website_id}
+        singular: website-level
+        plural: website-levels
+        type: msrestapi.com/programs/website-level
+      properties:
+        path:
+          type: string
+          readOnly: true
+        discount:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/DiscountPatch'
+          description: The change, or `null` to revert everything to the inherited values. The key itself
+            is required.
+      required:
+      - discount
+    UpdateBusinessUnitDiscountLevelBody:
+      type: object
+      description: 'Request body: the change under `discount`. `path` is read-only and ignored on input.'
+      x-aep-resource:
+        patterns:
+        - programs/{program}/store-discount-levels/business-units/{bu_unit_code}
+        singular: business-unit-level
+        plural: business-unit-levels
+        type: msrestapi.com/programs/business-unit-level
       properties:
         path:
           type: string

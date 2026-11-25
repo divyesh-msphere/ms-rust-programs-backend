@@ -4,7 +4,7 @@ use crate::adapters::services::postgres::program::program_repository::record_cha
 use crate::application::errors::application_error::ApplicationError;
 use crate::domain::store_discount::{
     DiscountChange, DiscountConfig, DiscountLevels, LevelTarget, MODULE_KEY, StoreDiscountFilter, StoreDiscountRepository,
-    StoreDiscountRow, resolve, validate_config, validate_resolved, validate_website_id,
+    StoreDiscountRow, resolve, validate_bu_unit_code, validate_config, validate_resolved, validate_website_id,
 };
 use async_trait::async_trait;
 use serde_json::{Value, json};
@@ -23,6 +23,8 @@ struct EnrollmentRow {
     store_name: Option<String>,
     website_id: String,
     website_name: Option<String>,
+    bu_unit_code: Option<String>,
+    bu_unit_name: Option<String>,
     status: String,
 }
 
@@ -60,54 +62,62 @@ async fn module_config(conn: &mut PgConnection, program_id: Uuid, lock: bool) ->
     Ok((module_id, config.get("discount").map(DiscountConfig::from_json).unwrap_or_default()))
 }
 
-/// The domain and store levels of the given websites and stores: unique-index probes.
-async fn level_configs(
-    conn: &mut PgConnection,
-    program_id: Uuid,
-    websites: &[String],
-    store_keys: &[String],
-) -> Result<(Configs, Configs), ApplicationError> {
+/// What the business-unit, website and store levels set, for the given enrollments.
+struct LevelConfigs {
+    business_units: Configs,
+    /// Stored with scope type `domain` (the website code), as before.
+    websites: Configs,
+    stores: Configs,
+}
+
+/// The business unit, website and store levels of the given enrollments: unique-index probes.
+async fn level_configs(conn: &mut PgConnection, program_id: Uuid, enrollments: &[EnrollmentRow]) -> Result<LevelConfigs, ApplicationError> {
+    let bu_codes: Vec<String> = enrollments.iter().filter_map(|e| e.bu_unit_code.clone()).collect::<HashSet<_>>().into_iter().collect();
+    let websites: Vec<String> = enrollments.iter().map(|e| e.website_id.clone()).collect::<HashSet<_>>().into_iter().collect();
+    let store_keys: Vec<String> = enrollments.iter().map(|e| e.id.to_string()).collect();
     let rows: Vec<(String, String, Value)> = sqlx::query_as(
         "SELECT scope_type, scope_id, config FROM program_overrides \
-         WHERE program_id = $1 AND ((scope_type = 'domain' AND scope_id = ANY($2)) \
-                                 OR (scope_type = 'store' AND scope_id = ANY($3)))",
+         WHERE program_id = $1 AND ((scope_type = 'business_unit' AND scope_id = ANY($2)) \
+                                 OR (scope_type = 'domain' AND scope_id = ANY($3)) \
+                                 OR (scope_type = 'store' AND scope_id = ANY($4)))",
     )
     .bind(program_id)
-    .bind(websites)
-    .bind(store_keys)
+    .bind(&bu_codes)
+    .bind(&websites)
+    .bind(&store_keys)
     .fetch_all(conn)
     .await
     .map_err(db_error)?;
-    let (mut domains, mut stores) = (Configs::new(), Configs::new());
+    let mut levels = LevelConfigs { business_units: Configs::new(), websites: Configs::new(), stores: Configs::new() };
     for (scope_type, scope_id, config) in rows {
         let config = DiscountConfig::from_json(&config);
-        if scope_type == "domain" {
-            domains.insert(scope_id, config);
-        } else {
-            stores.insert(scope_id, config);
-        }
+        match scope_type.as_str() {
+            "business_unit" => levels.business_units.insert(scope_id, config),
+            "domain" => levels.websites.insert(scope_id, config),
+            _ => levels.stores.insert(scope_id, config),
+        };
     }
-    Ok((domains, stores))
+    Ok(levels)
 }
 
-fn build_rows(
-    program_id: Uuid,
-    enrollments: Vec<EnrollmentRow>,
-    program: &DiscountConfig,
-    domains: &Configs,
-    stores: &Configs,
-) -> Vec<StoreDiscountRow> {
+fn business_unit_of(levels: &LevelConfigs, e: &EnrollmentRow) -> DiscountConfig {
+    e.bu_unit_code.as_ref().and_then(|code| levels.business_units.get(code)).cloned().unwrap_or_default()
+}
+
+fn build_rows(program_id: Uuid, enrollments: Vec<EnrollmentRow>, program: &DiscountConfig, levels: &LevelConfigs) -> Vec<StoreDiscountRow> {
     enrollments
         .into_iter()
         .map(|e| {
-            let domain = domains.get(&e.website_id).cloned().unwrap_or_default();
-            let store = stores.get(&e.id.to_string()).cloned().unwrap_or_default();
+            let business_unit = business_unit_of(levels, &e);
+            let website = levels.websites.get(&e.website_id).cloned().unwrap_or_default();
+            let store = levels.stores.get(&e.id.to_string()).cloned().unwrap_or_default();
             StoreDiscountRow::build(
                 e.id,
                 program_id,
-                (e.store_id, e.store_name, e.website_id, e.website_name, e.status),
+                (e.store_id, e.store_name, e.website_id, e.website_name, e.bu_unit_code.map(|code| (code, e.bu_unit_name)), e.status),
                 program,
-                &domain,
+                &business_unit,
+                &website,
                 store,
             )
         })
@@ -116,7 +126,7 @@ fn build_rows(
 
 async fn fetch_enrollments(conn: &mut PgConnection, program_id: Uuid, ids: &[Uuid]) -> Result<Vec<EnrollmentRow>, ApplicationError> {
     let query = format!(
-        "SELECT id, store_id, store_name, website_id, website_name, status FROM enrollments \
+        "SELECT id, store_id, store_name, website_id, website_name, bu_unit_code, bu_unit_name, status FROM enrollments \
          WHERE program_id = $1 AND id = ANY($2) AND status IN {LIVE}"
     );
     sqlx::query_as::<_, EnrollmentRow>(&query)
@@ -150,9 +160,9 @@ async fn bump_version(conn: &mut PgConnection, program_id: Uuid, current: i32) -
 }
 
 /// What one store would end up with, refused when it makes no sense.
-fn check_store(program: &DiscountConfig, domain: &DiscountConfig, new_store: &DiscountConfig) -> Result<(), ApplicationError> {
+fn check_store(program: &DiscountConfig, business_unit: &DiscountConfig, website: &DiscountConfig, new_store: &DiscountConfig) -> Result<(), ApplicationError> {
     validate_config(new_store)?;
-    validate_resolved(&resolve(program, domain, new_store).resolved)
+    validate_resolved(&resolve(program, business_unit, website, new_store).resolved)
 }
 
 fn push_filters(qb: &mut QueryBuilder<'_, Postgres>, program_id: Uuid, filter: &StoreDiscountFilter) {
@@ -160,6 +170,9 @@ fn push_filters(qb: &mut QueryBuilder<'_, Postgres>, program_id: Uuid, filter: &
     qb.push(format!(" AND status IN {LIVE}"));
     if let Some(website) = &filter.website_id {
         qb.push(" AND website_id = ").push_bind(website.clone());
+    }
+    if let Some(code) = &filter.bu_unit_code {
+        qb.push(" AND bu_unit_code = ").push_bind(code.clone());
     }
     if let Some(prefix) = &filter.store_prefix {
         let escaped = prefix.to_lowercase().replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_");
@@ -183,7 +196,7 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
         push_filters(&mut count, program_id, filter);
         let total_size: i64 = count.build_query_scalar().fetch_one(&mut *conn).await.map_err(db_error)?;
 
-        let mut qb = QueryBuilder::<Postgres>::new("SELECT id, store_id, store_name, website_id, website_name, status FROM enrollments");
+        let mut qb = QueryBuilder::<Postgres>::new("SELECT id, store_id, store_name, website_id, website_name, bu_unit_code, bu_unit_name, status FROM enrollments");
         push_filters(&mut qb, program_id, filter);
         if let Some(token) = page_token {
             qb.push(" AND id < ").push_bind(token);
@@ -198,11 +211,9 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
             None
         };
 
-        // The page only: three small probes into the unique index, however many rows.
-        let websites: Vec<String> = enrollments.iter().map(|e| e.website_id.clone()).collect::<HashSet<_>>().into_iter().collect();
-        let store_keys: Vec<String> = enrollments.iter().map(|e| e.id.to_string()).collect();
-        let (domains, stores) = level_configs(&mut conn, program_id, &websites, &store_keys).await?;
-        Ok((build_rows(program_id, enrollments, &program, &domains, &stores), next_page_token, total_size))
+        // The page only: one small probe into the unique index, however many rows.
+        let levels = level_configs(&mut conn, program_id, &enrollments).await?;
+        Ok((build_rows(program_id, enrollments, &program, &levels), next_page_token, total_size))
     }
 
     async fn get(&self, program_id: Uuid, enrollment_id: Uuid) -> Result<StoreDiscountRow, ApplicationError> {
@@ -212,9 +223,8 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
         if enrollments.is_empty() {
             return Err(ApplicationError::not_found("Enrollment", enrollment_id));
         }
-        let websites: Vec<String> = enrollments.iter().map(|e| e.website_id.clone()).collect();
-        let (domains, stores) = level_configs(&mut conn, program_id, &websites, &[enrollment_id.to_string()]).await?;
-        build_rows(program_id, enrollments, &program, &domains, &stores)
+        let levels = level_configs(&mut conn, program_id, &enrollments).await?;
+        build_rows(program_id, enrollments, &program, &levels)
             .pop()
             .ok_or_else(|| ApplicationError::not_found("Enrollment", enrollment_id))
     }
@@ -234,19 +244,18 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
         let Some(enrollment) = enrollments.first() else {
             return Err(ApplicationError::not_found("Enrollment", enrollment_id));
         };
-        let (domains, stores) =
-            level_configs(&mut tx, program_id, &[enrollment.website_id.clone()], &[enrollment_id.to_string()]).await?;
-        let domain = domains.get(&enrollment.website_id).cloned().unwrap_or_default();
-        let old = stores.get(&enrollment_id.to_string()).cloned().unwrap_or_default();
+        let mut levels = level_configs(&mut tx, program_id, &enrollments).await?;
+        let business_unit = business_unit_of(&levels, enrollment);
+        let website = levels.websites.get(&enrollment.website_id).cloned().unwrap_or_default();
+        let old = levels.stores.get(&enrollment_id.to_string()).cloned().unwrap_or_default();
         let new = change.apply(&old);
 
         // Nothing differs: write nothing, bump nothing.
         if new == old {
             tx.rollback().await.map_err(db_error)?;
-            let stores = HashMap::from([(enrollment_id.to_string(), old)]);
-            return Ok(build_rows(program_id, enrollments, &program, &domains, &stores).remove(0));
+            return Ok(build_rows(program_id, enrollments, &program, &levels).remove(0));
         }
-        check_store(&program, &domain, &new)?;
+        check_store(&program, &business_unit, &website, &new)?;
 
         write_store_levels(&mut tx, program_id, &[(enrollment_id, new.clone())]).await?;
         bump_version(&mut tx, program_id, current).await?;
@@ -261,8 +270,8 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
         .await
         .map_err(db_error)?;
 
-        let stores = HashMap::from([(enrollment_id.to_string(), new)]);
-        let row = build_rows(program_id, enrollments, &program, &domains, &stores).remove(0);
+        levels.stores.insert(enrollment_id.to_string(), new);
+        let row = build_rows(program_id, enrollments, &program, &levels).remove(0);
         tx.commit().await.map_err(db_error)?;
         Ok(row)
     }
@@ -292,24 +301,23 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
         let position: HashMap<Uuid, usize> = enrollment_ids.iter().enumerate().map(|(i, id)| (*id, i)).collect();
         enrollments.sort_by_key(|e| position[&e.id]);
 
-        let websites: Vec<String> = enrollments.iter().map(|e| e.website_id.clone()).collect::<HashSet<_>>().into_iter().collect();
-        let store_keys: Vec<String> = enrollment_ids.iter().map(Uuid::to_string).collect();
-        let (domains, mut stores) = level_configs(&mut tx, program_id, &websites, &store_keys).await?;
+        let mut levels = level_configs(&mut tx, program_id, &enrollments).await?;
 
         // Work every store out first: one invalid result refuses the whole batch.
         let mut changed: Vec<(Uuid, DiscountConfig)> = Vec::new();
         for e in &enrollments {
-            let old = stores.get(&e.id.to_string()).cloned().unwrap_or_default();
+            let old = levels.stores.get(&e.id.to_string()).cloned().unwrap_or_default();
             let new = change.apply(&old);
             if new == old {
                 continue;
             }
-            let domain = domains.get(&e.website_id).cloned().unwrap_or_default();
-            check_store(&program, &domain, &new).map_err(|err| {
+            let business_unit = business_unit_of(&levels, e);
+            let website = levels.websites.get(&e.website_id).cloned().unwrap_or_default();
+            check_store(&program, &business_unit, &website, &new).map_err(|err| {
                 ApplicationError::unprocessable_entity(&format!("store {} ({}): {}", e.store_id, e.website_id, err.message()))
             })?;
             changed.push((e.id, new.clone()));
-            stores.insert(e.id.to_string(), new);
+            levels.stores.insert(e.id.to_string(), new);
         }
 
         if !changed.is_empty() {
@@ -328,7 +336,7 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
             .map_err(db_error)?;
         }
 
-        let rows = build_rows(program_id, enrollments, &program, &domains, &stores);
+        let rows = build_rows(program_id, enrollments, &program, &levels);
         tx.commit().await.map_err(db_error)?;
         Ok((changed.len(), rows))
     }
@@ -336,17 +344,36 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
     async fn levels(&self, program_id: Uuid) -> Result<DiscountLevels, ApplicationError> {
         let mut conn = self.db_connection.get_pool().acquire().await.map_err(db_error)?;
         let (_, program) = module_config(&mut conn, program_id, false).await?;
-        let rows: Vec<(String, Value)> = sqlx::query_as(
-            "SELECT scope_id, config FROM program_overrides WHERE program_id = $1 AND scope_type = 'domain' ORDER BY scope_id",
+        let rows: Vec<(String, String, Value)> = sqlx::query_as(
+            "SELECT scope_type, scope_id, config FROM program_overrides \
+             WHERE program_id = $1 AND scope_type IN ('business_unit', 'domain') ORDER BY scope_id",
         )
         .bind(program_id)
         .fetch_all(&mut *conn)
         .await
         .map_err(db_error)?;
-        Ok(DiscountLevels {
-            program,
-            domains: rows.into_iter().map(|(website, config)| (website, DiscountConfig::from_json(&config))).collect(),
-        })
+        // A business unit has no table of its own: its name is the one its enrolled stores carry.
+        let names: HashMap<String, String> = sqlx::query_as::<_, (String, String)>(
+            "SELECT bu_unit_code, max(bu_unit_name) FROM enrollments \
+             WHERE program_id = $1 AND bu_unit_code IS NOT NULL AND bu_unit_name IS NOT NULL GROUP BY bu_unit_code",
+        )
+        .bind(program_id)
+        .fetch_all(&mut *conn)
+        .await
+        .map_err(db_error)?
+        .into_iter()
+        .collect();
+        let (mut business_units, mut websites) = (Vec::new(), Vec::new());
+        for (scope_type, scope_id, config) in rows {
+            let config = DiscountConfig::from_json(&config);
+            if scope_type == "business_unit" {
+                let name = names.get(&scope_id).cloned();
+                business_units.push((scope_id, name, config));
+            } else {
+                websites.push((scope_id, config));
+            }
+        }
+        Ok(DiscountLevels { program, business_units, websites })
     }
 
     async fn update_level(
@@ -356,18 +383,22 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
         change: &DiscountChange,
         actor: &str,
     ) -> Result<DiscountConfig, ApplicationError> {
-        if let LevelTarget::Domain(website) = target {
-            validate_website_id(website)?;
+        match target {
+            LevelTarget::Website(website) => validate_website_id(website)?,
+            LevelTarget::BusinessUnit(code) => validate_bu_unit_code(code)?,
+            LevelTarget::Program => {}
         }
         let mut tx = self.db_connection.get_pool().begin().await.map_err(db_error)?;
         let current = lock_program(&mut tx, program_id).await?;
         let (module_id, program) = module_config(&mut tx, program_id, true).await?;
 
-        let (old, level_name, website) = match target {
-            LevelTarget::Program => (program.clone(), "program", None),
-            LevelTarget::Domain(website) => {
-                let (domains, _) = level_configs(&mut tx, program_id, std::slice::from_ref(website), &[]).await?;
-                (domains.get(website).cloned().unwrap_or_default(), "domain", Some(website.clone()))
+        let (old, level_name, website, bu_unit_code) = match target {
+            LevelTarget::Program => (program.clone(), "program", None, None),
+            LevelTarget::BusinessUnit(code) => {
+                (scoped_config(&mut tx, program_id, "business_unit", code).await?, "business_unit", None, Some(code.clone()))
+            }
+            LevelTarget::Website(website) => {
+                (scoped_config(&mut tx, program_id, "domain", website).await?, "website", Some(website.clone()), None)
             }
         };
         let new = change.apply(&old);
@@ -376,9 +407,11 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
             return Ok(old);
         }
         validate_config(&new)?;
+        let none = DiscountConfig::default();
         let resolution = match target {
-            LevelTarget::Program => resolve(&new, &DiscountConfig::default(), &DiscountConfig::default()),
-            LevelTarget::Domain(_) => resolve(&program, &new, &DiscountConfig::default()),
+            LevelTarget::Program => resolve(&new, &none, &none, &none),
+            LevelTarget::BusinessUnit(_) => resolve(&program, &new, &none, &none),
+            LevelTarget::Website(_) => resolve(&program, &none, &new, &none),
         };
         validate_resolved(&resolution.resolved)?;
 
@@ -399,18 +432,9 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
                 .await
                 .map_err(db_error)?;
             }
-            LevelTarget::Domain(website) => {
-                if new.is_empty() {
-                    sqlx::query("DELETE FROM program_overrides WHERE program_id = $1 AND scope_type = 'domain' AND scope_id = $2")
-                        .bind(program_id)
-                        .bind(website)
-                        .execute(&mut *tx)
-                        .await
-                        .map_err(db_error)?;
-                } else {
-                    upsert_override(&mut tx, program_id, "domain", website, &new).await?;
-                }
-            }
+            LevelTarget::BusinessUnit(code) => write_scoped(&mut tx, program_id, "business_unit", code, &new).await?,
+            // Websites keep the scope type `domain`, as stored before the business-unit level existed.
+            LevelTarget::Website(website) => write_scoped(&mut tx, program_id, "domain", website, &new).await?,
         }
         bump_version(&mut tx, program_id, current).await?;
         record_change(
@@ -418,13 +442,41 @@ impl StoreDiscountRepository for StoreDiscountRepositoryPostgresImpl {
             program_id,
             actor,
             "store_discount_level_updated",
-            Some(json!({ "level": level_name, "website_id": website, "discount": old.to_json() })),
-            Some(json!({ "level": level_name, "website_id": website, "discount": new.to_json() })),
+            Some(json!({ "level": level_name, "website_id": website, "bu_unit_code": bu_unit_code, "discount": old.to_json() })),
+            Some(json!({ "level": level_name, "website_id": website, "bu_unit_code": bu_unit_code, "discount": new.to_json() })),
         )
         .await
         .map_err(db_error)?;
         tx.commit().await.map_err(db_error)?;
         Ok(new)
+    }
+}
+
+/// What one business unit or website level sets (nothing when it has no row).
+async fn scoped_config(conn: &mut PgConnection, program_id: Uuid, scope_type: &str, scope_id: &str) -> Result<DiscountConfig, ApplicationError> {
+    let config: Option<Value> = sqlx::query_scalar("SELECT config FROM program_overrides WHERE program_id = $1 AND scope_type = $2 AND scope_id = $3")
+        .bind(program_id)
+        .bind(scope_type)
+        .bind(scope_id)
+        .fetch_optional(conn)
+        .await
+        .map_err(db_error)?;
+    Ok(config.map(|c| DiscountConfig::from_json(&c)).unwrap_or_default())
+}
+
+/// Saves a business unit or website level; a level that sets nothing any more loses its row.
+async fn write_scoped(conn: &mut PgConnection, program_id: Uuid, scope_type: &str, scope_id: &str, config: &DiscountConfig) -> Result<(), ApplicationError> {
+    if config.is_empty() {
+        sqlx::query("DELETE FROM program_overrides WHERE program_id = $1 AND scope_type = $2 AND scope_id = $3")
+            .bind(program_id)
+            .bind(scope_type)
+            .bind(scope_id)
+            .execute(conn)
+            .await
+            .map_err(db_error)?;
+        Ok(())
+    } else {
+        upsert_override(conn, program_id, scope_type, scope_id, config).await
     }
 }
 

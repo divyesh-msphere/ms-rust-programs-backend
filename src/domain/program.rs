@@ -104,6 +104,8 @@ pub struct Program {
     pub about: Option<String>,
     /// Up to 5 short selling points, in order.
     pub highlights: Vec<String>,
+    /// The domains (websites) the program is for, e.g. `["domain1", "domain2"]`.
+    pub domain: Vec<String>,
     pub branding: Branding,
     pub renewal: Renewal,
     pub level: String,
@@ -115,9 +117,50 @@ pub struct Program {
     pub update_time: DateTime<Utc>, // OUTPUT_ONLY
 }
 
+/// The order of the programs list. `Id` (creation order) is the default.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ProgramSort {
+    #[default]
+    Id,
+    NameAsc,
+    NameDesc,
+}
+
+impl ProgramSort {
+    /// `name`, `name asc`, `name desc` (also `-name`, `+name`); empty means the default order.
+    pub fn parse(input: Option<&str>) -> Result<Self, ApplicationError> {
+        let raw = input.unwrap_or("").trim().to_lowercase();
+        let raw = raw.replace(',', " ");
+        let mut parts = raw.split_whitespace();
+        let Some(first) = parts.next() else { return Ok(Self::Id) };
+        let (field, mut desc) = match first.strip_prefix('-') {
+            Some(f) => (f, true),
+            None => (first.strip_prefix('+').unwrap_or(first), false),
+        };
+        match parts.next() {
+            None => {}
+            Some("asc") => desc = false,
+            Some("desc") => desc = true,
+            Some(_) => return Err(ApplicationError::validation_error("order_by direction must be asc or desc")),
+        }
+        if parts.next().is_some() {
+            return Err(ApplicationError::validation_error("order_by takes one field, e.g. name or name desc"));
+        }
+        match field {
+            "name" => Ok(if desc { Self::NameDesc } else { Self::NameAsc }),
+            "id" if !desc => Ok(Self::Id),
+            other => Err(ApplicationError::validation_error(&format!(
+                "order_by {other:?} is not supported; use name, name desc"
+            ))),
+        }
+    }
+}
+
 /// What the programs list narrows to. The cards above the table ignore it.
 #[derive(Debug, Clone, Default)]
 pub struct ProgramFilter {
+    /// The order of the rows (the cards and `total_size` do not depend on it).
+    pub sort: ProgramSort,
     pub show_deleted: bool,
     pub show_archived: bool,
     /// ANDed text conditions (`search=`).
@@ -199,6 +242,7 @@ pub struct NewProgram {
     pub description: Option<String>,
     pub about: Option<String>,
     pub highlights: Vec<String>,
+    pub domain: Vec<String>,
     pub branding: Branding,
     pub renewal: Renewal,
     pub level: String,
@@ -218,6 +262,8 @@ pub struct UpdateProgram {
     pub about: Option<Option<String>>,
     /// `Some` replaces the whole list.
     pub highlights: Option<Vec<String>>,
+    /// `Some` replaces the whole domain list (an empty list clears it).
+    pub domain: Option<Vec<String>>,
     /// `Some` replaces the badge.
     pub branding: Option<Branding>,
     /// `Some` replaces the renewal defaults.
@@ -274,6 +320,26 @@ pub fn clean_about(about: Option<String>) -> Result<Option<String>, ApplicationE
         return Err(unprocessable(format!("about must be at most {MAX_ABOUT_LEN} characters")));
     }
     Ok(about)
+}
+
+const MAX_DOMAINS: usize = 50;
+const MAX_DOMAIN_LEN: usize = 253;
+
+/// Trims each domain, drops empty ones and repeats (case-insensitive, first spelling kept).
+pub fn clean_domains(domains: Vec<String>) -> Result<Vec<String>, ApplicationError> {
+    let mut seen = std::collections::HashSet::new();
+    let cleaned: Vec<String> = domains
+        .into_iter()
+        .map(|d| d.trim().to_string())
+        .filter(|d| !d.is_empty() && seen.insert(d.to_lowercase()))
+        .collect();
+    if cleaned.len() > MAX_DOMAINS {
+        return Err(unprocessable(format!("domain takes at most {MAX_DOMAINS} items")));
+    }
+    if cleaned.iter().any(|d| d.chars().count() > MAX_DOMAIN_LEN) {
+        return Err(unprocessable(format!("a domain must be at most {MAX_DOMAIN_LEN} characters")));
+    }
+    Ok(cleaned)
 }
 
 /// Trims each highlight and drops empty ones; at most 5 remain.
@@ -401,6 +467,23 @@ mod tests {
         }
         assert!(clean_branding(Branding { logo_icon: Some("bad icon!".into()), ..Default::default() }).is_err());
         assert_eq!(clean_branding(Branding { brand_color: Some("  ".into()), ..Default::default() }).unwrap(), Branding::default());
+    }
+
+    #[test]
+    fn order_by_parses_name_directions() {
+        assert_eq!(ProgramSort::parse(None).unwrap(), ProgramSort::Id);
+        assert_eq!(ProgramSort::parse(Some("name")).unwrap(), ProgramSort::NameAsc);
+        assert_eq!(ProgramSort::parse(Some("Name DESC")).unwrap(), ProgramSort::NameDesc);
+        assert_eq!(ProgramSort::parse(Some("-name")).unwrap(), ProgramSort::NameDesc);
+        assert!(ProgramSort::parse(Some("colour")).is_err());
+        assert!(ProgramSort::parse(Some("name sideways")).is_err());
+    }
+
+    #[test]
+    fn domains_are_trimmed_and_deduplicated() {
+        let d = clean_domains(vec![" domain1 ".into(), "".into(), "Domain1".into(), "domain2".into()]).unwrap();
+        assert_eq!(d, vec!["domain1", "domain2"]);
+        assert!(clean_domains((0..51).map(|i| i.to_string()).collect()).is_err());
     }
 
     #[test]

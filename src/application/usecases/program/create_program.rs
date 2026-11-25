@@ -2,7 +2,7 @@ use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::interface::UseCase;
 use crate::domain::program::{
     Branding, DEFAULT_PROGRAM_LEVEL, NewProgram, Program, ProgramRepository, Renewal, clean_about, clean_branding,
-    clean_highlights, validate_level, validate_renewal, validate_slug,
+    clean_domains, clean_highlights, validate_level, validate_renewal, validate_slug,
 };
 use crate::domain::program_module::ProgramModule;
 use crate::domain::program_setting::{ModuleChange, validate_changes};
@@ -30,6 +30,7 @@ pub struct CreateProgramInput {
     pub description: Option<String>,
     pub about: Option<String>,
     pub highlights: Vec<String>,
+    pub domain: Vec<String>,
     pub branding: Branding,
     /// `None` takes the defaults (12 months, 30 days grace, 30 days reminder, no auto-renew).
     pub renewal: Option<Renewal>,
@@ -64,6 +65,7 @@ impl UseCase<CreateProgramOutput, CreateProgramInput> for CreateProgramUseCase {
         validate_level(&level)?;
         let about = clean_about(input.about)?;
         let highlights = clean_highlights(input.highlights)?;
+        let domain = clean_domains(input.domain)?;
         let branding = clean_branding(input.branding)?;
         let renewal = input.renewal.unwrap_or_default();
         validate_renewal(&renewal)?;
@@ -86,6 +88,7 @@ impl UseCase<CreateProgramOutput, CreateProgramInput> for CreateProgramUseCase {
                 description: input.description.map(|d| d.trim().to_string()).filter(|d| !d.is_empty()),
                 about,
                 highlights,
+                domain,
                 branding,
                 renewal,
                 level,

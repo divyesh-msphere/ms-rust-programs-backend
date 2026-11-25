@@ -14,6 +14,7 @@ impl DbMapper<Program, ProgramDbModel> for ProgramDbMapper {
             description: model.description,
             about: model.about,
             highlights: model.highlights,
+            domain: model.domain,
             branding: Branding {
                 brand_color: model.brand_color,
                 text_color: model.text_color,
@@ -44,6 +45,7 @@ impl DbMapper<Program, ProgramDbModel> for ProgramDbMapper {
             description: entity.description,
             about: entity.about,
             highlights: entity.highlights,
+            domain: entity.domain,
             brand_color: entity.branding.brand_color,
             text_color: entity.branding.text_color,
             logo_icon: entity.branding.logo_icon,

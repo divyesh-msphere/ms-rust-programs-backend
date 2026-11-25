@@ -9,7 +9,7 @@ use crate::application::usecases::interface::UseCase;
 use crate::dto::payloads::json::store_discount::{
     BatchUpdateStoreDiscountsBodyPayload, BatchUpdateStoreDiscountsPathPayload, GetStoreDiscountPayload,
     ListDiscountLevelsPayload, ListStoreDiscountsPathPayload, ListStoreDiscountsQueryPayload,
-    UpdateDiscountLevelBodyPayload, UpdateDomainLevelPathPayload, UpdateProgramLevelPathPayload,
+    UpdateBusinessUnitLevelPathPayload, UpdateDiscountLevelBodyPayload, UpdateProgramLevelPathPayload, UpdateWebsiteLevelPathPayload,
     UpdateStoreDiscountBodyPayload, UpdateStoreDiscountPathPayload,
 };
 use actix_web::{HttpRequest, HttpResponse, get, patch, post, web};
@@ -22,6 +22,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         .service(update_store_discount)
         .service(list_discount_levels)
         .service(update_program_level)
+        .service(update_business_unit_level)
+        .service(update_website_level)
         .service(update_domain_level);
 }
 
@@ -119,7 +121,7 @@ pub async fn update_store_discount(
     Ok(HttpResponse::Ok().json(UpdateStoreDiscountMapper::output_success(result)))
 }
 
-/// The program default and every website that sets something of its own.
+/// The program default, every business unit (parent) and every website (child) that sets something.
 #[instrument(skip(data))]
 #[get("/{program}/store-discount-levels")]
 pub async fn list_discount_levels(
@@ -163,17 +165,65 @@ pub async fn update_program_level(
     Ok(HttpResponse::Ok().json(UpdateDiscountLevelMapper::output_success(result)))
 }
 
+/// The PARENT level: what a business unit sets is inherited by every website that carries its
+/// `bu_unit_code`, until that website sets something of its own.
+#[instrument(skip(data, req, body))]
+#[patch("/{program}/store-discount-levels/business-units/{bu_unit_code}")]
+pub async fn update_business_unit_level(
+    req: HttpRequest,
+    data: web::Data<AppState>,
+    path: web::Path<UpdateBusinessUnitLevelPathPayload>,
+    body: web::Json<UpdateDiscountLevelBodyPayload>,
+) -> Result<HttpResponse, ErrorResponse> {
+    info!("UpdateBusinessUnitLevelController called");
+
+    let usecase_input = UpdateDiscountLevelMapper::business_unit_input(path.into_inner(), body.into_inner(), actor_from(&req))
+        .map_err(ErrorResponse::map_response_error)?;
+    let result = data
+        .use_cases
+        .store_discount
+        .update_discount_level
+        .execute(Some(usecase_input))
+        .await
+        .map_err(ErrorResponse::map_response_error)?;
+
+    Ok(HttpResponse::Ok().json(UpdateDiscountLevelMapper::output_success(result)))
+}
+
+/// The CHILD level: what one website sets itself. It wins over its business unit; reverting it falls
+/// back to the parent.
+#[instrument(skip(data, req, body))]
+#[patch("/{program}/store-discount-levels/websites/{website_id}")]
+pub async fn update_website_level(
+    req: HttpRequest,
+    data: web::Data<AppState>,
+    path: web::Path<UpdateWebsiteLevelPathPayload>,
+    body: web::Json<UpdateDiscountLevelBodyPayload>,
+) -> Result<HttpResponse, ErrorResponse> {
+    info!("UpdateWebsiteLevelController called");
+    change_website_level(req, data, path.into_inner(), body.into_inner()).await
+}
+
+/// The old name of `websites/{website_id}`, kept so existing callers keep working.
 #[instrument(skip(data, req, body))]
 #[patch("/{program}/store-discount-levels/domains/{website_id}")]
 pub async fn update_domain_level(
     req: HttpRequest,
     data: web::Data<AppState>,
-    path: web::Path<UpdateDomainLevelPathPayload>,
+    path: web::Path<UpdateWebsiteLevelPathPayload>,
     body: web::Json<UpdateDiscountLevelBodyPayload>,
 ) -> Result<HttpResponse, ErrorResponse> {
     info!("UpdateDomainLevelController called");
+    change_website_level(req, data, path.into_inner(), body.into_inner()).await
+}
 
-    let usecase_input = UpdateDiscountLevelMapper::domain_input(path.into_inner(), body.into_inner(), actor_from(&req))
+async fn change_website_level(
+    req: HttpRequest,
+    data: web::Data<AppState>,
+    path: UpdateWebsiteLevelPathPayload,
+    body: UpdateDiscountLevelBodyPayload,
+) -> Result<HttpResponse, ErrorResponse> {
+    let usecase_input = UpdateDiscountLevelMapper::website_input(path, body, actor_from(&req))
         .map_err(ErrorResponse::map_response_error)?;
     let result = data
         .use_cases

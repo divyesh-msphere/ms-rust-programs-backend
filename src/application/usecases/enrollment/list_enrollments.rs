@@ -1,7 +1,8 @@
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::interface::UseCase;
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::enrollment::{Enrollment, EnrollmentFilter, EnrollmentRepository, parse_status_filter};
+use crate::domain::enrollment::{Enrollment, EnrollmentFilter, EnrollmentRepository};
+use crate::domain::store_query::{parse_filter, parse_search};
 use crate::domain::program::ProgramRepository;
 use std::sync::Arc;
 use tracing::{Instrument, info_span, instrument};
@@ -24,9 +25,10 @@ impl ListEnrollmentsUseCase {
 #[derive(Debug)]
 pub struct ListEnrollmentsInput {
     pub program: ResourceIdentifier,
-    pub website_id: Option<String>,
-    pub status: Option<String>,
-    pub store: Option<String>,
+    /// The search box: bare text, or `bu_location=abc` (see `store_query`).
+    pub search: Option<String>,
+    /// `bu_location.starts_with=BU&customer_name.is_empty&website=[w1,w2]&status!=ended`.
+    pub filter: Option<String>,
     pub page_size: Option<i64>,
     pub page_token: Option<Uuid>,
 }
@@ -46,9 +48,8 @@ impl UseCase<ListEnrollmentsOutput, ListEnrollmentsInput> for ListEnrollmentsUse
         let input = input.ok_or_else(|| ApplicationError::validation_error("Input is required in ListEnrollmentsUseCase"))?;
 
         let filter = EnrollmentFilter {
-            website_id: input.website_id.map(|w| w.trim().to_string()).filter(|w| !w.is_empty()),
-            statuses: parse_status_filter(input.status.as_deref())?,
-            store_prefix: input.store.map(|s| s.trim().to_string()).filter(|s| !s.is_empty()),
+            search: parse_search(input.search.as_deref())?,
+            list: parse_filter(input.filter.as_deref())?,
         };
         let page_size = input.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
         if page_size < 1 {

@@ -19,7 +19,7 @@ async fn main() -> std::io::Result<()> {
     info!("Telemetry Config: {:?}", otel_cfg);
 
     let listner =
-        TcpListener::bind("0.0.0.0:".to_string() + &application_cfg.http_port.to_string())
+        TcpListener::bind(format!("0.0.0.0:{}", application_cfg.http_port))
             .expect("Port binding failed");
 
     let shutdown = install_signal_handler();

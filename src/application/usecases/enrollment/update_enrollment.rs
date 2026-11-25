@@ -1,7 +1,7 @@
 use crate::application::errors::application_error::ApplicationError;
 use crate::application::usecases::interface::UseCase;
 use crate::domain::aep::ResourceIdentifier;
-use crate::domain::enrollment::{Enrollment, EnrollmentRepository, UpdateEnrollment, validate_update};
+use crate::domain::enrollment::{BuUnit, Enrollment, EnrollmentRepository, UpdateEnrollment, validate_update};
 use crate::domain::program::ProgramRepository;
 use std::sync::Arc;
 use tracing::{Instrument, info_span, instrument};
@@ -25,6 +25,10 @@ pub struct UpdateEnrollmentInput {
     pub enrollment: Uuid,
     pub status: Option<String>,
     pub customer_group: Option<String>,
+    /// `Some(None)` clears the business unit.
+    pub bu: Option<Option<BuUnit>>,
+    /// The name of the location; `Some("")` clears it.
+    pub store_name: Option<String>,
     pub actor: String,
 }
 
@@ -40,7 +44,7 @@ impl UseCase<Enrollment, UpdateEnrollmentInput> for UpdateEnrollmentUseCase {
             .instrument(info_span!("UpdateEnrollmentUseCase::get_program"))
             .await?;
 
-        let update = UpdateEnrollment { status: input.status, customer_group: input.customer_group, actor: input.actor };
+        let update = UpdateEnrollment { status: input.status, bu: input.bu, store_name: input.store_name, customer_group: input.customer_group, actor: input.actor };
         validate_update(&update)?;
 
         self.enrollment_repository

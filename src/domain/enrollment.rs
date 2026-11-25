@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::application::errors::application_error::ApplicationError;
+use crate::domain::store_query::{StoreFilter, StoreTerm};
 
 pub const PENDING: &str = "pending";
 pub const ACTIVE: &str = "active";
@@ -29,6 +30,12 @@ pub struct Enrollment {
     pub store_resolved: bool,                  // OUTPUT_ONLY
     pub website_id: String,
     pub website_name: Option<String>,
+    pub website_domain: Option<String>,
+    /// The business unit this website belongs to (its parent in the store-discount levels).
+    /// The business unit of the store (`bu` in the API): its code and name. Also the parent of the
+    /// website in the store discounts.
+    pub bu_unit_code: Option<String>,
+    pub bu_unit_name: Option<String>,
     pub customer_group: Option<String>,
     pub status: String,
     pub enrolled_time: Option<DateTime<Utc>>,  // OUTPUT_ONLY
@@ -48,6 +55,9 @@ pub struct NewEnrollment {
     pub store_name: Option<String>,
     pub website_id: String,
     pub website_name: Option<String>,
+    pub website_domain: Option<String>,
+    pub bu_unit_code: Option<String>,
+    pub bu_unit_name: Option<String>,
     pub customer_group: Option<String>,
     /// `pending` or `active`.
     pub status: String,
@@ -57,18 +67,29 @@ pub struct NewEnrollment {
 #[derive(Debug, Clone, Default)]
 pub struct UpdateEnrollment {
     pub status: Option<String>,
+    /// `Some(Some(bu))` replaces the business unit, `Some(None)` clears it.
+    pub bu: Option<Option<BuUnit>>,
+    /// The name of the location; `Some("")` clears it.
+    pub store_name: Option<String>,
     /// `Some("")` clears the group.
     pub customer_group: Option<String>,
     pub actor: String,
 }
 
-/// The filters of the list (all optional).
+/// The business unit of a store.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BuUnit {
+    pub code: String,
+    pub name: Option<String>,
+}
+
+/// The filters of the list (all optional): the search box and the `filter` terms.
 #[derive(Debug, Clone, Default)]
 pub struct EnrollmentFilter {
-    pub website_id: Option<String>,
-    pub statuses: Vec<String>,
-    /// A prefix of the store name (case-insensitive).
-    pub store_prefix: Option<String>,
+    /// ANDed `search` conditions.
+    pub search: Vec<StoreTerm>,
+    /// The `filter` terms: text conditions and the status / website lists.
+    pub list: StoreFilter,
 }
 
 /// One item of a bulk enroll and what happened to it.
@@ -79,15 +100,14 @@ pub enum BatchOutcome {
     Failed(String),
 }
 
-/// Where a status may go: `pending -> active`, `active <-> suspended`, anything -> `ended`.
-/// `ended` is final.
+/// Where a status may go: to any other status, `ended` and `pending` included, so a store that
+/// was ended or sent back to pending can be moved again. Going live again (pending, active or
+/// suspended) is still refused when the store already has another live enrollment on the website.
 pub fn allowed_transitions(status: &str) -> Vec<&'static str> {
-    match status {
-        PENDING => vec![ACTIVE, ENDED],
-        ACTIVE => vec![SUSPENDED, ENDED],
-        SUSPENDED => vec![ACTIVE, ENDED],
-        _ => vec![],
+    if !STATUSES.contains(&status) {
+        return vec![];
     }
+    STATUSES.iter().copied().filter(|s| *s != status).collect()
 }
 
 pub fn can_change(from: &str, to: &str) -> bool {
@@ -116,11 +136,19 @@ fn validate_optional_text(field: &str, value: &Option<String>, max: usize) -> Re
 }
 
 pub fn validate_new(input: &NewEnrollment) -> Result<(), ApplicationError> {
-    validate_text("store_id", &input.store_id, 64)?;
-    validate_text("website_id", &input.website_id, 64)?;
-    validate_optional_text("store_name", &input.store_name, 200)?;
-    validate_optional_text("website_name", &input.website_name, 200)?;
-    validate_optional_text("customer_group", &input.customer_group, 64)?;
+    validate_text("bu_location.code", &input.store_id, 64)?;
+    validate_text("website.code", &input.website_id, 64)?;
+    validate_optional_text("bu_location.name", &input.store_name, 200)?;
+    validate_optional_text("website.name", &input.website_name, 200)?;
+    validate_optional_text("website.domain", &input.website_domain, 253)?;
+    validate_optional_text("bu.code", &input.bu_unit_code, 64)?;
+    validate_optional_text("bu.name", &input.bu_unit_name, 200)?;
+    if input.bu_unit_name.as_deref().is_some_and(|n| !n.trim().is_empty())
+        && input.bu_unit_code.as_deref().is_none_or(|c| c.trim().is_empty())
+    {
+        return Err(ApplicationError::unprocessable_entity("bu.name needs bu.code"));
+    }
+    validate_optional_text("customer_name", &input.customer_group, 64)?;
     if input.status != PENDING && input.status != ACTIVE {
         return Err(ApplicationError::unprocessable_entity("status must be \"pending\" or \"active\" when enrolling"));
     }
@@ -136,7 +164,12 @@ pub fn validate_update(input: &UpdateEnrollment) -> Result<(), ApplicationError>
             STATUSES.join(", ")
         )));
     }
-    validate_optional_text("customer_group", &input.customer_group, 64)
+    validate_optional_text("bu_location.name", &input.store_name, 200)?;
+    if let Some(Some(bu)) = &input.bu {
+        validate_text("bu.code", &bu.code, 64)?;
+        validate_optional_text("bu.name", &bu.name, 200)?;
+    }
+    validate_optional_text("customer_name", &input.customer_group, 64)
 }
 
 /// `status=active,suspended` -> the statuses; an unknown one is a 400.
@@ -202,6 +235,9 @@ mod tests {
             store_name: Some("Store One".into()),
             website_id: "web-1".into(),
             website_name: None,
+            website_domain: None,
+            bu_unit_code: None,
+            bu_unit_name: None,
             customer_group: Some("tier-1".into()),
             status: ACTIVE.into(),
             actor: "t".into(),
@@ -209,25 +245,22 @@ mod tests {
     }
 
     #[test]
-    fn status_moves_follow_the_plan() {
-        assert!(can_change(PENDING, ACTIVE));
-        assert!(can_change(ACTIVE, SUSPENDED));
-        assert!(can_change(SUSPENDED, ACTIVE));
-        for from in [PENDING, ACTIVE, SUSPENDED] {
-            assert!(can_change(from, ENDED));
+    fn any_status_can_move_to_any_other() {
+        for from in STATUSES {
+            for to in STATUSES {
+                assert_eq!(can_change(from, to), from != to, "{from} -> {to}");
+            }
         }
-        assert!(!can_change(PENDING, SUSPENDED));
-        assert!(!can_change(ACTIVE, PENDING));
-        assert!(!can_change(ACTIVE, ACTIVE));
-        for to in STATUSES {
-            assert!(!can_change(ENDED, to), "ended is final");
-        }
+        assert!(can_change(ACTIVE, PENDING), "back to pending");
+        assert!(can_change(ENDED, ACTIVE), "an ended store can be brought back");
+        assert!(!can_change("gone", ACTIVE));
     }
 
     #[test]
-    fn actions_are_the_allowed_moves() {
-        assert_eq!(allowed_transitions(ACTIVE), vec![SUSPENDED, ENDED]);
-        assert!(allowed_transitions(ENDED).is_empty());
+    fn actions_are_the_other_statuses() {
+        assert_eq!(allowed_transitions(ACTIVE), vec![PENDING, SUSPENDED, ENDED]);
+        assert_eq!(allowed_transitions(ENDED), vec![PENDING, ACTIVE, SUSPENDED]);
+        assert!(allowed_transitions("gone").is_empty());
     }
 
     #[test]

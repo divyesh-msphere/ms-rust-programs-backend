@@ -10,6 +10,8 @@ pub struct ProgramPresenter {
     pub description: Option<String>,
     pub about: Option<String>,
     pub highlights: Vec<String>,
+    /// The program's domains, e.g. `["domain1", "domain2"]`.
+    pub domain: Vec<String>,
     pub branding: BrandingPresenter,
     /// Whether the program renews at all.
     pub renewal_enabled: bool,

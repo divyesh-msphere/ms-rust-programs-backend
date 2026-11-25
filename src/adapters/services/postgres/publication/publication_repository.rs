@@ -83,18 +83,19 @@ async fn store_discounts_section(conn: &mut PgConnection, program_id: Uuid) -> R
             .fetch_all(&mut *conn)
             .await
             .map_err(db_error)?;
-    let (mut domains, mut stores): (HashMap<String, DiscountConfig>, HashMap<String, DiscountConfig>) = Default::default();
+    let (mut business_units, mut domains, mut stores): (HashMap<String, DiscountConfig>, HashMap<String, DiscountConfig>, HashMap<String, DiscountConfig>) =
+        Default::default();
     for (scope_type, scope_id, config) in overrides {
         let config = DiscountConfig::from_json(&config);
-        if scope_type == "domain" {
-            domains.insert(scope_id, config);
-        } else {
-            stores.insert(scope_id, config);
-        }
+        match scope_type.as_str() {
+            "business_unit" => business_units.insert(scope_id, config),
+            "domain" => domains.insert(scope_id, config),
+            _ => stores.insert(scope_id, config),
+        };
     }
 
-    let enrollments: Vec<(Uuid, String, String)> = sqlx::query_as(
-        "SELECT id, store_id, website_id FROM enrollments WHERE program_id = $1 AND status = 'active' ORDER BY id",
+    let enrollments: Vec<(Uuid, String, String, Option<String>)> = sqlx::query_as(
+        "SELECT id, store_id, website_id, bu_unit_code FROM enrollments WHERE program_id = $1 AND status = 'active' ORDER BY id",
     )
     .bind(program_id)
     .fetch_all(&mut *conn)
@@ -103,8 +104,9 @@ async fn store_discounts_section(conn: &mut PgConnection, program_id: Uuid) -> R
     let empty = DiscountConfig::default();
     let resolved: Vec<Value> = enrollments
         .into_iter()
-        .filter_map(|(id, store_id, website_id)| {
-            let r = resolve(&program, domains.get(&website_id).unwrap_or(&empty), stores.get(&id.to_string()).unwrap_or(&empty)).resolved;
+        .filter_map(|(id, store_id, website_id, bu_unit_code)| {
+            let business_unit = bu_unit_code.as_ref().and_then(|code| business_units.get(code)).unwrap_or(&empty);
+            let r = resolve(&program, business_unit, domains.get(&website_id).unwrap_or(&empty), stores.get(&id.to_string()).unwrap_or(&empty)).resolved;
             (r.enabled && r.amount > 0.0).then(|| {
                 json!({ "store_id": store_id, "website_id": website_id, "type": r.discount_type, "amount": r.amount, "currency_code": r.currency_code })
             })
@@ -113,6 +115,7 @@ async fn store_discounts_section(conn: &mut PgConnection, program_id: Uuid) -> R
 
     Ok(json!({
         "program": program.to_json(),
+        "business_units": business_units.iter().map(|(k, v)| (k.clone(), v.to_json())).collect::<serde_json::Map<_, _>>(),
         "domains": domains.iter().map(|(k, v)| (k.clone(), v.to_json())).collect::<serde_json::Map<_, _>>(),
         "stores": resolved,
     }))

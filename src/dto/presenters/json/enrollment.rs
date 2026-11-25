@@ -1,17 +1,37 @@
 use serde::Serialize;
 
 #[derive(Debug, Serialize, Clone)]
+pub struct BuLocationPresenter {
+    pub code: String,
+    /// The name of the location; `null` when it was not known at enroll time.
+    pub name: Option<String>,
+    /// The business unit of the location, `{code, name}`; `null` when none was sent.
+    pub bu: Option<BuPresenter>,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct WebsitePresenter {
+    pub code: String,
+    pub name: Option<String>,
+    pub domain: Option<String>,
+}
+
+/// The business unit of a store.
+#[derive(Debug, Serialize, Clone)]
+pub struct BuPresenter {
+    pub code: String,
+    pub name: Option<String>,
+}
+
+/// A store enrolled in a program on one website.
+#[derive(Debug, Serialize, Clone)]
 pub struct EnrollmentPresenter {
     pub path: String,
     pub id: String,
     pub application_id: Option<String>,
-    pub store_id: String,
-    /// `null` = show "Unresolved store".
-    pub store_name: Option<String>,
-    pub store_resolved: bool,
-    pub website_id: String,
-    pub website_name: Option<String>,
-    pub customer_group: Option<String>,
+    pub bu_location: BuLocationPresenter,
+    pub website: WebsitePresenter,
+    pub customer_name: Option<String>,
     pub status: String,
     /// The status changes allowed from here (the Actions dropdown).
     pub actions: Vec<&'static str>,
@@ -26,18 +46,19 @@ pub struct EnrollmentPresenter {
 pub struct ListEnrollmentsPresenter {
     pub results: Vec<EnrollmentPresenter>,
     pub next_page_token: Option<String>,
-    /// How many enrollments match the filter (the "N STORES" count).
+    /// How many stores match the filter (the "N STORES" count).
     pub total_size: i64,
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct BatchItemResultPresenter {
-    pub store_id: String,
-    pub website_id: String,
+    pub bu_location_code: String,
+    pub website_code: String,
     /// `created`, `already_enrolled` or `failed`.
     pub outcome: &'static str,
+    /// The new store's id when it was created.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub enrollment_id: Option<String>,
+    pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
 }

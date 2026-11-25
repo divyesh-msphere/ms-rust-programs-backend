@@ -33,7 +33,7 @@ use crate::domain::publication::PublicationRepository;
 use crate::domain::requirement::RequirementRepository;
 use crate::domain::rule_engine::RuleEngine;
 use crate::domain::rule_set::RuleSetRepository;
-use crate::adapters::services::zen::zen_rule_engine::ZenRuleEngine;
+use crate::adapters::services::ruleengine::module_rule_engine::ModuleRuleEngine;
 use crate::domain::signoff::SignoffRepository;
 use crate::domain::store_discount::StoreDiscountRepository;
 use std::sync::Arc;
@@ -85,7 +85,7 @@ impl Repositories {
             enrollment_repository: Arc::new(EnrollmentRepositoryPostgresImpl::new(postgres_connection.clone())),
             store_discount_repository: Arc::new(StoreDiscountRepositoryPostgresImpl::new(postgres_connection.clone())),
             rule_set_repository: Arc::new(RuleSetRepositoryPostgresImpl::new(postgres_connection.clone())),
-            rule_engine: Arc::new(ZenRuleEngine::new()),
+            rule_engine: Arc::new(ModuleRuleEngine::new().await),
             publication_repository: Arc::new(PublicationRepositoryPostgresImpl::new(postgres_connection.clone())),
             document_repository: Arc::new(DocumentRepositoryPostgresImpl::new(postgres_connection)),
         }

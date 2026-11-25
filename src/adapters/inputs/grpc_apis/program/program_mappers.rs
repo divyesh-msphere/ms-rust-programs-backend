@@ -87,6 +87,7 @@ pub fn to_grpc_program(program: Program) -> GrpcProgram {
         description: program.description,
         about: program.about,
         highlights: program.highlights,
+        domain: program.domain,
         branding: Some(ProgramBranding {
             brand_color: program.branding.brand_color,
             text_color: program.branding.text_color,
@@ -149,6 +150,7 @@ impl GrpcApiMapper<ListProgramsOutput, ListProgramsInput, ListProgramsResponse, 
             show_archived: request.show_archived.unwrap_or(false),
             search: request.search,
             filter: request.filter,
+            order_by: request.order_by,
         })
     }
 
@@ -197,6 +199,7 @@ impl CreateProgramGrpcMapper {
             description: request.description,
             about: request.about,
             highlights: request.highlights,
+            domain: request.domain,
             branding: request
                 .branding
                 .into_option()
@@ -246,6 +249,7 @@ impl UpdateProgramGrpcMapper {
             // An empty string clears the merchant-facing text.
             about: request.about.map(|a| if a.is_empty() { None } else { Some(a) }),
             highlights: request.highlights.into_option().map(|list| list.items),
+            domain: request.domain.into_option().map(|list| list.items),
             branding: request.branding.into_option().map(|b| BrandingPatch {
                 brand_color: b.brand_color,
                 text_color: b.text_color,

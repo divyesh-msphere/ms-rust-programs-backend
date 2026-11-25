@@ -280,40 +280,40 @@ service ProgramsService {
     };
   }
 
-  // ---- Enrollments ----
-  rpc ListEnrollments(ListEnrollmentsRequest) returns (ListEnrollmentsResponse) {
+  // ---- Stores ----
+  rpc ListStores(ListStoresRequest) returns (ListStoresResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "reader"
       resource_fields: [{field: "path" pattern: "programs/*"}]
     };
   }
-  rpc GetEnrollment(GetEnrollmentRequest) returns (GetEnrollmentResponse) {
+  rpc GetStore(GetStoreRequest) returns (GetStoreResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "reader"
-      resource_fields: [{field: "path" pattern: "programs/*/enrollments/*"}]
+      resource_fields: [{field: "path" pattern: "programs/*/stores/*"}]
     };
   }
-  rpc CreateEnrollment(CreateEnrollmentRequest) returns (CreateEnrollmentResponse) {
+  rpc CreateStore(CreateStoreRequest) returns (CreateStoreResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "writer"
       resource_fields: [{field: "path" pattern: "programs/*"}]
     };
   }
-  rpc BatchCreateEnrollments(BatchCreateEnrollmentsRequest) returns (BatchCreateEnrollmentsResponse) {
+  rpc BatchCreateStores(BatchCreateStoresRequest) returns (BatchCreateStoresResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "writer"
       resource_fields: [{field: "path" pattern: "programs/*"}]
     };
   }
-  rpc UpdateEnrollment(UpdateEnrollmentRequest) returns (UpdateEnrollmentResponse) {
+  rpc UpdateStore(UpdateStoreRequest) returns (UpdateStoreResponse) {
     option (msapi.v1.sso_permission) = {
       permission: "programs.programs"
       action: "writer"
-      resource_fields: [{field: "path" pattern: "programs/*/enrollments/*"}]
+      resource_fields: [{field: "path" pattern: "programs/*/stores/*"}]
     };
   }
 

@@ -25,6 +25,7 @@ impl ListStoreDiscountsUseCase {
 pub struct ListStoreDiscountsInput {
     pub program: ResourceIdentifier,
     pub website_id: Option<String>,
+    pub bu_unit_code: Option<String>,
     pub store: Option<String>,
     pub page_size: Option<i64>,
     pub page_token: Option<Uuid>,
@@ -46,6 +47,7 @@ impl UseCase<ListStoreDiscountsOutput, ListStoreDiscountsInput> for ListStoreDis
 
         let filter = StoreDiscountFilter {
             website_id: input.website_id.map(|w| w.trim().to_string()).filter(|w| !w.is_empty()),
+            bu_unit_code: input.bu_unit_code.map(|c| c.trim().to_string()).filter(|c| !c.is_empty()),
             store_prefix: input.store.map(|s| s.trim().to_string()).filter(|s| !s.is_empty()),
         };
         let page_size = input.page_size.unwrap_or(DEFAULT_PAGE_SIZE);

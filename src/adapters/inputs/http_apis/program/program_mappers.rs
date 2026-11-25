@@ -37,6 +37,7 @@ pub fn to_presenter(program: Program) -> ProgramPresenter {
         description: program.description,
         about: program.about,
         highlights: program.highlights,
+        domain: program.domain,
         branding: BrandingPresenter {
             brand_color: program.branding.brand_color,
             text_color: program.branding.text_color,
@@ -173,7 +174,7 @@ impl ListProgramsMapper {
     pub fn input(payload: ListProgramsPayload, pairs: Vec<(String, String)>) -> Result<ListProgramsInput, ApplicationError> {
         let is_filter_key = |key: &str| {
             let head = key.split('.').next().unwrap_or("").trim_end_matches('!').to_lowercase();
-            matches!(head.as_str(), "program" | "description" | "domain" | "status" | "state" | "level")
+            matches!(head.as_str(), "program" | "description" | "domain" | "domains" | "status" | "state" | "level")
         };
         let terms: Vec<String> = payload
             .filter
@@ -190,6 +191,7 @@ impl ListProgramsMapper {
             show_archived: payload.show_archived.unwrap_or(false),
             search: payload.search,
             filter,
+            order_by: payload.order_by,
         })
     }
 
@@ -238,6 +240,7 @@ impl CreateProgramMapper {
             description: body.description,
             about: body.about,
             highlights: body.highlights.unwrap_or_default(),
+            domain: body.domain.unwrap_or_default(),
             branding: body
                 .branding
                 .map(|b| Branding { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon })
@@ -282,6 +285,7 @@ impl UpdateProgramMapper {
             description: body.description,
             about: body.about,
             highlights: body.highlights,
+            domain: body.domain,
             branding: body
                 .branding
                 .map(|b| BrandingPatch { brand_color: b.brand_color, text_color: b.text_color, logo_icon: b.logo_icon }),

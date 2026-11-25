@@ -1,6 +1,6 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
     BatchUpdateStoreDiscountsRequest, BatchUpdateStoreDiscountsResponse, DiscountChange as GrpcDiscountChange,
-    DiscountConfig as GrpcDiscountConfig, DiscountSources, DomainDiscountLevel, GetStoreDiscountRequest,
+    DiscountConfig as GrpcDiscountConfig, BusinessUnit, BusinessUnitDiscountLevel, DiscountSources, DomainDiscountLevel, GetStoreDiscountRequest,
     GetStoreDiscountResponse, ListDiscountLevelsRequest, ListDiscountLevelsResponse, ListStoreDiscountsRequest,
     ListStoreDiscountsResponse, ResolvedDiscount, StoreDiscount as GrpcStoreDiscount, UpdateDiscountLevelRequest,
     UpdateDiscountLevelResponse, UpdateStoreDiscountRequest, UpdateStoreDiscountResponse,
@@ -58,6 +58,8 @@ fn to_grpc_row(row: StoreDiscountRow) -> GrpcStoreDiscount {
         store_name: row.store_name,
         website_id: row.website_id,
         website_name: row.website_name,
+        bu: row.bu_unit_code.map(|code| BusinessUnit { code, name: row.bu_unit_name, ..Default::default() }).into(),
+        inherited_from_parent: row.inherited_from_parent,
         enrollment_status: row.enrollment_status,
         resolved: Some(resolved_to_grpc(row.resolved)).into(),
         sources: Some(sources_to_grpc(row.sources)).into(),
@@ -113,6 +115,7 @@ impl ListStoreDiscountsGrpcMapper {
         Ok(ListStoreDiscountsInput {
             program: ResourceIdentifier::parse(&request.program),
             website_id: request.website_id,
+            bu_unit_code: request.bu_unit_code,
             store: request.store,
             page_size: request.max_page_size,
             page_token: parse::optional_uuid("page_token", request.page_token.as_deref())?,
@@ -192,8 +195,18 @@ impl ListDiscountLevelsGrpcMapper {
     pub fn output_success(output: DiscountLevels) -> ListDiscountLevelsResponse {
         ListDiscountLevelsResponse {
             program: Some(config_to_grpc(output.program)).into(),
-            domains: output
-                .domains
+            business_units: output
+                .business_units
+                .into_iter()
+                .map(|(bu_unit_code, name, config)| BusinessUnitDiscountLevel {
+                    bu_unit_code,
+                    name,
+                    discount: Some(config_to_grpc(config)).into(),
+                    ..Default::default()
+                })
+                .collect(),
+            websites: output
+                .websites
                 .into_iter()
                 .map(|(website_id, config)| DomainDiscountLevel {
                     website_id,
@@ -212,9 +225,13 @@ impl UpdateDiscountLevelGrpcMapper {
     pub fn input(request: UpdateDiscountLevelRequest, actor: String) -> Result<UpdateDiscountLevelInput, ApplicationError> {
         Ok(UpdateDiscountLevelInput {
             program: ResourceIdentifier::parse(&request.program),
-            target: match request.website_id {
-                Some(website) => LevelTarget::Domain(website.trim().to_string()),
-                None => LevelTarget::Program,
+            target: match (request.website_id, request.bu_unit_code) {
+                (Some(_), Some(_)) => {
+                    return Err(ApplicationError::validation_error("give website_id or bu_unit_code, not both"));
+                }
+                (Some(website), None) => LevelTarget::Website(website.trim().to_string()),
+                (None, Some(code)) => LevelTarget::BusinessUnit(code.trim().to_string()),
+                (None, None) => LevelTarget::Program,
             },
             change: change_from_grpc(request.discount.into_option())?,
             actor,
@@ -222,13 +239,15 @@ impl UpdateDiscountLevelGrpcMapper {
     }
 
     pub fn output_success(output: UpdateDiscountLevelOutput) -> UpdateDiscountLevelResponse {
-        let (level, website_id) = match output.target {
-            LevelTarget::Program => ("program", None),
-            LevelTarget::Domain(website) => ("domain", Some(website)),
+        let (level, website_id, bu_unit_code) = match output.target {
+            LevelTarget::Program => ("program", None, None),
+            LevelTarget::BusinessUnit(code) => ("business_unit", None, Some(code)),
+            LevelTarget::Website(website) => ("website", Some(website), None),
         };
         UpdateDiscountLevelResponse {
             level: level.to_string(),
             website_id,
+            bu_unit_code,
             discount: Some(config_to_grpc(output.discount)).into(),
             ..Default::default()
         }

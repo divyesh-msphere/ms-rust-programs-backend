@@ -7,7 +7,7 @@ use crate::application::errors::application_error::ApplicationError;
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::aep::ResourceIdentifier;
 use crate::domain::program::{
-    LastActivity, NewProgram, Program, ProgramDomain, ProgramFilter, ProgramListStats, ProgramListSummary, ProgramRepository, UpdateProgram,
+    LastActivity, NewProgram, Program, ProgramDomain, ProgramFilter, ProgramSort, ProgramListStats, ProgramListSummary, ProgramRepository, UpdateProgram,
 };
 use crate::domain::program_module::ProgramModule;
 use crate::domain::program_query::{SearchField, SearchTerm, TextOp};
@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
-const COLUMNS: &str = "id, name, slug, description, about, highlights, brand_color, text_color, logo_icon, \
+const COLUMNS: &str = "id, name, slug, description, about, highlights, domain, brand_color, text_color, logo_icon, \
                        renewal_term_months, renewal_grace_days, renewal_reminder_days, auto_renew, \
                        renewal_enabled, level, active, config_version, config_hash, state, create_time, update_time";
 
@@ -122,17 +122,26 @@ fn push_filter(qb: &mut QueryBuilder<'_, Postgres>, filter: &ProgramFilter) {
         )
         .push_bind(filter.list.not_domains.clone())
         .push(") OR lower(e.website_name) = ANY(")
+        .push_bind(lowered.clone())
+        .push(") OR lower(e.website_domain) = ANY(")
+        .push_bind(lowered.clone())
+        .push("))) AND NOT EXISTS (SELECT 1 FROM unnest(programs.domain) d WHERE lower(d) = ANY(")
         .push_bind(lowered)
-        .push(")))");
+        .push("))");
     }
     if !filter.list.domains.is_empty() {
         let lowered: Vec<String> = filter.list.domains.iter().map(|d| d.to_lowercase()).collect();
+        // A program matches on its stored `domain` list or on a website it has a live enrollment on.
         qb.push(
-            " AND EXISTS (SELECT 1 FROM enrollments e WHERE e.program_id = programs.id \
+            " AND (EXISTS (SELECT 1 FROM enrollments e WHERE e.program_id = programs.id \
              AND e.status IN ('pending', 'active', 'suspended') AND (e.website_id = ANY(",
         )
         .push_bind(filter.list.domains.clone())
         .push(") OR lower(e.website_name) = ANY(")
+        .push_bind(lowered.clone())
+        .push(") OR lower(e.website_domain) = ANY(")
+        .push_bind(lowered.clone())
+        .push("))) OR EXISTS (SELECT 1 FROM unnest(programs.domain) d WHERE lower(d) = ANY(")
         .push_bind(lowered)
         .push(")))");
     }
@@ -145,6 +154,7 @@ fn snapshot(program: &Program) -> Value {
         "description": program.description,
         "about": program.about,
         "highlights": program.highlights,
+        "domain": program.domain,
         "branding": {
             "brand_color": program.branding.brand_color,
             "text_color": program.branding.text_color,
@@ -281,13 +291,24 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         push_filter(&mut count, filter);
         let total_size: i64 = count.build_query_scalar().fetch_one(pool).await.map_err(db_error)?;
 
-        // Keyset on the primary key; UUIDv7 ids are in creation order.
+        // Keyset paging; the token is the last row's id. UUIDv7 ids are in creation order. For a name
+        // sort the position is (lower(name), id), so the token's own row is looked up.
         let mut select = QueryBuilder::<Postgres>::new(format!("SELECT {COLUMNS} FROM programs WHERE "));
         push_filter(&mut select, filter);
+        let (after, order) = match filter.sort {
+            ProgramSort::Id => ("id >", "id"),
+            ProgramSort::NameAsc => ("(lower(name), id) >", "lower(name), id"),
+            ProgramSort::NameDesc => ("(lower(name), id) <", "lower(name) DESC, id DESC"),
+        };
         if let Some(token) = page_token {
-            select.push(" AND id > ").push_bind(token);
+            select.push(" AND ").push(after);
+            if filter.sort == ProgramSort::Id {
+                select.push(" ").push_bind(token);
+            } else {
+                select.push(" (SELECT lower(name), id FROM programs WHERE id = ").push_bind(token).push(")");
+            }
         }
-        select.push(" ORDER BY id LIMIT ").push_bind(page_size + 1);
+        select.push(" ORDER BY ").push(order).push(" LIMIT ").push_bind(page_size + 1);
 
         let mut rows = select.build_query_as::<ProgramDbModel>().fetch_all(pool).await.map_err(db_error)?;
 
@@ -404,8 +425,8 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
         let insert = format!(
             "INSERT INTO programs (id, name, slug, description, level, config_hash, about, highlights, \
                                    brand_color, text_color, logo_icon, renewal_term_months, \
-                                   renewal_grace_days, renewal_reminder_days, auto_renew, renewal_enabled) \
-             VALUES ($1, $2, $3, $4, $5, md5($1::text || ':1'), $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) \
+                                   renewal_grace_days, renewal_reminder_days, auto_renew, renewal_enabled, domain) \
+             VALUES ($1, $2, $3, $4, $5, md5($1::text || ':1'), $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) \
              RETURNING {COLUMNS}"
         );
         let model = sqlx::query_as::<_, ProgramDbModel>(&insert)
@@ -424,6 +445,7 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             .bind(input.renewal.reminder_days)
             .bind(input.renewal.auto_renew)
             .bind(input.renewal.enabled)
+            .bind(&input.domain)
             .fetch_one(&mut *tx)
             .await
             .map_err(|err| create_conflict(err, &input.slug))?;
@@ -500,6 +522,7 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             None => current.about.clone(),
         };
         let highlights = input.highlights.clone().unwrap_or_else(|| current.highlights.clone());
+        let domain = input.domain.clone().unwrap_or_else(|| current.domain.clone());
         let branding = input.branding.clone().unwrap_or_else(|| current.branding.clone());
         let renewal = input.renewal.clone().unwrap_or_else(|| current.renewal.clone());
 
@@ -525,7 +548,7 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
                     config_version = $6, config_hash = md5(id::text || ':' || $6::text), \
                     about = $7, highlights = $8, brand_color = $9, text_color = $10, logo_icon = $11, \
                     renewal_term_months = $12, renewal_grace_days = $13, renewal_reminder_days = $14, \
-                    auto_renew = $15, renewal_enabled = $16, update_time = now() \
+                    auto_renew = $15, renewal_enabled = $16, domain = $17, update_time = now() \
              WHERE id = $1 RETURNING {COLUMNS}"
         );
         let model = sqlx::query_as::<_, ProgramDbModel>(&update)
@@ -545,6 +568,7 @@ impl ProgramRepository for ProgramRepositoryPostgresImpl {
             .bind(renewal.reminder_days)
             .bind(renewal.auto_renew)
             .bind(renewal.enabled)
+            .bind(&domain)
             .fetch_one(&mut *tx)
             .await
             .map_err(db_error)?;

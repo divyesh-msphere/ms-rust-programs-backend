@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tracing::{Instrument, info_span, instrument};
 use uuid::Uuid;
 use crate::domain::program_query::{parse_filter, parse_search};
-use crate::domain::program::{ProgramFilter, ProgramListItem, ProgramListSummary, ProgramRepository};
+use crate::domain::program::{ProgramFilter, ProgramSort, ProgramListItem, ProgramListSummary, ProgramRepository};
 
 const DEFAULT_PAGE_SIZE: i64 = 50;
 const MAX_PAGE_SIZE: i64 = 200;
@@ -29,6 +29,8 @@ pub struct ListProgramsInput {
     pub search: Option<String>,
     /// `program.not_contains=abc,description.is_empty,domain=[a,b],status=active,level=organization`.
     pub filter: Option<String>,
+    /// `name`, `name asc` or `name desc`; empty keeps creation order.
+    pub order_by: Option<String>,
 }
 
 #[derive(Debug)]
@@ -54,6 +56,7 @@ impl UseCase<ListProgramsOutput, ListProgramsInput> for ListProgramsUseCase {
 
         let list = parse_filter(input.filter.as_deref())?;
         let filter = ProgramFilter {
+            sort: ProgramSort::parse(input.order_by.as_deref())?,
             show_deleted: input.show_deleted,
             show_archived: input.show_archived,
             search: parse_search(input.search.as_deref())?.into_iter().chain(list.text.clone()).collect(),

@@ -36,6 +36,8 @@ pub struct ListStoreDiscountsPathPayload {
 pub struct ListStoreDiscountsQueryPayload {
     /// The "All websites" filter.
     pub website_id: Option<String>,
+    /// Only the stores of one business unit (the parent of the websites).
+    pub bu_unit_code: Option<String>,
     /// A prefix of the store name (case-insensitive).
     pub store: Option<String>,
     pub max_page_size: Option<i64>,
@@ -86,9 +88,15 @@ pub struct UpdateProgramLevelPathPayload {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct UpdateDomainLevelPathPayload {
+pub struct UpdateWebsiteLevelPathPayload {
     pub program: String,
     pub website_id: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct UpdateBusinessUnitLevelPathPayload {
+    pub program: String,
+    pub bu_unit_code: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

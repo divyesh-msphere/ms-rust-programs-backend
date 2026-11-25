@@ -166,6 +166,8 @@ message Program {
   ProgramBranding branding = 17 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // Only set when `renewal_enabled` is true.
   optional ProgramRenewal renewal = 18 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The program's domains, e.g. ["domain1", "domain2"].
+  repeated string domain = 20 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // Whether the program renews at all (false until turned on).
   bool renewal_enabled = 19 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
@@ -193,6 +195,11 @@ message ProgramRenewal {
 
 // The highlights of an update: present replaces the whole list (an empty list clears it).
 message HighlightList {
+  repeated string items = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// The domains of an update: present replaces the whole list (an empty list clears it).
+message DomainList {
   repeated string items = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 
@@ -383,7 +390,8 @@ message ListProgramsRequest {
   // operators (program, description): contains (default), not_contains, equals, not_equals, starts_with,
   // ends_with, is_empty, is_not_empty. `domain`, `status` and `level` also take `!=` to exclude, e.g. `status!=active`.
   optional string filter = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  reserved 7;
+  // `name`, `name asc` or `name desc` (case-insensitive). Empty keeps creation order.
+  optional string order_by = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
 message ListProgramsResponse {
   repeated Program results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -419,6 +427,8 @@ message CreateProgramRequest {
   optional string about = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // Up to 5 short selling points.
   repeated string highlights = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The program's domains, e.g. ["domain1", "domain2"].
+  repeated string domain = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramBranding branding = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramRenewal renewal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional bool renewal_enabled = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
@@ -444,6 +454,8 @@ message UpdateProgramRequest {
   // An empty string clears the merchant-facing text.
   optional string about = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional HighlightList highlights = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Present replaces the whole domain list (an empty list clears it).
+  optional DomainList domain = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramBranding branding = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional ProgramRenewal renewal = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional bool renewal_enabled = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
@@ -1110,130 +1122,159 @@ message CreateSignoffResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Enrollments (a store enrolled in a program on one website)
+// Stores (a store enrolled in a program on one website)
 // ---------------------------------------------------------------------------
 
-message Enrollment {
+// The BU location a store belongs to.
+message BuLocation {
+  reserved 2, 3;
+  // Its unique code.
+  string code = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The name of the location; unset when it was not known. On update an empty string clears it.
+  optional string name = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The business unit of the location, code and name; unset when none was sent. On update a `bu` with an
+  // empty code clears it.
+  optional BusinessUnit bu = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// The website a store is enrolled on.
+message StoreWebsite {
+  // Its unique code.
+  string code = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string domain = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+// The business unit of a store. Its code is also the PARENT of the website in the store discounts.
+message BusinessUnit {
+  string code = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+}
+
+message Store {
   option (aep.api.resource) = {
-    type: "programs.mobilesentrix.com/enrollment"
-    singular: "enrollment"
-    plural: "enrollments"
-    pattern: "programs/{program}/enrollments/{enrollment}"
+    type: "programs.mobilesentrix.com/store"
+    singular: "store"
+    plural: "stores"
+    pattern: "programs/{program}/stores/{store}"
   };
 
   string path = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // The application that produced it, when there was one.
   optional string application_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  string store_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  // Unset = "Unresolved store".
-  optional string store_name = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  bool store_resolved = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  string website_id = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  optional string website_name = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  optional string customer_group = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // pending, active, suspended or ended. Changes: pending -> active, active <-> suspended, anything -> ended.
-  string status = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  BuLocation bu_location = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  StoreWebsite website = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string customer_name = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // pending, active, suspended or ended. Any status can move to any other.
+  string status = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // The status changes allowed from here (the Actions dropdown).
-  repeated string actions = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  optional string enrolled_time = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  int32 contracts_count = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  optional string last_contract_time = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  string create_time = 15 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  string update_time = 16 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated string actions = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string enrolled_time = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  int32 contracts_count = 10 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string last_contract_time = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string create_time = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string update_time = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message ListEnrollmentsRequest {
+message ListStoresRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  // The "All websites" filter.
-  optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // Only these statuses, comma-separated. Unset for all.
+  // The "All websites" filter: a website code, name or domain. Same as `filter` term `website=...`.
+  optional string website = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Only these statuses, e.g. `active` or `[active,suspended]`. Same as `filter` term `status=...`.
   optional string status = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // A prefix of the store name (case-insensitive).
-  optional string store = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // BU location code contains this text. Same as `filter` term `bu_location=...`.
+  optional string bu_location = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional int64 max_page_size = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional string page_token = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // The search box: bare text matches the BU location code, website and customer name; `bu_location=abc`,
+  // `website=abc` or `customer_name=abc` match one field.
+  optional string search = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Terms joined with `&`: `bu_location.starts_with=BU&customer_name.is_empty&website=[w1,w2]&status!=ended`.
+  // Text fields (bu_location, website, customer_name) take an operator: contains (default), not_contains,
+  // equals, not_equals, starts_with, ends_with, is_empty, is_not_empty (customer_name only).
+  optional string filter = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
-message ListEnrollmentsResponse {
-  repeated Enrollment results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message ListStoresResponse {
+  repeated Store results = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string next_page_token = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  // How many enrollments match the filter (the "N STORES" count).
+  // How many stores match the filter (the "N STORES" count).
   int64 total_size = 3 [jstype = JS_NUMBER, (aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message GetEnrollmentRequest {
+message GetStoreRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  string enrollment = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string store = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
-message GetEnrollmentResponse {
-  Enrollment enrollment = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message GetStoreResponse {
+  Store store = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message CreateEnrollmentRequest {
+message CreateStoreRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Optional client-specified ID (AEP-133); server generates one if omitted.
   optional string id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  string store_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  optional string store_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  string website_id = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  optional string website_name = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  optional string customer_group = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  BuLocation bu_location = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  StoreWebsite website = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string customer_name = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // "pending" or "active" (default).
-  optional string status = 8 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string status = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
-  string path = 9 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string path = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
-message CreateEnrollmentResponse {
-  Enrollment enrollment = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message CreateStoreResponse {
+  Store store = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message UpdateEnrollmentRequest {
+message UpdateStoreRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  string enrollment = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  string store = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Any of pending, active, suspended, ended.
   optional string status = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  // An empty string clears the group.
-  optional string customer_group = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // An empty string clears the customer name.
+  optional string customer_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  // Only `bu_location.bu` is read: it replaces the business unit, and a `bu` with an empty code clears it.
+  optional BuLocation bu_location = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
-message UpdateEnrollmentResponse {
-  Enrollment enrollment = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message UpdateStoreResponse {
+  Store store = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-message EnrollmentItem {
-  string store_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  optional string store_name = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  string website_id = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  optional string website_name = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  optional string customer_group = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
-  optional string status = 6 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+message StoreItem {
+  BuLocation bu_location = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  StoreWebsite website = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  optional string customer_name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  optional string status = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
 }
-message BatchCreateEnrollmentsRequest {
+message BatchCreateStoresRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // Up to 500 stores.
-  repeated EnrollmentItem items = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
+  repeated StoreItem items = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
-message EnrollmentItemResult {
-  string store_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+message StoreItemResult {
+  string bu_location_code = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  string website_code = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // "created", "already_enrolled" or "failed".
   string outcome = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  optional string enrollment_id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The new store's id when it was created.
+  optional string id = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string error = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
-message BatchCreateEnrollmentsResponse {
+message BatchCreateStoresResponse {
   int32 created = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  repeated EnrollmentItemResult results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  repeated StoreItemResult results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 // ---------------------------------------------------------------------------
-// Store discounts (each enrolled store's effective discount: Program -> Domain -> Store)
+// Store discounts (each enrolled store's effective discount: Program -> Business unit -> Website -> Store)
 // ---------------------------------------------------------------------------
 
 // What ONE level sets. A field that is unset is inherited from the level above.
@@ -1254,7 +1295,7 @@ message ResolvedDiscount {
   optional string currency_code = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
-// Which level each resolved field came from: "program", "domain" or "store".
+// Which level each resolved field came from: "program", "business_unit", "website" or "store".
 message DiscountSources {
   string enabled = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   string type = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -1300,11 +1341,17 @@ message StoreDiscount {
   DiscountConfig store_override = 11 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // What the store would get if its own override were reverted.
   ResolvedDiscount inherited = 12 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The business unit of the store (code and name), the parent whose discount the website inherits.
+  optional BusinessUnit bu = 13 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // True when at least one field is taken from the business unit (the parent), not set on the website.
+  bool inherited_from_parent = 14 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message ListStoreDiscountsRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // Only the stores of this business unit.
+  optional string bu_unit_code = 7 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   // A prefix of the store name (case-insensitive).
   optional string store = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   optional int64 max_page_size = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
@@ -1353,6 +1400,13 @@ message BatchUpdateStoreDiscountsResponse {
   repeated StoreDiscount results = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
+message BusinessUnitDiscountLevel {
+  string bu_unit_code = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  DiscountConfig discount = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The business unit's name, from the stores enrolled with it.
+  optional string name = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+}
+
 message DomainDiscountLevel {
   string website_id = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   DiscountConfig discount = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
@@ -1365,21 +1419,27 @@ message ListDiscountLevelsRequest {
 }
 message ListDiscountLevelsResponse {
   DiscountConfig program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
-  repeated DomainDiscountLevel domains = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The websites that set something of their own.
+  repeated DomainDiscountLevel websites = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  // The business units (parents of the websites) that set something.
+  repeated BusinessUnitDiscountLevel business_units = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }
 
 message UpdateDiscountLevelRequest {
   string program = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
-  // The website to change; unset changes the program level.
+  // The website to change (the child). Give this or `bu_unit_code`; neither changes the program level.
   optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
+  // The business unit to change (the parent of its websites).
+  optional string bu_unit_code = 5 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OPTIONAL];
   DiscountChange discount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
   // AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
   string path = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_REQUIRED];
 }
 message UpdateDiscountLevelResponse {
-  // "program" or "domain".
+  // "program", "business_unit" or "website".
   string level = 1 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   optional string website_id = 2 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
+  optional string bu_unit_code = 4 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
   // What that level sets afterwards.
   DiscountConfig discount = 3 [(aep.api.field_info).field_behavior = FIELD_BEHAVIOR_OUTPUT_ONLY];
 }

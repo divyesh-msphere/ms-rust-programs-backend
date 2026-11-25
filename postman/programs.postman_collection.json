@@ -1329,7 +1329,7 @@
                   "pm.collectionVariables.set('program_id', b.id);",
                   "pm.test('program fields', () => { pm.expect(b.slug).to.eql(pm.collectionVariables.get('slug')); pm.expect(b.level).to.eql('location'); pm.expect(b.config_version).to.eql(1); pm.expect(b.state).to.eql('ACTIVE'); });",
                   "pm.test('Overview added automatically', () => pm.expect(b.modules.map(m => m.key)).to.include('overview'));",
-                  "pm.test('premade modules carry handler and api_base', () => { const a = b.modules.find(m => m.key === 'enrollment.stores.enrolled_stores_control_panel'); pm.expect(a.source).to.eql('premade'); pm.expect(a.handler_key).to.eql('enrolled_stores'); pm.expect(a.api_base).to.eql('enrollments'); });",
+                  "pm.test('premade modules carry handler and api_base', () => { const a = b.modules.find(m => m.key === 'enrollment.stores.enrolled_stores_control_panel'); pm.expect(a.source).to.eql('premade'); pm.expect(a.handler_key).to.eql('enrolled_stores'); pm.expect(a.api_base).to.eql('stores'); });",
                   "pm.test('ancestors included', () => pm.expect(b.modules.map(m => m.key)).to.include.members(['enrollment','document_agreement']));"
                 ]
               }
@@ -1420,7 +1420,7 @@
             "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Credit Line Details\",\n  \"slug\": \"details-{{$timestamp}}\",\n  \"description\": \"Net-30 credit line.\",\n  \"about\": \"Buy parts now and pay in 30 days.\",\n  \"highlights\": [\n    \"Net-30 payment terms\",\n    \"Monthly statements\"\n  ],\n  \"branding\": {\n    \"brand_color\": \"#1b62f6\",\n    \"text_color\": \"#FFFFFF\",\n    \"logo_icon\": \"credit_card\"\n  },\n  \"renewal\": {\n    \"term_months\": 12,\n    \"grace_period_days\": 30,\n    \"reminder_days\": 30,\n    \"auto_renew\": false\n  },\n  \"renewal_enabled\": true,\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Discount limit\",\n          \"type\": \"percentage\",\n          \"display\": true,\n          \"default\": 10\n        },\n        {\n          \"name\": \"Internal note\",\n          \"type\": \"text\",\n          \"display\": false\n        }\n      ]\n    }\n  ]\n}",
+              "raw": "{\n  \"name\": \"Credit Line Details\",\n  \"slug\": \"details-{{$timestamp}}\",\n  \"description\": \"Net-30 credit line.\",\n  \"about\": \"Buy parts now and pay in 30 days.\",\n  \"highlights\": [\n    \"Net-30 payment terms\",\n    \"Monthly statements\"\n  ],\n  \"domain\": [\"domain1\", \"domain2\"],\n  \"branding\": {\n    \"brand_color\": \"#1b62f6\",\n    \"text_color\": \"#FFFFFF\",\n    \"logo_icon\": \"credit_card\"\n  },\n  \"renewal\": {\n    \"term_months\": 12,\n    \"grace_period_days\": 30,\n    \"reminder_days\": 30,\n    \"auto_renew\": false\n  },\n  \"renewal_enabled\": true,\n  \"level\": \"user\",\n  \"modules\": [\n    {\n      \"key\": \"catalog_pricing.pricing.discount_rules\",\n      \"mode\": \"settings\",\n      \"settings\": [\n        {\n          \"name\": \"Discount limit\",\n          \"type\": \"percentage\",\n          \"display\": true,\n          \"default\": 10\n        },\n        {\n          \"name\": \"Internal note\",\n          \"type\": \"text\",\n          \"display\": false\n        }\n      ]\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1436,7 +1436,7 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const p = pm.response.json();",
-                  "pm.test('about, highlights, branding (upper-cased), renewal come back', () => { pm.expect(p.about).to.eql('Buy parts now and pay in 30 days.'); pm.expect(p.highlights).to.eql(['Net-30 payment terms','Monthly statements']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#FFFFFF',logo_icon:'credit_card'}); pm.expect(p.renewal_enabled).to.eql(true); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });",
+                  "pm.test('about, highlights, branding (upper-cased), renewal come back', () => { pm.expect(p.about).to.eql('Buy parts now and pay in 30 days.'); pm.expect(p.highlights).to.eql(['Net-30 payment terms','Monthly statements']); pm.expect(p.domain).to.eql(['domain1','domain2']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#FFFFFF',logo_icon:'credit_card'}); pm.expect(p.renewal_enabled).to.eql(true); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:false}); });",
                   "pm.test('settings carry display and the percentage type', () => { const s = p.modules.flatMap(m => m.settings || []); const limit = s.find(x => x.name === 'Discount limit'); const note = s.find(x => x.name === 'Internal note'); pm.expect(limit.type).to.eql('percentage'); pm.expect(limit.render).to.eql('percentage_input'); pm.expect(limit.display).to.eql(true); pm.expect(note.display).to.eql(false); });",
                   "pm.collectionVariables.set('detailsSlug', p.slug);"
                 ]
@@ -1730,7 +1730,7 @@
             "description": "One transaction: program + picked modules (with ancestors) + Overview + counters + audit + outbox.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"about\": null,\n  \"highlights\": [\n    \"Only one\"\n  ],\n  \"branding\": {\n    \"text_color\": \"#000000\"\n  },\n  \"renewal\": {\n    \"auto_renew\": true\n  }\n}",
+              "raw": "{\n  \"about\": null,\n  \"highlights\": [\n    \"Only one\"\n  ],\n  \"domain\": [\"domain3\"],\n  \"branding\": {\n    \"text_color\": \"#000000\"\n  },\n  \"renewal\": {\n    \"auto_renew\": true\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1745,7 +1745,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.test('a sent part replaces that part, the rest is kept', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql(['Only one']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#000000',logo_icon:'credit_card'}); pm.expect(p.renewal_enabled).to.eql(true); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:true}); });"
+                  "pm.test('a sent part replaces that part, the rest is kept', () => { const p = pm.response.json(); pm.expect(p.about).to.eql(null); pm.expect(p.highlights).to.eql(['Only one']); pm.expect(p.domain).to.eql(['domain3']); pm.expect(p.branding).to.eql({brand_color:'#1B62F6',text_color:'#000000',logo_icon:'credit_card'}); pm.expect(p.renewal_enabled).to.eql(true); pm.expect(p.renewal).to.eql({term_months:12,grace_period_days:30,reminder_days:30,auto_renew:true}); });"
                 ]
               }
             }
@@ -7111,20 +7111,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{dzslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{dzslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{dzslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"dz-store-1\",\n  \"website_id\": \"dz-web-1\",\n  \"status\": \"active\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"dz-store-1\"\n  },\n  \"website\": {\n    \"code\": \"dz-web-1\"\n  },\n  \"status\": \"active\"\n}"
             }
           },
           "event": [
@@ -8284,7 +8284,7 @@
       ]
     },
     {
-      "name": "Enrollments",
+      "name": "Stores",
       "item": [
         {
           "name": "Reset",
@@ -8380,14 +8380,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": ""
@@ -8421,20 +8421,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s1\",\n  \"store_name\": \"Alpha Store\",\n  \"website_id\": \"w1\",\n  \"website_name\": \"Main site\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s1\"\n  },\n  \"website\": {\n    \"code\": \"w1\",\n    \"name\": \"Main site\"\n  }\n}"
             }
           },
           "event": [
@@ -8460,14 +8460,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": ""
@@ -8481,7 +8481,7 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.collectionVariables.set('eid1', j.results[0].id);",
-                  "pm.test('one active enrollment, no application',()=>{const e=j.results[0];pm.expect(j.total_size).to.eql(1);pm.expect(e.store_id).to.eql('s1');pm.expect(e.store_name).to.eql('Alpha Store');pm.expect(e.store_resolved).to.eql(true);pm.expect(e.status).to.eql('active');pm.expect(e.application_id).to.eql(null);pm.expect(e.enrolled_time).to.be.a('string');pm.expect(e.actions).to.eql(['suspended','ended']);pm.expect(e.contracts_count).to.eql(0);pm.expect(e.path).to.eql('programs/'+e.path.split('/')[1]+'/enrollments/'+e.id);});"
+                  "pm.test('one active enrollment, no application',()=>{const e=j.results[0];pm.expect(j.total_size).to.eql(1);pm.expect(e.bu_location.code).to.eql('s1');pm.expect(e.status).to.eql('active');pm.expect(e.application_id).to.eql(null);pm.expect(e.enrolled_time).to.be.a('string');pm.expect(e.actions).to.eql(['pending','suspended','ended']);pm.expect(e.contracts_count).to.eql(0);pm.expect(e.path).to.eql('programs/'+e.path.split('/')[1]+'/stores/'+e.id);});"
                 ]
               }
             }
@@ -8540,20 +8540,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s2\",\n  \"store_name\": \"Bravo Shop\",\n  \"website_id\": \"w1\",\n  \"customer_group\": \"tier-1\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s2\"\n  },\n  \"website\": {\n    \"code\": \"w1\"\n  },\n  \"customer_name\": \"tier-1\"\n}"
             }
           },
           "event": [
@@ -8565,7 +8565,7 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.collectionVariables.set('eid2',j.id);",
-                  "pm.test('active, no application, group kept',()=>{pm.expect(j.status).to.eql('active');pm.expect(j.application_id).to.eql(null);pm.expect(j.customer_group).to.eql('tier-1');pm.expect(j.enrolled_time).to.be.a('string');});"
+                  "pm.test('active, no application, group kept',()=>{pm.expect(j.status).to.eql('active');pm.expect(j.application_id).to.eql(null);pm.expect(j.customer_name).to.eql('tier-1');pm.expect(j.enrolled_time).to.be.a('string');});"
                 ]
               }
             }
@@ -8586,20 +8586,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s2\",\n  \"website_id\": \"w1\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s2\"\n  },\n  \"website\": {\n    \"code\": \"w1\"\n  }\n}"
             }
           },
           "event": [
@@ -8630,20 +8630,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s2\",\n  \"website_id\": \"w2\",\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s2\"\n  },\n  \"website\": {\n    \"code\": \"w2\"\n  },\n  \"status\": \"pending\"\n}"
             }
           },
           "event": [
@@ -8655,7 +8655,7 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.collectionVariables.set('eid3',j.id);",
-                  "pm.test('pending and unresolved',()=>{pm.expect(j.status).to.eql('pending');pm.expect(j.store_resolved).to.eql(false);pm.expect(j.store_name).to.eql(null);pm.expect(j.enrolled_time).to.eql(null);pm.expect(j.actions).to.eql(['active','ended']);});"
+                  "pm.test('pending, no enrolled time',()=>{pm.expect(j.status).to.eql('pending');pm.expect(j.enrolled_time).to.eql(null);pm.expect(j.actions).to.eql(['active','suspended','ended']);});"
                 ]
               }
             }
@@ -8710,18 +8710,18 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?website_id=w2",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?website=w2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
-                  "key": "website_id",
+                  "key": "website",
                   "value": "w2"
                 }
               ]
@@ -8753,14 +8753,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?status=pending",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?status=pending",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -8796,14 +8796,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?status=active&website_id=w1",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?status=active&website=w1",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -8811,7 +8811,7 @@
                   "value": "active"
                 },
                 {
-                  "key": "website_id",
+                  "key": "website",
                   "value": "w1"
                 }
               ]
@@ -8826,14 +8826,14 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('two',()=>{pm.expect(j.total_size).to.eql(2);pm.expect(j.results.map(e=>e.store_id)).to.eql(['s2','s1']);});"
+                  "pm.test('two',()=>{pm.expect(j.total_size).to.eql(2);pm.expect(j.results.map(e=>e.bu_location.code)).to.eql(['s2','s1']);});"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Filter: store name starts with 'br' (any case)",
+          "name": "Filter: BU location code starts with 'S2' (any case)",
           "request": {
             "method": "GET",
             "header": [
@@ -8843,19 +8843,19 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?store=BR",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?bu_location=S2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
-                  "key": "store",
-                  "value": "BR"
+                  "key": "bu_location",
+                  "value": "S2"
                 }
               ]
             },
@@ -8869,7 +8869,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('Bravo Shop',()=>{pm.expect(j.total_size).to.eql(1);pm.expect(j.results[0].store_name).to.eql('Bravo Shop');});"
+                  "pm.test('s2 on both websites',()=>{pm.expect(j.total_size).to.eql(2);j.results.forEach(r=>pm.expect(r.bu_location.code).to.eql('s2'));});"
                 ]
               }
             }
@@ -8886,14 +8886,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?status=pending,active",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?status=pending,active",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -8919,6 +8919,252 @@
           ]
         },
         {
+          "name": "Search: bare text matches the BU location code, website or customer name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?search=s2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "s2"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));const j=pm.response.json();pm.test('only s2 stores',()=>{pm.expect(j.total_size).to.be.at.least(1);j.results.forEach(r=>pm.expect(r.bu_location.code).to.eql('s2'));});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search one field: bu_location=S1 (any case)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?search=bu_location%3DS1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "bu_location=S1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));const j=pm.response.json();pm.test('s1 only',()=>{pm.expect(j.total_size).to.eql(1);pm.expect(j.results[0].bu_location.code).to.eql('s1');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter: operator, BU location starts with S",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?filter=bu_location.starts_with%3DS",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "bu_location.starts_with=S"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('all start with s',()=>pm.response.json().results.forEach(r=>pm.expect(r.bu_location.code.toLowerCase().startsWith('s')).to.eql(true)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter: website in a list and status excluded",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?filter=website%3D%5Bw1%2Cw2%5D%26status!%3Dended",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "website=[w1,w2]&status!=ended"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('no ended store',()=>pm.response.json().results.forEach(r=>pm.expect(r.status).to.not.eql('ended')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter: operator form status.not_equal=pending",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?status.not_equal=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "status.not_equal",
+                  "value": "pending"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('no pending store',()=>pm.response.json().results.forEach(r=>pm.expect(r.status).to.not.eql('pending')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter: customer name is empty",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?filter=customer_name.is_empty",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "customer_name.is_empty"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('no customer name',()=>pm.response.json().results.forEach(r=>pm.expect(r.customer_name).to.eql(null)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Page 1 (size 2): total_size still 3",
           "request": {
             "method": "GET",
@@ -8929,14 +9175,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?max_page_size=2",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?max_page_size=2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -8972,14 +9218,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments?max_page_size=2&page_token={{etoken}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores?max_page_size=2&page_token={{etoken}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -9019,14 +9265,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid2}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid2}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid2}}"
               ]
             },
@@ -9040,14 +9286,14 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('right one',()=>{pm.expect(j.id).to.eql(pm.collectionVariables.get('eid2'));pm.expect(j.store_name).to.eql('Bravo Shop');});"
+                  "pm.test('right one',()=>{pm.expect(j.id).to.eql(pm.collectionVariables.get('eid2'));pm.expect(j.bu_location.code).to.eql('s2');});"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Pending to suspended is not allowed -> 409",
+          "name": "Pending to suspended is allowed (any status can move to any other)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -9061,14 +9307,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
@@ -9084,8 +9330,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('409',()=>pm.response.to.have.status(409));",
-                  "pm.test('says why',()=>pm.expect(pm.response.json().detail).to.include('pending to suspended'));"
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('suspended',()=>pm.expect(pm.response.json().status).to.eql('suspended'));"
                 ]
               }
             }
@@ -9110,14 +9355,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
@@ -9135,7 +9380,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('active now, enrolled_time set, new actions',()=>{pm.expect(j.status).to.eql('active');pm.expect(j.enrolled_time).to.be.a('string');pm.expect(j.actions).to.eql(['suspended','ended']);});"
+                  "pm.test('active now, enrolled_time set, new actions',()=>{pm.expect(j.status).to.eql('active');pm.expect(j.enrolled_time).to.be.a('string');pm.expect(j.actions).to.eql(['pending','suspended','ended']);});"
                 ]
               }
             }
@@ -9194,14 +9439,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
@@ -9219,7 +9464,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('suspended; it can come back or end',()=>{pm.expect(j.status).to.eql('suspended');pm.expect(j.actions).to.eql(['active','ended']);});"
+                  "pm.test('suspended; it can come back or end',()=>{pm.expect(j.status).to.eql('suspended');pm.expect(j.actions).to.eql(['pending','active','ended']);});"
                 ]
               }
             }
@@ -9278,14 +9523,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
@@ -9308,7 +9553,7 @@
           ]
         },
         {
-          "name": "Same status plus a new group is only a group change",
+          "name": "Same status plus a new customer name is only a name change",
           "request": {
             "method": "PATCH",
             "header": [
@@ -9322,21 +9567,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"active\",\n  \"customer_group\": \"gold\"\n}"
+              "raw": "{\n  \"status\": \"active\",\n  \"customer_name\": \"gold\"\n}"
             }
           },
           "event": [
@@ -9347,14 +9592,14 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('group set',()=>pm.expect(j.customer_group).to.eql('gold'));"
+                  "pm.test('group set',()=>pm.expect(j.customer_name).to.eql('gold'));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "An empty group clears it",
+          "name": "An empty customer_name clears it",
           "request": {
             "method": "PATCH",
             "header": [
@@ -9368,21 +9613,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_group\": \"\"\n}"
+              "raw": "{\n  \"customer_name\": \"\"\n}"
             }
           },
           "event": [
@@ -9393,7 +9638,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('cleared',()=>pm.expect(j.customer_group).to.eql(null));"
+                  "pm.test('cleared',()=>pm.expect(j.customer_name).to.eql(null));"
                 ]
               }
             }
@@ -9452,14 +9697,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
@@ -9477,7 +9722,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('final: no actions',()=>{pm.expect(j.status).to.eql('ended');pm.expect(j.actions).to.eql([]);});"
+                  "pm.test('ended; it can still be moved',()=>{pm.expect(j.status).to.eql('ended');pm.expect(j.actions).to.eql(['pending','active','suspended']);});"
                 ]
               }
             }
@@ -9522,7 +9767,7 @@
           ]
         },
         {
-          "name": "Ended is final -> 409",
+          "name": "An ended store can be moved again: ended to pending",
           "request": {
             "method": "PATCH",
             "header": [
@@ -9536,21 +9781,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments/{{eid3}}",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments",
+                "stores",
                 "{{eid3}}"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"active\"\n}"
+              "raw": "{\n  \"status\": \"pending\"\n}"
             }
           },
           "event": [
@@ -9559,7 +9804,51 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('409',()=>pm.response.to.have.status(409));"
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('pending again',()=>pm.expect(pm.response.json().status).to.eql('pending'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "...and back to ended",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{eslug}}/stores/{{eid3}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{eslug}}",
+                "stores",
+                "{{eid3}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ended\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('ended',()=>pm.expect(pm.response.json().status).to.eql('ended'));"
                 ]
               }
             }
@@ -9580,20 +9869,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s2\",\n  \"website_id\": \"w2\",\n  \"store_name\": \"Bravo Shop\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s2\"\n  },\n  \"website\": {\n    \"code\": \"w2\"\n  }\n}"
             }
           },
           "event": [
@@ -9663,20 +9952,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{eslug}}/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/{{eslug}}/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{eslug}}",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"items\":[{\"store_id\":\"b1\",\"store_name\":\"Bulk One\",\"website_id\":\"w1\"},{\"store_id\":\"b2\",\"website_id\":\"w1\"},{\"store_id\":\"s2\",\"website_id\":\"w1\"},{\"store_id\":\" \",\"website_id\":\"w1\"},{\"store_id\":\"b1\",\"website_id\":\"w1\"},{\"store_id\":\"b3\",\"website_id\":\"w1\",\"status\":\"suspended\"}]}"
+              "raw": "{\"items\":[{\"bu_location\":{\"code\":\"b1\"},\"website\":{\"code\":\"w1\"}},{\"bu_location\":{\"code\":\"b2\"},\"website\":{\"code\":\"w1\"}},{\"bu_location\":{\"code\":\"s2\"},\"website\":{\"code\":\"w1\"}},{\"bu_location\":{\"code\":\" \"},\"website\":{\"code\":\"w1\"}},{\"bu_location\":{\"code\":\"b1\"},\"website\":{\"code\":\"w1\"}},{\"bu_location\":{\"code\":\"b3\"},\"website\":{\"code\":\"w1\"},\"status\":\"suspended\"}]}"
             }
           },
           "event": [
@@ -9689,7 +9978,7 @@
                   "const j=pm.response.json();",
                   "pm.test('2 created',()=>pm.expect(j.created).to.eql(2));",
                   "pm.test('one outcome per item, in order',()=>{const o=j.results.map(r=>r.outcome);pm.expect(o).to.eql(['created','created','already_enrolled','failed','already_enrolled','failed']);});",
-                  "pm.test('created ones carry an id, failed ones say why',()=>{pm.expect(j.results[0].enrollment_id).to.be.a('string');pm.expect(j.results[3].error).to.include('store_id');pm.expect(j.results[5].error).to.include('status');});"
+                  "pm.test('created ones carry an id, failed ones say why',()=>{pm.expect(j.results[0].id).to.be.a('string');pm.expect(j.results[3].error).to.include('bu_location');pm.expect(j.results[5].error).to.include('status');});"
                 ]
               }
             }
@@ -9771,7 +10060,7 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.test('enrollment entries',()=>{const s=j.results.map(e=>e.summary);['Enrollment created','Enrollment status changed','Enrollment updated','Enrollment batch created'].forEach(x=>pm.expect(s).to.include(x));});",
-                  "pm.test('the status change has before and after, and who',()=>{const e=j.results.find(e=>e.action==='status_changed'&&e.actor==='alice');pm.expect(e.before.status).to.eql('pending');pm.expect(e.after.status).to.eql('active');});"
+                  "pm.test('the status change has before and after, and who',()=>{const e=j.results.find(e=>e.action==='status_changed'&&e.actor==='alice');pm.expect(e.before.status).to.be.a('string');pm.expect(e.after.status).to.be.a('string');pm.expect(e.before.status).to.not.eql(e.after.status);});"
                 ]
               }
             }
@@ -9880,20 +10169,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{dslug}}/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/{{dslug}}/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{dslug}}",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"items\":[{\"store_id\":\"st-1\",\"store_name\":\"Store 1\",\"website_id\":\"cprparts\"},{\"store_id\":\"st-2\",\"store_name\":\"Store 2\",\"website_id\":\"cprparts\"},{\"store_id\":\"st-3\",\"store_name\":\"Store 3\",\"website_id\":\"cprparts\"},{\"store_id\":\"st-4\",\"store_name\":\"Store 4\",\"website_id\":\"other\"}]}"
+              "raw": "{\"items\":[{\"bu_location\":{\"code\":\"st-1\"},\"website\":{\"code\":\"cprparts\"}},{\"bu_location\":{\"code\":\"st-2\"},\"website\":{\"code\":\"cprparts\"}},{\"bu_location\":{\"code\":\"st-3\"},\"website\":{\"code\":\"cprparts\"}},{\"bu_location\":{\"code\":\"st-4\"},\"website\":{\"code\":\"other\"}}]}"
             }
           },
           "event": [
@@ -10081,7 +10370,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{dslug}}/store-discount-levels/domains/cprparts",
+              "raw": "{{base_url}}/programs/{{dslug}}/store-discount-levels/websites/cprparts",
               "host": [
                 "{{base_url}}"
               ],
@@ -10089,7 +10378,7 @@
                 "programs",
                 "{{dslug}}",
                 "store-discount-levels",
-                "domains",
+                "websites",
                 "cprparts"
               ]
             },
@@ -10107,7 +10396,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('only the amount is set',()=>{pm.expect(j.level).to.eql('domain');pm.expect(j.website_id).to.eql('cprparts');pm.expect(j.discount).to.eql({enabled:null,type:null,amount:8,currency_code:null});});"
+                  "pm.test('only the amount is set',()=>{pm.expect(j.level).to.eql('website');pm.expect(j.website_id).to.eql('cprparts');pm.expect(j.discount).to.eql({enabled:null,type:null,amount:8,currency_code:null});});"
                 ]
               }
             }
@@ -10144,7 +10433,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('program and one domain',()=>{pm.expect(j.program.amount).to.eql(5);pm.expect(j.domains.length).to.eql(1);pm.expect(j.domains[0].website_id).to.eql('cprparts');pm.expect(j.domains[0].discount.amount).to.eql(8);});"
+                  "pm.test('program and one website',()=>{pm.expect(j.program.amount).to.eql(5);pm.expect(j.websites.length).to.eql(1);pm.expect(j.websites[0].website_id).to.eql('cprparts');pm.expect(j.websites[0].discount.amount).to.eql(8);});"
                 ]
               }
             }
@@ -10181,7 +10470,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('cprparts stores: 8% From domain',()=>{['st-1','st-2','st-3'].forEach(s=>{const r=j.results.find(x=>x.store_id===s);pm.expect(r.resolved.amount).to.eql(8);pm.expect(r.set_at).to.eql('domain');pm.expect(r.sources.amount).to.eql('domain');pm.expect(r.sources.enabled).to.eql('program');});});",
+                  "pm.test('cprparts stores: 8% From domain',()=>{['st-1','st-2','st-3'].forEach(s=>{const r=j.results.find(x=>x.store_id===s);pm.expect(r.resolved.amount).to.eql(8);pm.expect(r.set_at).to.eql('website');pm.expect(r.sources.amount).to.eql('website');pm.expect(r.sources.enabled).to.eql('program');});});",
                   "pm.test('other site: 5% From program',()=>{const r=j.results.find(x=>x.store_id==='st-4');pm.expect(r.resolved.amount).to.eql(5);pm.expect(r.set_at).to.eql('program');pm.expect(r.resolved.enabled).to.eql(true);});"
                 ]
               }
@@ -10406,7 +10695,7 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.test('resolved: enabled True, percentage, 8',()=>{const r=j.resolved;pm.expect(r.enabled).to.eql(true);pm.expect(r.type).to.eql('percentage');pm.expect(r.amount).to.eql(8);});",
-                  "pm.test('set_at domain',()=>pm.expect(j.set_at).to.eql('domain'));",
+                  "pm.test('set_at domain',()=>pm.expect(j.set_at).to.eql('website'));",
                   "pm.test('nothing set on the store',()=>pm.expect(j.store_override).to.eql({enabled:null,type:null,amount:null,currency_code:null}));"
                 ]
               }
@@ -10454,7 +10743,7 @@
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
                   "pm.test('resolved: enabled False, percentage, 8',()=>{const r=j.resolved;pm.expect(r.enabled).to.eql(false);pm.expect(r.type).to.eql('percentage');pm.expect(r.amount).to.eql(8);});",
-                  "pm.test('sources: enabled store, type program, amount domain',()=>{pm.expect(j.sources.enabled).to.eql('store');pm.expect(j.sources.type).to.eql('program');pm.expect(j.sources.amount).to.eql('domain');});",
+                  "pm.test('sources: enabled store, type program, amount domain',()=>{pm.expect(j.sources.enabled).to.eql('store');pm.expect(j.sources.type).to.eql('program');pm.expect(j.sources.amount).to.eql('website');});",
                   "pm.test('set_at store',()=>pm.expect(j.set_at).to.eql('store'));"
                 ]
               }
@@ -10786,7 +11075,7 @@
                 "exec": [
                   "pm.test('200',()=>pm.response.to.have.status(200));",
                   "const j=pm.response.json();",
-                  "pm.test('2 updated, back to the domain value',()=>{pm.expect(j.updated).to.eql(2);j.results.forEach(r=>{pm.expect(r.resolved.amount).to.eql(8);pm.expect(r.resolved.type).to.eql('percentage');pm.expect(r.set_at).to.eql('domain');});});"
+                  "pm.test('2 updated, back to the domain value',()=>{pm.expect(j.updated).to.eql(2);j.results.forEach(r=>{pm.expect(r.resolved.amount).to.eql(8);pm.expect(r.resolved.type).to.eql('percentage');pm.expect(r.set_at).to.eql('website');});});"
                 ]
               }
             }
@@ -10936,7 +11225,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{dslug}}/store-discount-levels/domains/cprparts",
+              "raw": "{{base_url}}/programs/{{dslug}}/store-discount-levels/websites/cprparts",
               "host": [
                 "{{base_url}}"
               ],
@@ -10944,7 +11233,7 @@
                 "programs",
                 "{{dslug}}",
                 "store-discount-levels",
-                "domains",
+                "websites",
                 "cprparts"
               ]
             },
@@ -11089,6 +11378,617 @@
       ]
     },
     {
+      "name": "Store discounts - business unit (parent) and website (child)",
+      "item": [
+        {
+          "name": "Create a program that uses Store Discounts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Business Unit Discounts\",\n  \"slug\": \"{{bslug}}\",\n  \"level\": \"location\",\n  \"modules\": [\n    \"catalog_pricing.store_discounts.control_panel\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('bslug','bu-'+Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Enroll a store: website w1 comes with its business unit BU1, nothing is set yet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/stores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "stores"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bu_location\": { \"code\": \"bs-1\", \"bu\": { \"code\": \"BU1\", \"name\": \"Business One\" } },\n  \"website\": { \"code\": \"w1\", \"name\": \"Site One\" }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('the enrollment returns bu_location.bu {code, name}',()=>pm.expect(j.bu_location.bu).to.eql({code:'BU1',name:'Business One'}));",
+                  "pm.collectionVariables.set('bsid', j.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nothing set anywhere: disabled by default, not inherited",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discounts"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const r=pm.response.json().results[0];",
+                  "pm.test('disabled, from program, no parent',()=>{pm.expect(r.bu).to.eql({code:'BU1',name:'Business One'});pm.expect(r.resolved.enabled).to.eql(false);pm.expect(r.set_at).to.eql('program');pm.expect(r.inherited_from_parent).to.eql(false);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Set the PARENT (business unit BU1): enabled, 10%",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discount-levels/business-units/BU1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discount-levels",
+                "business-units",
+                "BU1"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discount\": {\n    \"enabled\": true,\n    \"type\": \"percentage\",\n    \"amount\": 10\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('parent level saved',()=>{pm.expect(j.level).to.eql('business_unit');pm.expect(j.bu_unit_code).to.eql('BU1');pm.expect(j.discount.amount).to.eql(10);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A second website of BU1 enrolls AFTER the parent was set",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/stores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "stores"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bu_location\": { \"code\": \"bs-2\", \"bu\": { \"code\": \"BU1\", \"name\": \"Business One\" } },\n  \"website\": { \"code\": \"w2\", \"name\": \"Site Two\" }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Both websites take the parent discount, flagged inherited_from_parent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discounts?bu_unit_code=BU1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discounts"
+              ],
+              "query": [
+                {
+                  "key": "bu_unit_code",
+                  "value": "BU1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('2 stores of BU1',()=>pm.expect(j.total_size).to.eql(2));",
+                  "pm.test('parent value applied and flagged',()=>j.results.forEach(r=>{pm.expect(r.resolved.enabled).to.eql(true);pm.expect(r.resolved.amount).to.eql(10);pm.expect(r.set_at).to.eql('business_unit');pm.expect(r.sources.amount).to.eql('business_unit');pm.expect(r.inherited_from_parent).to.eql(true);}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit the CHILD: website w1 sets its own amount (4)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discount-levels/websites/w1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discount-levels",
+                "websites",
+                "w1"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discount\": {\n    \"amount\": 4\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('child level saved',()=>{pm.expect(j.level).to.eql('website');pm.expect(j.website_id).to.eql('w1');pm.expect(j.discount.amount).to.eql(4);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The override wins on w1 only; w2 still follows the parent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discounts"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "const w1=j.results.find(r=>r.website_id==='w1'),w2=j.results.find(r=>r.website_id==='w2');",
+                  "pm.test('w1: its own amount, the rest from the parent',()=>{pm.expect(w1.resolved.amount).to.eql(4);pm.expect(w1.sources.amount).to.eql('website');pm.expect(w1.sources.enabled).to.eql('business_unit');pm.expect(w1.set_at).to.eql('website');});",
+                  "pm.test('w2: unchanged, still the parent',()=>{pm.expect(w2.resolved.amount).to.eql(10);pm.expect(w2.inherited_from_parent).to.eql(true);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "The levels: one parent, one child",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discount-levels",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discount-levels"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('business_units and websites',()=>{pm.expect(j.business_units.map(b=>b.bu_unit_code)).to.eql(['BU1']);pm.expect(j.business_units[0].discount.amount).to.eql(10);pm.expect(j.websites.map(w=>w.website_id)).to.eql(['w1']);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revert the child: w1 falls back to the parent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discount-levels/websites/w1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discount-levels",
+                "websites",
+                "w1"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discount\": null\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('nothing set on w1 any more',()=>pm.expect(pm.response.json().discount).to.eql({enabled:null,type:null,amount:null,currency_code:null}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "w1 is back to the parent value",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/store-discounts?website_id=w1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "store-discounts"
+              ],
+              "query": [
+                {
+                  "key": "website_id",
+                  "value": "w1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const r=pm.response.json().results[0];",
+                  "pm.test('parent again',()=>{pm.expect(r.resolved.amount).to.eql(10);pm.expect(r.set_at).to.eql('business_unit');pm.expect(r.inherited_from_parent).to.eql(true);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List the stores: bu {code, name} on every row",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/stores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "stores"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.test('each store carries bu',()=>j.results.forEach(r=>pm.expect(r.bu_location.bu).to.eql({code:'BU1',name:'Business One'})));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move a store to another business unit (PATCH bu)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/stores/{{bsid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "stores",
+                "{{bsid}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bu_location\": { \"bu\": { \"code\": \"BU2\", \"name\": \"Business Two\" } }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('bu replaced',()=>pm.expect(pm.response.json().bu_location.bu).to.eql({code:'BU2',name:'Business Two'}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clear the business unit of that store (bu: null)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{bslug}}/stores/{{bsid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{bslug}}",
+                "stores",
+                "{{bsid}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bu_location\": { \"bu\": null }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200',()=>pm.response.to.have.status(200));",
+                  "pm.test('bu cleared',()=>pm.expect(pm.response.json().bu_location.bu).to.eql(null));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Rules and publishing",
       "item": [
         {
@@ -11189,20 +12089,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{uslug}}/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/{{uslug}}/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{uslug}}",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"items\":[{\"store_id\":\"s1\",\"store_name\":\"Store 1\",\"website_id\":\"w1\"},{\"store_id\":\"s2\",\"store_name\":\"Store 2\",\"website_id\":\"w1\"}]}"
+              "raw": "{\"items\":[{\"bu_location\":{\"code\":\"s1\"},\"website\":{\"code\":\"w1\"}},{\"bu_location\":{\"code\":\"s2\"},\"website\":{\"code\":\"w1\"}}]}"
             }
           },
           "event": [
@@ -19620,10 +20520,10 @@
       ]
     },
     {
-      "name": "Enrollments - negative checks",
+      "name": "Stores - negative checks",
       "item": [
         {
-          "name": "Missing store_id -> 400",
+          "name": "Missing bu_location -> 400",
           "request": {
             "method": "POST",
             "header": [
@@ -19637,20 +20537,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -19666,7 +20566,7 @@
           ]
         },
         {
-          "name": "Empty store_id -> 422",
+          "name": "Empty bu_location code -> 422",
           "request": {
             "method": "POST",
             "header": [
@@ -19680,20 +20580,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \" \",\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \" \"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -19709,7 +20609,7 @@
           ]
         },
         {
-          "name": "website_id too long -> 422",
+          "name": "Website code too long -> 422",
           "request": {
             "method": "POST",
             "header": [
@@ -19723,20 +20623,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s\",\n  \"website_id\": \"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s\"\n  },\n  \"website\": {\n    \"code\": \"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\"\n  }\n}"
             }
           },
           "event": [
@@ -19766,20 +20666,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s\",\n  \"website_id\": \"w\",\n  \"status\": \"suspended\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  },\n  \"status\": \"suspended\"\n}"
             }
           },
           "event": [
@@ -19809,20 +20709,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s\",\n  \"website_id\": \"w\",\n  \"status\": \"gone\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  },\n  \"status\": \"gone\"\n}"
             }
           },
           "event": [
@@ -19838,7 +20738,7 @@
           ]
         },
         {
-          "name": "customer_group too long -> 422",
+          "name": "customer_name too long -> 422",
           "request": {
             "method": "POST",
             "header": [
@@ -19852,20 +20752,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s\",\n  \"website_id\": \"w\",\n  \"customer_group\": \"ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  },\n  \"customer_name\": \"ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\"\n}"
             }
           },
           "event": [
@@ -19895,14 +20795,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
@@ -19938,14 +20838,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments?id=nope",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?id=nope",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -19957,7 +20857,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s\",\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -19987,14 +20887,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments?id={{jact}}",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?id={{jact}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -20006,7 +20906,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"other\",\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"other\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -20036,20 +20936,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"j-act\",\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"j-act\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -20079,20 +20979,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"j-pend\",\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"j-pend\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -20118,14 +21018,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments?status=approved",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?status=approved",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -20150,6 +21050,129 @@
           ]
         },
         {
+          "name": "Unknown filter key -> 400",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?filter=colour%3Dred",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{jslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "colour=red"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search with an operator -> 400 (operators live in filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?search=bu_location.equals%3Dx",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{jslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "bu_location.equals=x"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "is_empty on bu_location -> 400",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?filter=bu_location.is_empty",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "programs",
+                "{{jslug}}",
+                "stores"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "bu_location.is_empty"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Bad page_token -> 400",
           "request": {
             "method": "GET",
@@ -20160,14 +21183,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments?page_token=nope",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?page_token=nope",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -20201,14 +21224,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments?max_page_size=0",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores?max_page_size=0",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ],
               "query": [
                 {
@@ -20242,14 +21265,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/no-such-program-xyz/enrollments",
+              "raw": "{{base_url}}/programs/no-such-program-xyz/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "no-such-program-xyz",
-                "enrollments"
+                "stores"
               ]
             },
             "description": ""
@@ -20281,20 +21304,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/no-such-program-xyz/enrollments",
+              "raw": "{{base_url}}/programs/no-such-program-xyz/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "no-such-program-xyz",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s\",\n  \"website_id\": \"w\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s\"\n  },\n  \"website\": {\n    \"code\": \"w\"\n  }\n}"
             }
           },
           "event": [
@@ -20310,7 +21333,7 @@
           ]
         },
         {
-          "name": "Enrollment id not a UUID -> 400",
+          "name": "Store id not a UUID -> 400",
           "request": {
             "method": "GET",
             "header": [
@@ -20320,14 +21343,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/nope",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/nope",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "nope"
               ]
             },
@@ -20346,7 +21369,7 @@
           ]
         },
         {
-          "name": "Unknown enrollment -> 404",
+          "name": "Unknown store -> 404",
           "request": {
             "method": "GET",
             "header": [
@@ -20356,14 +21379,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/01a14424-0000-7000-8000-000000000000",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/01a14424-0000-7000-8000-000000000000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "01a14424-0000-7000-8000-000000000000"
               ]
             },
@@ -20382,7 +21405,7 @@
           ]
         },
         {
-          "name": "Update unknown enrollment -> 404",
+          "name": "Update unknown store -> 404",
           "request": {
             "method": "PATCH",
             "header": [
@@ -20396,14 +21419,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/01a14424-0000-7000-8000-000000000000",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/01a14424-0000-7000-8000-000000000000",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "01a14424-0000-7000-8000-000000000000"
               ]
             },
@@ -20440,14 +21463,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/{{jact}}",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/{{jact}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "{{jact}}"
               ]
             },
@@ -20470,7 +21493,7 @@
           ]
         },
         {
-          "name": "Update with a too long group -> 422",
+          "name": "Update with a too long customer_name -> 422",
           "request": {
             "method": "PATCH",
             "header": [
@@ -20484,21 +21507,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/{{jact}}",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/{{jact}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "{{jact}}"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_group\": \"ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\"\n}"
+              "raw": "{\n  \"customer_name\": \"ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\"\n}"
             }
           },
           "event": [
@@ -20514,7 +21537,7 @@
           ]
         },
         {
-          "name": "Pending to suspended -> 409",
+          "name": "Any status can move: pending to suspended",
           "request": {
             "method": "PATCH",
             "header": [
@@ -20528,14 +21551,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/{{jpend}}",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/{{jpend}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "{{jpend}}"
               ]
             },
@@ -20551,14 +21574,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('409',()=>pm.response.to.have.status(409));"
+                  "pm.test('200',()=>pm.response.to.have.status(200));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Active back to pending -> 409",
+          "name": "Any status can move: active back to pending",
           "request": {
             "method": "PATCH",
             "header": [
@@ -20572,14 +21595,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/{{jact}}",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/{{jact}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "{{jact}}"
               ]
             },
@@ -20595,14 +21618,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('409',()=>pm.response.to.have.status(409));"
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('pending',()=>pm.expect(pm.response.json().status).to.eql('pending'));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Ended is final -> 409",
+          "name": "Any status can move: an ended store comes back",
           "request": {
             "method": "PATCH",
             "header": [
@@ -20616,14 +21639,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments/{{jend}}",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores/{{jend}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments",
+                "stores",
                 "{{jend}}"
               ]
             },
@@ -20639,7 +21662,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('409',()=>pm.response.to.have.status(409));"
+                  "pm.test('200',()=>pm.response.to.have.status(200));pm.test('active',()=>pm.expect(pm.response.json().status).to.eql('active'));"
                 ]
               }
             }
@@ -20660,14 +21683,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
@@ -20703,20 +21726,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\"items\": [{\"store_id\": \"x0\", \"website_id\": \"w\"}, {\"store_id\": \"x1\", \"website_id\": \"w\"}, {\"store_id\": \"x2\", \"website_id\": \"w\"}, {\"store_id\": \"x3\", \"website_id\": \"w\"}, {\"store_id\": \"x4\", \"website_id\": \"w\"}, {\"store_id\": \"x5\", \"website_id\": \"w\"}, {\"store_id\": \"x6\", \"website_id\": \"w\"}, {\"store_id\": \"x7\", \"website_id\": \"w\"}, {\"store_id\": \"x8\", \"website_id\": \"w\"}, {\"store_id\": \"x9\", \"website_id\": \"w\"}, {\"store_id\": \"x10\", \"website_id\": \"w\"}, {\"store_id\": \"x11\", \"website_id\": \"w\"}, {\"store_id\": \"x12\", \"website_id\": \"w\"}, {\"store_id\": \"x13\", \"website_id\": \"w\"}, {\"store_id\": \"x14\", \"website_id\": \"w\"}, {\"store_id\": \"x15\", \"website_id\": \"w\"}, {\"store_id\": \"x16\", \"website_id\": \"w\"}, {\"store_id\": \"x17\", \"website_id\": \"w\"}, {\"store_id\": \"x18\", \"website_id\": \"w\"}, {\"store_id\": \"x19\", \"website_id\": \"w\"}, {\"store_id\": \"x20\", \"website_id\": \"w\"}, {\"store_id\": \"x21\", \"website_id\": \"w\"}, {\"store_id\": \"x22\", \"website_id\": \"w\"}, {\"store_id\": \"x23\", \"website_id\": \"w\"}, {\"store_id\": \"x24\", \"website_id\": \"w\"}, {\"store_id\": \"x25\", \"website_id\": \"w\"}, {\"store_id\": \"x26\", \"website_id\": \"w\"}, {\"store_id\": \"x27\", \"website_id\": \"w\"}, {\"store_id\": \"x28\", \"website_id\": \"w\"}, {\"store_id\": \"x29\", \"website_id\": \"w\"}, {\"store_id\": \"x30\", \"website_id\": \"w\"}, {\"store_id\": \"x31\", \"website_id\": \"w\"}, {\"store_id\": \"x32\", \"website_id\": \"w\"}, {\"store_id\": \"x33\", \"website_id\": \"w\"}, {\"store_id\": \"x34\", \"website_id\": \"w\"}, {\"store_id\": \"x35\", \"website_id\": \"w\"}, {\"store_id\": \"x36\", \"website_id\": \"w\"}, {\"store_id\": \"x37\", \"website_id\": \"w\"}, {\"store_id\": \"x38\", \"website_id\": \"w\"}, {\"store_id\": \"x39\", \"website_id\": \"w\"}, {\"store_id\": \"x40\", \"website_id\": \"w\"}, {\"store_id\": \"x41\", \"website_id\": \"w\"}, {\"store_id\": \"x42\", \"website_id\": \"w\"}, {\"store_id\": \"x43\", \"website_id\": \"w\"}, {\"store_id\": \"x44\", \"website_id\": \"w\"}, {\"store_id\": \"x45\", \"website_id\": \"w\"}, {\"store_id\": \"x46\", \"website_id\": \"w\"}, {\"store_id\": \"x47\", \"website_id\": \"w\"}, {\"store_id\": \"x48\", \"website_id\": \"w\"}, {\"store_id\": \"x49\", \"website_id\": \"w\"}, {\"store_id\": \"x50\", \"website_id\": \"w\"}, {\"store_id\": \"x51\", \"website_id\": \"w\"}, {\"store_id\": \"x52\", \"website_id\": \"w\"}, {\"store_id\": \"x53\", \"website_id\": \"w\"}, {\"store_id\": \"x54\", \"website_id\": \"w\"}, {\"store_id\": \"x55\", \"website_id\": \"w\"}, {\"store_id\": \"x56\", \"website_id\": \"w\"}, {\"store_id\": \"x57\", \"website_id\": \"w\"}, {\"store_id\": \"x58\", \"website_id\": \"w\"}, {\"store_id\": \"x59\", \"website_id\": \"w\"}, {\"store_id\": \"x60\", \"website_id\": \"w\"}, {\"store_id\": \"x61\", \"website_id\": \"w\"}, {\"store_id\": \"x62\", \"website_id\": \"w\"}, {\"store_id\": \"x63\", \"website_id\": \"w\"}, {\"store_id\": \"x64\", \"website_id\": \"w\"}, {\"store_id\": \"x65\", \"website_id\": \"w\"}, {\"store_id\": \"x66\", \"website_id\": \"w\"}, {\"store_id\": \"x67\", \"website_id\": \"w\"}, {\"store_id\": \"x68\", \"website_id\": \"w\"}, {\"store_id\": \"x69\", \"website_id\": \"w\"}, {\"store_id\": \"x70\", \"website_id\": \"w\"}, {\"store_id\": \"x71\", \"website_id\": \"w\"}, {\"store_id\": \"x72\", \"website_id\": \"w\"}, {\"store_id\": \"x73\", \"website_id\": \"w\"}, {\"store_id\": \"x74\", \"website_id\": \"w\"}, {\"store_id\": \"x75\", \"website_id\": \"w\"}, {\"store_id\": \"x76\", \"website_id\": \"w\"}, {\"store_id\": \"x77\", \"website_id\": \"w\"}, {\"store_id\": \"x78\", \"website_id\": \"w\"}, {\"store_id\": \"x79\", \"website_id\": \"w\"}, {\"store_id\": \"x80\", \"website_id\": \"w\"}, {\"store_id\": \"x81\", \"website_id\": \"w\"}, {\"store_id\": \"x82\", \"website_id\": \"w\"}, {\"store_id\": \"x83\", \"website_id\": \"w\"}, {\"store_id\": \"x84\", \"website_id\": \"w\"}, {\"store_id\": \"x85\", \"website_id\": \"w\"}, {\"store_id\": \"x86\", \"website_id\": \"w\"}, {\"store_id\": \"x87\", \"website_id\": \"w\"}, {\"store_id\": \"x88\", \"website_id\": \"w\"}, {\"store_id\": \"x89\", \"website_id\": \"w\"}, {\"store_id\": \"x90\", \"website_id\": \"w\"}, {\"store_id\": \"x91\", \"website_id\": \"w\"}, {\"store_id\": \"x92\", \"website_id\": \"w\"}, {\"store_id\": \"x93\", \"website_id\": \"w\"}, {\"store_id\": \"x94\", \"website_id\": \"w\"}, {\"store_id\": \"x95\", \"website_id\": \"w\"}, {\"store_id\": \"x96\", \"website_id\": \"w\"}, {\"store_id\": \"x97\", \"website_id\": \"w\"}, {\"store_id\": \"x98\", \"website_id\": \"w\"}, {\"store_id\": \"x99\", \"website_id\": \"w\"}, {\"store_id\": \"x100\", \"website_id\": \"w\"}, {\"store_id\": \"x101\", \"website_id\": \"w\"}, {\"store_id\": \"x102\", \"website_id\": \"w\"}, {\"store_id\": \"x103\", \"website_id\": \"w\"}, {\"store_id\": \"x104\", \"website_id\": \"w\"}, {\"store_id\": \"x105\", \"website_id\": \"w\"}, {\"store_id\": \"x106\", \"website_id\": \"w\"}, {\"store_id\": \"x107\", \"website_id\": \"w\"}, {\"store_id\": \"x108\", \"website_id\": \"w\"}, {\"store_id\": \"x109\", \"website_id\": \"w\"}, {\"store_id\": \"x110\", \"website_id\": \"w\"}, {\"store_id\": \"x111\", \"website_id\": \"w\"}, {\"store_id\": \"x112\", \"website_id\": \"w\"}, {\"store_id\": \"x113\", \"website_id\": \"w\"}, {\"store_id\": \"x114\", \"website_id\": \"w\"}, {\"store_id\": \"x115\", \"website_id\": \"w\"}, {\"store_id\": \"x116\", \"website_id\": \"w\"}, {\"store_id\": \"x117\", \"website_id\": \"w\"}, {\"store_id\": \"x118\", \"website_id\": \"w\"}, {\"store_id\": \"x119\", \"website_id\": \"w\"}, {\"store_id\": \"x120\", \"website_id\": \"w\"}, {\"store_id\": \"x121\", \"website_id\": \"w\"}, {\"store_id\": \"x122\", \"website_id\": \"w\"}, {\"store_id\": \"x123\", \"website_id\": \"w\"}, {\"store_id\": \"x124\", \"website_id\": \"w\"}, {\"store_id\": \"x125\", \"website_id\": \"w\"}, {\"store_id\": \"x126\", \"website_id\": \"w\"}, {\"store_id\": \"x127\", \"website_id\": \"w\"}, {\"store_id\": \"x128\", \"website_id\": \"w\"}, {\"store_id\": \"x129\", \"website_id\": \"w\"}, {\"store_id\": \"x130\", \"website_id\": \"w\"}, {\"store_id\": \"x131\", \"website_id\": \"w\"}, {\"store_id\": \"x132\", \"website_id\": \"w\"}, {\"store_id\": \"x133\", \"website_id\": \"w\"}, {\"store_id\": \"x134\", \"website_id\": \"w\"}, {\"store_id\": \"x135\", \"website_id\": \"w\"}, {\"store_id\": \"x136\", \"website_id\": \"w\"}, {\"store_id\": \"x137\", \"website_id\": \"w\"}, {\"store_id\": \"x138\", \"website_id\": \"w\"}, {\"store_id\": \"x139\", \"website_id\": \"w\"}, {\"store_id\": \"x140\", \"website_id\": \"w\"}, {\"store_id\": \"x141\", \"website_id\": \"w\"}, {\"store_id\": \"x142\", \"website_id\": \"w\"}, {\"store_id\": \"x143\", \"website_id\": \"w\"}, {\"store_id\": \"x144\", \"website_id\": \"w\"}, {\"store_id\": \"x145\", \"website_id\": \"w\"}, {\"store_id\": \"x146\", \"website_id\": \"w\"}, {\"store_id\": \"x147\", \"website_id\": \"w\"}, {\"store_id\": \"x148\", \"website_id\": \"w\"}, {\"store_id\": \"x149\", \"website_id\": \"w\"}, {\"store_id\": \"x150\", \"website_id\": \"w\"}, {\"store_id\": \"x151\", \"website_id\": \"w\"}, {\"store_id\": \"x152\", \"website_id\": \"w\"}, {\"store_id\": \"x153\", \"website_id\": \"w\"}, {\"store_id\": \"x154\", \"website_id\": \"w\"}, {\"store_id\": \"x155\", \"website_id\": \"w\"}, {\"store_id\": \"x156\", \"website_id\": \"w\"}, {\"store_id\": \"x157\", \"website_id\": \"w\"}, {\"store_id\": \"x158\", \"website_id\": \"w\"}, {\"store_id\": \"x159\", \"website_id\": \"w\"}, {\"store_id\": \"x160\", \"website_id\": \"w\"}, {\"store_id\": \"x161\", \"website_id\": \"w\"}, {\"store_id\": \"x162\", \"website_id\": \"w\"}, {\"store_id\": \"x163\", \"website_id\": \"w\"}, {\"store_id\": \"x164\", \"website_id\": \"w\"}, {\"store_id\": \"x165\", \"website_id\": \"w\"}, {\"store_id\": \"x166\", \"website_id\": \"w\"}, {\"store_id\": \"x167\", \"website_id\": \"w\"}, {\"store_id\": \"x168\", \"website_id\": \"w\"}, {\"store_id\": \"x169\", \"website_id\": \"w\"}, {\"store_id\": \"x170\", \"website_id\": \"w\"}, {\"store_id\": \"x171\", \"website_id\": \"w\"}, {\"store_id\": \"x172\", \"website_id\": \"w\"}, {\"store_id\": \"x173\", \"website_id\": \"w\"}, {\"store_id\": \"x174\", \"website_id\": \"w\"}, {\"store_id\": \"x175\", \"website_id\": \"w\"}, {\"store_id\": \"x176\", \"website_id\": \"w\"}, {\"store_id\": \"x177\", \"website_id\": \"w\"}, {\"store_id\": \"x178\", \"website_id\": \"w\"}, {\"store_id\": \"x179\", \"website_id\": \"w\"}, {\"store_id\": \"x180\", \"website_id\": \"w\"}, {\"store_id\": \"x181\", \"website_id\": \"w\"}, {\"store_id\": \"x182\", \"website_id\": \"w\"}, {\"store_id\": \"x183\", \"website_id\": \"w\"}, {\"store_id\": \"x184\", \"website_id\": \"w\"}, {\"store_id\": \"x185\", \"website_id\": \"w\"}, {\"store_id\": \"x186\", \"website_id\": \"w\"}, {\"store_id\": \"x187\", \"website_id\": \"w\"}, {\"store_id\": \"x188\", \"website_id\": \"w\"}, {\"store_id\": \"x189\", \"website_id\": \"w\"}, {\"store_id\": \"x190\", \"website_id\": \"w\"}, {\"store_id\": \"x191\", \"website_id\": \"w\"}, {\"store_id\": \"x192\", \"website_id\": \"w\"}, {\"store_id\": \"x193\", \"website_id\": \"w\"}, {\"store_id\": \"x194\", \"website_id\": \"w\"}, {\"store_id\": \"x195\", \"website_id\": \"w\"}, {\"store_id\": \"x196\", \"website_id\": \"w\"}, {\"store_id\": \"x197\", \"website_id\": \"w\"}, {\"store_id\": \"x198\", \"website_id\": \"w\"}, {\"store_id\": \"x199\", \"website_id\": \"w\"}, {\"store_id\": \"x200\", \"website_id\": \"w\"}, {\"store_id\": \"x201\", \"website_id\": \"w\"}, {\"store_id\": \"x202\", \"website_id\": \"w\"}, {\"store_id\": \"x203\", \"website_id\": \"w\"}, {\"store_id\": \"x204\", \"website_id\": \"w\"}, {\"store_id\": \"x205\", \"website_id\": \"w\"}, {\"store_id\": \"x206\", \"website_id\": \"w\"}, {\"store_id\": \"x207\", \"website_id\": \"w\"}, {\"store_id\": \"x208\", \"website_id\": \"w\"}, {\"store_id\": \"x209\", \"website_id\": \"w\"}, {\"store_id\": \"x210\", \"website_id\": \"w\"}, {\"store_id\": \"x211\", \"website_id\": \"w\"}, {\"store_id\": \"x212\", \"website_id\": \"w\"}, {\"store_id\": \"x213\", \"website_id\": \"w\"}, {\"store_id\": \"x214\", \"website_id\": \"w\"}, {\"store_id\": \"x215\", \"website_id\": \"w\"}, {\"store_id\": \"x216\", \"website_id\": \"w\"}, {\"store_id\": \"x217\", \"website_id\": \"w\"}, {\"store_id\": \"x218\", \"website_id\": \"w\"}, {\"store_id\": \"x219\", \"website_id\": \"w\"}, {\"store_id\": \"x220\", \"website_id\": \"w\"}, {\"store_id\": \"x221\", \"website_id\": \"w\"}, {\"store_id\": \"x222\", \"website_id\": \"w\"}, {\"store_id\": \"x223\", \"website_id\": \"w\"}, {\"store_id\": \"x224\", \"website_id\": \"w\"}, {\"store_id\": \"x225\", \"website_id\": \"w\"}, {\"store_id\": \"x226\", \"website_id\": \"w\"}, {\"store_id\": \"x227\", \"website_id\": \"w\"}, {\"store_id\": \"x228\", \"website_id\": \"w\"}, {\"store_id\": \"x229\", \"website_id\": \"w\"}, {\"store_id\": \"x230\", \"website_id\": \"w\"}, {\"store_id\": \"x231\", \"website_id\": \"w\"}, {\"store_id\": \"x232\", \"website_id\": \"w\"}, {\"store_id\": \"x233\", \"website_id\": \"w\"}, {\"store_id\": \"x234\", \"website_id\": \"w\"}, {\"store_id\": \"x235\", \"website_id\": \"w\"}, {\"store_id\": \"x236\", \"website_id\": \"w\"}, {\"store_id\": \"x237\", \"website_id\": \"w\"}, {\"store_id\": \"x238\", \"website_id\": \"w\"}, {\"store_id\": \"x239\", \"website_id\": \"w\"}, {\"store_id\": \"x240\", \"website_id\": \"w\"}, {\"store_id\": \"x241\", \"website_id\": \"w\"}, {\"store_id\": \"x242\", \"website_id\": \"w\"}, {\"store_id\": \"x243\", \"website_id\": \"w\"}, {\"store_id\": \"x244\", \"website_id\": \"w\"}, {\"store_id\": \"x245\", \"website_id\": \"w\"}, {\"store_id\": \"x246\", \"website_id\": \"w\"}, {\"store_id\": \"x247\", \"website_id\": \"w\"}, {\"store_id\": \"x248\", \"website_id\": \"w\"}, {\"store_id\": \"x249\", \"website_id\": \"w\"}, {\"store_id\": \"x250\", \"website_id\": \"w\"}, {\"store_id\": \"x251\", \"website_id\": \"w\"}, {\"store_id\": \"x252\", \"website_id\": \"w\"}, {\"store_id\": \"x253\", \"website_id\": \"w\"}, {\"store_id\": \"x254\", \"website_id\": \"w\"}, {\"store_id\": \"x255\", \"website_id\": \"w\"}, {\"store_id\": \"x256\", \"website_id\": \"w\"}, {\"store_id\": \"x257\", \"website_id\": \"w\"}, {\"store_id\": \"x258\", \"website_id\": \"w\"}, {\"store_id\": \"x259\", \"website_id\": \"w\"}, {\"store_id\": \"x260\", \"website_id\": \"w\"}, {\"store_id\": \"x261\", \"website_id\": \"w\"}, {\"store_id\": \"x262\", \"website_id\": \"w\"}, {\"store_id\": \"x263\", \"website_id\": \"w\"}, {\"store_id\": \"x264\", \"website_id\": \"w\"}, {\"store_id\": \"x265\", \"website_id\": \"w\"}, {\"store_id\": \"x266\", \"website_id\": \"w\"}, {\"store_id\": \"x267\", \"website_id\": \"w\"}, {\"store_id\": \"x268\", \"website_id\": \"w\"}, {\"store_id\": \"x269\", \"website_id\": \"w\"}, {\"store_id\": \"x270\", \"website_id\": \"w\"}, {\"store_id\": \"x271\", \"website_id\": \"w\"}, {\"store_id\": \"x272\", \"website_id\": \"w\"}, {\"store_id\": \"x273\", \"website_id\": \"w\"}, {\"store_id\": \"x274\", \"website_id\": \"w\"}, {\"store_id\": \"x275\", \"website_id\": \"w\"}, {\"store_id\": \"x276\", \"website_id\": \"w\"}, {\"store_id\": \"x277\", \"website_id\": \"w\"}, {\"store_id\": \"x278\", \"website_id\": \"w\"}, {\"store_id\": \"x279\", \"website_id\": \"w\"}, {\"store_id\": \"x280\", \"website_id\": \"w\"}, {\"store_id\": \"x281\", \"website_id\": \"w\"}, {\"store_id\": \"x282\", \"website_id\": \"w\"}, {\"store_id\": \"x283\", \"website_id\": \"w\"}, {\"store_id\": \"x284\", \"website_id\": \"w\"}, {\"store_id\": \"x285\", \"website_id\": \"w\"}, {\"store_id\": \"x286\", \"website_id\": \"w\"}, {\"store_id\": \"x287\", \"website_id\": \"w\"}, {\"store_id\": \"x288\", \"website_id\": \"w\"}, {\"store_id\": \"x289\", \"website_id\": \"w\"}, {\"store_id\": \"x290\", \"website_id\": \"w\"}, {\"store_id\": \"x291\", \"website_id\": \"w\"}, {\"store_id\": \"x292\", \"website_id\": \"w\"}, {\"store_id\": \"x293\", \"website_id\": \"w\"}, {\"store_id\": \"x294\", \"website_id\": \"w\"}, {\"store_id\": \"x295\", \"website_id\": \"w\"}, {\"store_id\": \"x296\", \"website_id\": \"w\"}, {\"store_id\": \"x297\", \"website_id\": \"w\"}, {\"store_id\": \"x298\", \"website_id\": \"w\"}, {\"store_id\": \"x299\", \"website_id\": \"w\"}, {\"store_id\": \"x300\", \"website_id\": \"w\"}, {\"store_id\": \"x301\", \"website_id\": \"w\"}, {\"store_id\": \"x302\", \"website_id\": \"w\"}, {\"store_id\": \"x303\", \"website_id\": \"w\"}, {\"store_id\": \"x304\", \"website_id\": \"w\"}, {\"store_id\": \"x305\", \"website_id\": \"w\"}, {\"store_id\": \"x306\", \"website_id\": \"w\"}, {\"store_id\": \"x307\", \"website_id\": \"w\"}, {\"store_id\": \"x308\", \"website_id\": \"w\"}, {\"store_id\": \"x309\", \"website_id\": \"w\"}, {\"store_id\": \"x310\", \"website_id\": \"w\"}, {\"store_id\": \"x311\", \"website_id\": \"w\"}, {\"store_id\": \"x312\", \"website_id\": \"w\"}, {\"store_id\": \"x313\", \"website_id\": \"w\"}, {\"store_id\": \"x314\", \"website_id\": \"w\"}, {\"store_id\": \"x315\", \"website_id\": \"w\"}, {\"store_id\": \"x316\", \"website_id\": \"w\"}, {\"store_id\": \"x317\", \"website_id\": \"w\"}, {\"store_id\": \"x318\", \"website_id\": \"w\"}, {\"store_id\": \"x319\", \"website_id\": \"w\"}, {\"store_id\": \"x320\", \"website_id\": \"w\"}, {\"store_id\": \"x321\", \"website_id\": \"w\"}, {\"store_id\": \"x322\", \"website_id\": \"w\"}, {\"store_id\": \"x323\", \"website_id\": \"w\"}, {\"store_id\": \"x324\", \"website_id\": \"w\"}, {\"store_id\": \"x325\", \"website_id\": \"w\"}, {\"store_id\": \"x326\", \"website_id\": \"w\"}, {\"store_id\": \"x327\", \"website_id\": \"w\"}, {\"store_id\": \"x328\", \"website_id\": \"w\"}, {\"store_id\": \"x329\", \"website_id\": \"w\"}, {\"store_id\": \"x330\", \"website_id\": \"w\"}, {\"store_id\": \"x331\", \"website_id\": \"w\"}, {\"store_id\": \"x332\", \"website_id\": \"w\"}, {\"store_id\": \"x333\", \"website_id\": \"w\"}, {\"store_id\": \"x334\", \"website_id\": \"w\"}, {\"store_id\": \"x335\", \"website_id\": \"w\"}, {\"store_id\": \"x336\", \"website_id\": \"w\"}, {\"store_id\": \"x337\", \"website_id\": \"w\"}, {\"store_id\": \"x338\", \"website_id\": \"w\"}, {\"store_id\": \"x339\", \"website_id\": \"w\"}, {\"store_id\": \"x340\", \"website_id\": \"w\"}, {\"store_id\": \"x341\", \"website_id\": \"w\"}, {\"store_id\": \"x342\", \"website_id\": \"w\"}, {\"store_id\": \"x343\", \"website_id\": \"w\"}, {\"store_id\": \"x344\", \"website_id\": \"w\"}, {\"store_id\": \"x345\", \"website_id\": \"w\"}, {\"store_id\": \"x346\", \"website_id\": \"w\"}, {\"store_id\": \"x347\", \"website_id\": \"w\"}, {\"store_id\": \"x348\", \"website_id\": \"w\"}, {\"store_id\": \"x349\", \"website_id\": \"w\"}, {\"store_id\": \"x350\", \"website_id\": \"w\"}, {\"store_id\": \"x351\", \"website_id\": \"w\"}, {\"store_id\": \"x352\", \"website_id\": \"w\"}, {\"store_id\": \"x353\", \"website_id\": \"w\"}, {\"store_id\": \"x354\", \"website_id\": \"w\"}, {\"store_id\": \"x355\", \"website_id\": \"w\"}, {\"store_id\": \"x356\", \"website_id\": \"w\"}, {\"store_id\": \"x357\", \"website_id\": \"w\"}, {\"store_id\": \"x358\", \"website_id\": \"w\"}, {\"store_id\": \"x359\", \"website_id\": \"w\"}, {\"store_id\": \"x360\", \"website_id\": \"w\"}, {\"store_id\": \"x361\", \"website_id\": \"w\"}, {\"store_id\": \"x362\", \"website_id\": \"w\"}, {\"store_id\": \"x363\", \"website_id\": \"w\"}, {\"store_id\": \"x364\", \"website_id\": \"w\"}, {\"store_id\": \"x365\", \"website_id\": \"w\"}, {\"store_id\": \"x366\", \"website_id\": \"w\"}, {\"store_id\": \"x367\", \"website_id\": \"w\"}, {\"store_id\": \"x368\", \"website_id\": \"w\"}, {\"store_id\": \"x369\", \"website_id\": \"w\"}, {\"store_id\": \"x370\", \"website_id\": \"w\"}, {\"store_id\": \"x371\", \"website_id\": \"w\"}, {\"store_id\": \"x372\", \"website_id\": \"w\"}, {\"store_id\": \"x373\", \"website_id\": \"w\"}, {\"store_id\": \"x374\", \"website_id\": \"w\"}, {\"store_id\": \"x375\", \"website_id\": \"w\"}, {\"store_id\": \"x376\", \"website_id\": \"w\"}, {\"store_id\": \"x377\", \"website_id\": \"w\"}, {\"store_id\": \"x378\", \"website_id\": \"w\"}, {\"store_id\": \"x379\", \"website_id\": \"w\"}, {\"store_id\": \"x380\", \"website_id\": \"w\"}, {\"store_id\": \"x381\", \"website_id\": \"w\"}, {\"store_id\": \"x382\", \"website_id\": \"w\"}, {\"store_id\": \"x383\", \"website_id\": \"w\"}, {\"store_id\": \"x384\", \"website_id\": \"w\"}, {\"store_id\": \"x385\", \"website_id\": \"w\"}, {\"store_id\": \"x386\", \"website_id\": \"w\"}, {\"store_id\": \"x387\", \"website_id\": \"w\"}, {\"store_id\": \"x388\", \"website_id\": \"w\"}, {\"store_id\": \"x389\", \"website_id\": \"w\"}, {\"store_id\": \"x390\", \"website_id\": \"w\"}, {\"store_id\": \"x391\", \"website_id\": \"w\"}, {\"store_id\": \"x392\", \"website_id\": \"w\"}, {\"store_id\": \"x393\", \"website_id\": \"w\"}, {\"store_id\": \"x394\", \"website_id\": \"w\"}, {\"store_id\": \"x395\", \"website_id\": \"w\"}, {\"store_id\": \"x396\", \"website_id\": \"w\"}, {\"store_id\": \"x397\", \"website_id\": \"w\"}, {\"store_id\": \"x398\", \"website_id\": \"w\"}, {\"store_id\": \"x399\", \"website_id\": \"w\"}, {\"store_id\": \"x400\", \"website_id\": \"w\"}, {\"store_id\": \"x401\", \"website_id\": \"w\"}, {\"store_id\": \"x402\", \"website_id\": \"w\"}, {\"store_id\": \"x403\", \"website_id\": \"w\"}, {\"store_id\": \"x404\", \"website_id\": \"w\"}, {\"store_id\": \"x405\", \"website_id\": \"w\"}, {\"store_id\": \"x406\", \"website_id\": \"w\"}, {\"store_id\": \"x407\", \"website_id\": \"w\"}, {\"store_id\": \"x408\", \"website_id\": \"w\"}, {\"store_id\": \"x409\", \"website_id\": \"w\"}, {\"store_id\": \"x410\", \"website_id\": \"w\"}, {\"store_id\": \"x411\", \"website_id\": \"w\"}, {\"store_id\": \"x412\", \"website_id\": \"w\"}, {\"store_id\": \"x413\", \"website_id\": \"w\"}, {\"store_id\": \"x414\", \"website_id\": \"w\"}, {\"store_id\": \"x415\", \"website_id\": \"w\"}, {\"store_id\": \"x416\", \"website_id\": \"w\"}, {\"store_id\": \"x417\", \"website_id\": \"w\"}, {\"store_id\": \"x418\", \"website_id\": \"w\"}, {\"store_id\": \"x419\", \"website_id\": \"w\"}, {\"store_id\": \"x420\", \"website_id\": \"w\"}, {\"store_id\": \"x421\", \"website_id\": \"w\"}, {\"store_id\": \"x422\", \"website_id\": \"w\"}, {\"store_id\": \"x423\", \"website_id\": \"w\"}, {\"store_id\": \"x424\", \"website_id\": \"w\"}, {\"store_id\": \"x425\", \"website_id\": \"w\"}, {\"store_id\": \"x426\", \"website_id\": \"w\"}, {\"store_id\": \"x427\", \"website_id\": \"w\"}, {\"store_id\": \"x428\", \"website_id\": \"w\"}, {\"store_id\": \"x429\", \"website_id\": \"w\"}, {\"store_id\": \"x430\", \"website_id\": \"w\"}, {\"store_id\": \"x431\", \"website_id\": \"w\"}, {\"store_id\": \"x432\", \"website_id\": \"w\"}, {\"store_id\": \"x433\", \"website_id\": \"w\"}, {\"store_id\": \"x434\", \"website_id\": \"w\"}, {\"store_id\": \"x435\", \"website_id\": \"w\"}, {\"store_id\": \"x436\", \"website_id\": \"w\"}, {\"store_id\": \"x437\", \"website_id\": \"w\"}, {\"store_id\": \"x438\", \"website_id\": \"w\"}, {\"store_id\": \"x439\", \"website_id\": \"w\"}, {\"store_id\": \"x440\", \"website_id\": \"w\"}, {\"store_id\": \"x441\", \"website_id\": \"w\"}, {\"store_id\": \"x442\", \"website_id\": \"w\"}, {\"store_id\": \"x443\", \"website_id\": \"w\"}, {\"store_id\": \"x444\", \"website_id\": \"w\"}, {\"store_id\": \"x445\", \"website_id\": \"w\"}, {\"store_id\": \"x446\", \"website_id\": \"w\"}, {\"store_id\": \"x447\", \"website_id\": \"w\"}, {\"store_id\": \"x448\", \"website_id\": \"w\"}, {\"store_id\": \"x449\", \"website_id\": \"w\"}, {\"store_id\": \"x450\", \"website_id\": \"w\"}, {\"store_id\": \"x451\", \"website_id\": \"w\"}, {\"store_id\": \"x452\", \"website_id\": \"w\"}, {\"store_id\": \"x453\", \"website_id\": \"w\"}, {\"store_id\": \"x454\", \"website_id\": \"w\"}, {\"store_id\": \"x455\", \"website_id\": \"w\"}, {\"store_id\": \"x456\", \"website_id\": \"w\"}, {\"store_id\": \"x457\", \"website_id\": \"w\"}, {\"store_id\": \"x458\", \"website_id\": \"w\"}, {\"store_id\": \"x459\", \"website_id\": \"w\"}, {\"store_id\": \"x460\", \"website_id\": \"w\"}, {\"store_id\": \"x461\", \"website_id\": \"w\"}, {\"store_id\": \"x462\", \"website_id\": \"w\"}, {\"store_id\": \"x463\", \"website_id\": \"w\"}, {\"store_id\": \"x464\", \"website_id\": \"w\"}, {\"store_id\": \"x465\", \"website_id\": \"w\"}, {\"store_id\": \"x466\", \"website_id\": \"w\"}, {\"store_id\": \"x467\", \"website_id\": \"w\"}, {\"store_id\": \"x468\", \"website_id\": \"w\"}, {\"store_id\": \"x469\", \"website_id\": \"w\"}, {\"store_id\": \"x470\", \"website_id\": \"w\"}, {\"store_id\": \"x471\", \"website_id\": \"w\"}, {\"store_id\": \"x472\", \"website_id\": \"w\"}, {\"store_id\": \"x473\", \"website_id\": \"w\"}, {\"store_id\": \"x474\", \"website_id\": \"w\"}, {\"store_id\": \"x475\", \"website_id\": \"w\"}, {\"store_id\": \"x476\", \"website_id\": \"w\"}, {\"store_id\": \"x477\", \"website_id\": \"w\"}, {\"store_id\": \"x478\", \"website_id\": \"w\"}, {\"store_id\": \"x479\", \"website_id\": \"w\"}, {\"store_id\": \"x480\", \"website_id\": \"w\"}, {\"store_id\": \"x481\", \"website_id\": \"w\"}, {\"store_id\": \"x482\", \"website_id\": \"w\"}, {\"store_id\": \"x483\", \"website_id\": \"w\"}, {\"store_id\": \"x484\", \"website_id\": \"w\"}, {\"store_id\": \"x485\", \"website_id\": \"w\"}, {\"store_id\": \"x486\", \"website_id\": \"w\"}, {\"store_id\": \"x487\", \"website_id\": \"w\"}, {\"store_id\": \"x488\", \"website_id\": \"w\"}, {\"store_id\": \"x489\", \"website_id\": \"w\"}, {\"store_id\": \"x490\", \"website_id\": \"w\"}, {\"store_id\": \"x491\", \"website_id\": \"w\"}, {\"store_id\": \"x492\", \"website_id\": \"w\"}, {\"store_id\": \"x493\", \"website_id\": \"w\"}, {\"store_id\": \"x494\", \"website_id\": \"w\"}, {\"store_id\": \"x495\", \"website_id\": \"w\"}, {\"store_id\": \"x496\", \"website_id\": \"w\"}, {\"store_id\": \"x497\", \"website_id\": \"w\"}, {\"store_id\": \"x498\", \"website_id\": \"w\"}, {\"store_id\": \"x499\", \"website_id\": \"w\"}, {\"store_id\": \"x500\", \"website_id\": \"w\"}]}"
+              "raw": "{\"items\": [{\"bu_location\": {\"code\": \"x0\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x1\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x2\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x3\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x4\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x5\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x6\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x7\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x8\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x9\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x10\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x11\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x12\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x13\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x14\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x15\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x16\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x17\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x18\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x19\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x20\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x21\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x22\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x23\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x24\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x25\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x26\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x27\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x28\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x29\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x30\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x31\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x32\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x33\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x34\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x35\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x36\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x37\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x38\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x39\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x40\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x41\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x42\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x43\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x44\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x45\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x46\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x47\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x48\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x49\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x50\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x51\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x52\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x53\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x54\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x55\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x56\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x57\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x58\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x59\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x60\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x61\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x62\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x63\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x64\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x65\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x66\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x67\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x68\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x69\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x70\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x71\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x72\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x73\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x74\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x75\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x76\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x77\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x78\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x79\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x80\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x81\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x82\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x83\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x84\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x85\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x86\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x87\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x88\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x89\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x90\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x91\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x92\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x93\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x94\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x95\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x96\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x97\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x98\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x99\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x100\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x101\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x102\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x103\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x104\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x105\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x106\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x107\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x108\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x109\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x110\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x111\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x112\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x113\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x114\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x115\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x116\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x117\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x118\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x119\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x120\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x121\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x122\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x123\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x124\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x125\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x126\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x127\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x128\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x129\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x130\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x131\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x132\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x133\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x134\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x135\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x136\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x137\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x138\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x139\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x140\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x141\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x142\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x143\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x144\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x145\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x146\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x147\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x148\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x149\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x150\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x151\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x152\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x153\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x154\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x155\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x156\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x157\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x158\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x159\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x160\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x161\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x162\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x163\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x164\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x165\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x166\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x167\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x168\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x169\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x170\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x171\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x172\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x173\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x174\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x175\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x176\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x177\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x178\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x179\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x180\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x181\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x182\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x183\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x184\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x185\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x186\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x187\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x188\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x189\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x190\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x191\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x192\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x193\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x194\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x195\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x196\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x197\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x198\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x199\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x200\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x201\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x202\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x203\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x204\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x205\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x206\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x207\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x208\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x209\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x210\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x211\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x212\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x213\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x214\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x215\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x216\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x217\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x218\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x219\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x220\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x221\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x222\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x223\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x224\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x225\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x226\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x227\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x228\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x229\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x230\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x231\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x232\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x233\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x234\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x235\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x236\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x237\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x238\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x239\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x240\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x241\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x242\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x243\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x244\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x245\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x246\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x247\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x248\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x249\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x250\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x251\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x252\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x253\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x254\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x255\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x256\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x257\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x258\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x259\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x260\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x261\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x262\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x263\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x264\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x265\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x266\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x267\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x268\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x269\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x270\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x271\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x272\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x273\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x274\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x275\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x276\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x277\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x278\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x279\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x280\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x281\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x282\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x283\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x284\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x285\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x286\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x287\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x288\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x289\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x290\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x291\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x292\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x293\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x294\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x295\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x296\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x297\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x298\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x299\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x300\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x301\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x302\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x303\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x304\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x305\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x306\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x307\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x308\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x309\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x310\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x311\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x312\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x313\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x314\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x315\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x316\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x317\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x318\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x319\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x320\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x321\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x322\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x323\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x324\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x325\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x326\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x327\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x328\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x329\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x330\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x331\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x332\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x333\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x334\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x335\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x336\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x337\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x338\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x339\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x340\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x341\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x342\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x343\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x344\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x345\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x346\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x347\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x348\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x349\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x350\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x351\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x352\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x353\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x354\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x355\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x356\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x357\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x358\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x359\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x360\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x361\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x362\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x363\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x364\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x365\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x366\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x367\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x368\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x369\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x370\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x371\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x372\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x373\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x374\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x375\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x376\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x377\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x378\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x379\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x380\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x381\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x382\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x383\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x384\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x385\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x386\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x387\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x388\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x389\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x390\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x391\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x392\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x393\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x394\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x395\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x396\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x397\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x398\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x399\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x400\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x401\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x402\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x403\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x404\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x405\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x406\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x407\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x408\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x409\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x410\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x411\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x412\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x413\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x414\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x415\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x416\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x417\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x418\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x419\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x420\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x421\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x422\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x423\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x424\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x425\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x426\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x427\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x428\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x429\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x430\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x431\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x432\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x433\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x434\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x435\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x436\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x437\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x438\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x439\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x440\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x441\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x442\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x443\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x444\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x445\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x446\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x447\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x448\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x449\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x450\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x451\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x452\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x453\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x454\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x455\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x456\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x457\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x458\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x459\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x460\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x461\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x462\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x463\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x464\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x465\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x466\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x467\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x468\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x469\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x470\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x471\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x472\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x473\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x474\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x475\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x476\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x477\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x478\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x479\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x480\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x481\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x482\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x483\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x484\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x485\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x486\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x487\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x488\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x489\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x490\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x491\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x492\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x493\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x494\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x495\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x496\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x497\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x498\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x499\"}, \"website\": {\"code\": \"w\"}}, {\"bu_location\": {\"code\": \"x500\"}, \"website\": {\"code\": \"w\"}}]}"
             }
           },
           "event": [
@@ -20747,14 +21770,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
@@ -20790,20 +21813,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/no-such-program-xyz/enrollments:batchCreate",
+              "raw": "{{base_url}}/programs/no-such-program-xyz/stores:batchCreate",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "no-such-program-xyz",
-                "enrollments:batchCreate"
+                "stores:batchCreate"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"store_id\": \"s\",\n      \"website_id\": \"w\"\n    }\n  ]\n}"
+              "raw": "{\n  \"items\": [\n    {\n      \"bu_location\": {\n        \"code\": \"s\"\n      },\n      \"website\": {\n        \"code\": \"w\"\n      }\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -20829,14 +21852,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{jslug}}/enrollments",
+              "raw": "{{base_url}}/programs/{{jslug}}/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{jslug}}",
-                "enrollments"
+                "stores"
               ]
             },
             "description": ""
@@ -20868,10 +21891,10 @@
               "const id = r => (r && r.code === 200) ? r.json().id : null;",
               "(async () => {",
               "  await call('POST', '/programs', {name: 'Enrollment negatives', slug, level: 'location', modules: []});",
-              "  const act = id(await call('POST', '/programs/' + slug + '/enrollments', {store_id: 'j-act', store_name: 'Active Store', website_id: 'w'}));",
-              "  const pend = id(await call('POST', '/programs/' + slug + '/enrollments', {store_id: 'j-pend', website_id: 'w', status: 'pending'}));",
-              "  const end = id(await call('POST', '/programs/' + slug + '/enrollments', {store_id: 'j-end', website_id: 'w'}));",
-              "  await call('PATCH', '/programs/' + slug + '/enrollments/' + end, {status: 'ended'});",
+              "  const act = id(await call('POST', '/programs/' + slug + '/stores', {bu_location: {code: 'j-act'}, website: {code: 'w'}}));",
+              "  const pend = id(await call('POST', '/programs/' + slug + '/stores', {bu_location: {code: 'j-pend'}, website: {code: 'w'}, status: 'pending'}));",
+              "  const end = id(await call('POST', '/programs/' + slug + '/stores', {bu_location: {code: 'j-end'}, website: {code: 'w'}}));",
+              "  await call('PATCH', '/programs/' + slug + '/stores/' + end, {status: 'ended'});",
               "  Object.entries({jslug: slug, jact: act, jpend: pend, jend: end}).forEach(([k, v]) => v && pm.collectionVariables.set(k, v));",
               "})();"
             ]
@@ -21352,7 +22375,7 @@
           ]
         },
         {
-          "name": "Unknown enrollment -> 404",
+          "name": "Unknown store -> 404",
           "request": {
             "method": "PATCH",
             "header": [
@@ -21396,7 +22419,7 @@
           ]
         },
         {
-          "name": "Enrollment id not a UUID -> 400",
+          "name": "Store id not a UUID -> 400",
           "request": {
             "method": "GET",
             "header": [
@@ -22116,9 +23139,9 @@
               "  const slug = 'sdn-' + stamp, noslug = 'sdn2-' + stamp;",
               "  await call('POST', '/programs', {name: 'Discount negatives', slug, level: 'location', modules: ['catalog_pricing.store_discounts.control_panel']});",
               "  await call('POST', '/programs', {name: 'No discounts', slug: noslug, level: 'location', modules: []});",
-              "  const mk = async (store) => { const r = await call('POST', '/programs/' + slug + '/enrollments', {store_id: store, store_name: store, website_id: 'w'}); return r && r.code === 200 ? r.json().id : null; };",
+              "  const mk = async (store) => { const r = await call('POST', '/programs/' + slug + '/stores', {bu_location: {code: store}, website: {code: 'w'}}); return r && r.code === 200 ? r.json().id : null; };",
               "  const a = await mk('k-1'), b = await mk('k-2'), e = await mk('k-ended');",
-              "  await call('PATCH', '/programs/' + slug + '/enrollments/' + e, {status: 'ended'});",
+              "  await call('PATCH', '/programs/' + slug + '/stores/' + e, {status: 'ended'});",
               "  Object.entries({kslug: slug, knoslug: noslug, kid: a, kid2: b, kended: e}).forEach(([k, v]) => v && pm.collectionVariables.set(k, v));",
               "})();"
             ]
@@ -26051,20 +27074,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/programs/{{pslug}}-c/enrollments",
+              "raw": "{{base_url}}/programs/{{pslug}}-c/stores",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "programs",
                 "{{pslug}}-c",
-                "enrollments"
+                "stores"
               ]
             },
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"store_id\": \"s1\",\n  \"store_name\": \"Alpha\",\n  \"website_id\": \"w1\"\n}"
+              "raw": "{\n  \"bu_location\": {\n    \"code\": \"s1\"\n  },\n  \"website\": {\n    \"code\": \"w1\"\n  }\n}"
             }
           },
           "event": [

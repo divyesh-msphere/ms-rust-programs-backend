@@ -2690,6 +2690,15 @@ pub struct Program {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
     pub renewal: ::buffa::MessageField<ProgramRenewal, ::buffa::Inline<ProgramRenewal>>,
+    /// The program's domains, e.g. \["domain1", "domain2"\].
+    ///
+    /// Field 20: `domain`
+    #[serde(
+        rename = "domain",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub domain: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
     /// Whether the program renews at all (false until turned on).
     ///
     /// Field 19: `renewal_enabled`
@@ -2724,6 +2733,7 @@ impl ::core::fmt::Debug for Program {
             .field("highlights", &self.highlights)
             .field("branding", &self.branding)
             .field("renewal", &self.renewal)
+            .field("domain", &self.domain)
             .field("renewal_enabled", &self.renewal_enabled)
             .finish()
     }
@@ -2846,6 +2856,9 @@ impl ::buffa::Message for Program {
         if self.renewal_enabled {
             size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
         }
+        for v in &self.domain {
+            size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -2924,6 +2937,9 @@ impl ::buffa::Message for Program {
         }
         if self.renewal_enabled {
             ::buffa::types::put_bool_field(19u32, self.renewal_enabled, buf);
+        }
+        for v in &self.domain {
+            ::buffa::types::put_string_field(20u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -3088,6 +3104,17 @@ impl ::buffa::Message for Program {
                 )?;
                 self.renewal_enabled = ::buffa::types::decode_bool(buf)?;
             }
+            20u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.domain.push(__elem);
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -3114,6 +3141,7 @@ impl ::buffa::Message for Program {
         self.branding = ::buffa::MessageField::none();
         self.renewal = ::buffa::MessageField::none();
         self.renewal_enabled = false;
+        self.domain.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -3734,6 +3762,135 @@ pub const __HIGHLIGHT_LIST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::bu
     type_url: "type.googleapis.com/programs.v1.HighlightList",
     to_json: ::buffa::type_registry::any_to_json::<HighlightList>,
     from_json: ::buffa::type_registry::any_from_json::<HighlightList>,
+    is_wkt: false,
+};
+/// The domains of an update: present replaces the whole list (an empty list clears it).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct DomainList {
+    /// Field 1: `items`
+    #[serde(
+        rename = "items",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub items: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for DomainList {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("DomainList").field("items", &self.items).finish()
+    }
+}
+impl DomainList {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.DomainList";
+}
+::buffa::impl_default_instance!(DomainList);
+impl ::buffa::MessageName for DomainList {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "DomainList";
+    const FULL_NAME: &'static str = "programs.v1.DomainList";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.DomainList";
+}
+impl ::buffa::Message for DomainList {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        for v in &self.items {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        for v in &self.items {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.items.push(__elem);
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.items.clear();
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for DomainList {
+    const PROTO_FQN: &'static str = "programs.v1.DomainList";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for DomainList {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __DOMAIN_LIST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.DomainList",
+    to_json: ::buffa::type_registry::any_to_json::<DomainList>,
+    from_json: ::buffa::type_registry::any_from_json::<DomainList>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
@@ -7542,6 +7699,15 @@ pub struct ListProgramsRequest {
     /// Field 6: `filter`
     #[serde(rename = "filter", skip_serializing_if = "::core::option::Option::is_none")]
     pub filter: ::core::option::Option<::buffa::alloc::string::String>,
+    /// `name`, `name asc` or `name desc` (case-insensitive). Empty keeps creation order.
+    ///
+    /// Field 7: `order_by`
+    #[serde(
+        rename = "orderBy",
+        alias = "order_by",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub order_by: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -7555,6 +7721,7 @@ impl ::core::fmt::Debug for ListProgramsRequest {
             .field("show_archived", &self.show_archived)
             .field("search", &self.search)
             .field("filter", &self.filter)
+            .field("order_by", &self.order_by)
             .finish()
     }
 }
@@ -7617,6 +7784,16 @@ impl ListProgramsRequest {
         self.filter = Some(value.into());
         self
     }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::order_by`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_order_by(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.order_by = Some(value.into());
+        self
+    }
 }
 ::buffa::impl_default_instance!(ListProgramsRequest);
 impl ::buffa::MessageName for ListProgramsRequest {
@@ -7656,6 +7833,9 @@ impl ::buffa::Message for ListProgramsRequest {
         if let Some(ref v) = self.filter {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
+        if let Some(ref v) = self.order_by {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -7683,6 +7863,9 @@ impl ::buffa::Message for ListProgramsRequest {
         }
         if let Some(ref v) = self.filter {
             ::buffa::types::put_string_field(6u32, v, buf);
+        }
+        if let Some(ref v) = self.order_by {
+            ::buffa::types::put_string_field(7u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -7756,6 +7939,18 @@ impl ::buffa::Message for ListProgramsRequest {
                     buf,
                 )?;
             }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .order_by
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -7770,6 +7965,7 @@ impl ::buffa::Message for ListProgramsRequest {
         self.show_archived = ::core::option::Option::None;
         self.search = ::core::option::Option::None;
         self.filter = ::core::option::Option::None;
+        self.order_by = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -8400,6 +8596,15 @@ pub struct CreateProgramRequest {
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub highlights: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// The program's domains, e.g. \["domain1", "domain2"\].
+    ///
+    /// Field 13: `domain`
+    #[serde(
+        rename = "domain",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub domain: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
     /// Field 10: `branding`
     #[serde(
         rename = "branding",
@@ -8438,6 +8643,7 @@ impl ::core::fmt::Debug for CreateProgramRequest {
             .field("module_configs", &self.module_configs)
             .field("about", &self.about)
             .field("highlights", &self.highlights)
+            .field("domain", &self.domain)
             .field("branding", &self.branding)
             .field("renewal", &self.renewal)
             .field("renewal_enabled", &self.renewal_enabled)
@@ -8568,6 +8774,9 @@ impl ::buffa::Message for CreateProgramRequest {
         if self.renewal_enabled.is_some() {
             size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
         }
+        for v in &self.domain {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -8628,6 +8837,9 @@ impl ::buffa::Message for CreateProgramRequest {
         }
         if let Some(v) = self.renewal_enabled {
             ::buffa::types::put_bool_field(12u32, v, buf);
+        }
+        for v in &self.domain {
+            ::buffa::types::put_string_field(13u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -8763,6 +8975,17 @@ impl ::buffa::Message for CreateProgramRequest {
                     ::buffa::types::decode_bool(buf)?,
                 );
             }
+            13u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __elem = ::buffa::types::decode_string(buf)?;
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&__elem),
+                )?;
+                self.domain.push(__elem);
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -8783,6 +9006,7 @@ impl ::buffa::Message for CreateProgramRequest {
         self.branding = ::buffa::MessageField::none();
         self.renewal = ::buffa::MessageField::none();
         self.renewal_enabled = ::core::option::Option::None;
+        self.domain.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -9051,6 +9275,14 @@ pub struct UpdateProgramRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
     pub highlights: ::buffa::MessageField<HighlightList, ::buffa::Inline<HighlightList>>,
+    /// Present replaces the whole domain list (an empty list clears it).
+    ///
+    /// Field 13: `domain`
+    #[serde(
+        rename = "domain",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub domain: ::buffa::MessageField<DomainList, ::buffa::Inline<DomainList>>,
     /// Field 10: `branding`
     #[serde(
         rename = "branding",
@@ -9089,6 +9321,7 @@ impl ::core::fmt::Debug for UpdateProgramRequest {
             .field("modules", &self.modules)
             .field("about", &self.about)
             .field("highlights", &self.highlights)
+            .field("domain", &self.domain)
             .field("branding", &self.branding)
             .field("renewal", &self.renewal)
             .field("renewal_enabled", &self.renewal_enabled)
@@ -9234,6 +9467,14 @@ impl ::buffa::Message for UpdateProgramRequest {
         if self.renewal_enabled.is_some() {
             size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
         }
+        if self.domain.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.domain.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -9299,6 +9540,14 @@ impl ::buffa::Message for UpdateProgramRequest {
         }
         if let Some(v) = self.renewal_enabled {
             ::buffa::types::put_bool_field(12u32, v, buf);
+        }
+        if self.domain.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                13u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.domain.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -9432,6 +9681,17 @@ impl ::buffa::Message for UpdateProgramRequest {
                     ::buffa::types::decode_bool(buf)?,
                 );
             }
+            13u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.domain.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -9452,6 +9712,7 @@ impl ::buffa::Message for UpdateProgramRequest {
         self.branding = ::buffa::MessageField::none();
         self.renewal = ::buffa::MessageField::none();
         self.renewal_enabled = ::core::option::Option::None;
+        self.domain = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -26265,12 +26526,568 @@ pub const __CREATE_SIGNOFF_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEnt
     is_wkt: false,
 };
 /// ---------------------------------------------------------------------------
-/// Enrollments (a store enrolled in a program on one website)
+/// Stores (a store enrolled in a program on one website)
 /// ---------------------------------------------------------------------------
+///
+/// The BU location a store belongs to.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct Enrollment {
+pub struct BuLocation {
+    /// Its unique code.
+    ///
+    /// Field 1: `code`
+    #[serde(
+        rename = "code",
+        with = "::buffa::json_helpers::proto_string",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    pub code: ::buffa::alloc::string::String,
+    /// The name of the location; unset when it was not known. On update an empty string clears it.
+    ///
+    /// Field 5: `name`
+    #[serde(rename = "name", skip_serializing_if = "::core::option::Option::is_none")]
+    pub name: ::core::option::Option<::buffa::alloc::string::String>,
+    /// The business unit of the location, code and name; unset when none was sent. On update a `bu` with an
+    /// empty code clears it.
+    ///
+    /// Field 4: `bu`
+    #[serde(
+        rename = "bu",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub bu: ::buffa::MessageField<BusinessUnit, ::buffa::Inline<BusinessUnit>>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for BuLocation {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("BuLocation")
+            .field("code", &self.code)
+            .field("name", &self.name)
+            .field("bu", &self.bu)
+            .finish()
+    }
+}
+impl BuLocation {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BuLocation";
+}
+impl BuLocation {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_name(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.name = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(BuLocation);
+impl ::buffa::MessageName for BuLocation {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "BuLocation";
+    const FULL_NAME: &'static str = "programs.v1.BuLocation";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BuLocation";
+}
+impl ::buffa::Message for BuLocation {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.code.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.code) as u64;
+        }
+        if self.bu.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.bu.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let Some(ref v) = self.name {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.code.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.code, buf);
+        }
+        if self.bu.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.bu.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.name {
+            ::buffa::types::put_string_field(5u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(&mut self.code, buf)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.bu.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.name.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.code.clear();
+        self.bu = ::buffa::MessageField::none();
+        self.name = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for BuLocation {
+    const PROTO_FQN: &'static str = "programs.v1.BuLocation";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for BuLocation {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __BU_LOCATION_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.BuLocation",
+    to_json: ::buffa::type_registry::any_to_json::<BuLocation>,
+    from_json: ::buffa::type_registry::any_from_json::<BuLocation>,
+    is_wkt: false,
+};
+/// The website a store is enrolled on.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct StoreWebsite {
+    /// Its unique code.
+    ///
+    /// Field 1: `code`
+    #[serde(
+        rename = "code",
+        with = "::buffa::json_helpers::proto_string",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    pub code: ::buffa::alloc::string::String,
+    /// Field 2: `name`
+    #[serde(rename = "name", skip_serializing_if = "::core::option::Option::is_none")]
+    pub name: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 3: `domain`
+    #[serde(rename = "domain", skip_serializing_if = "::core::option::Option::is_none")]
+    pub domain: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for StoreWebsite {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("StoreWebsite")
+            .field("code", &self.code)
+            .field("name", &self.name)
+            .field("domain", &self.domain)
+            .finish()
+    }
+}
+impl StoreWebsite {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreWebsite";
+}
+impl StoreWebsite {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_name(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.name = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::domain`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_domain(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.domain = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(StoreWebsite);
+impl ::buffa::MessageName for StoreWebsite {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "StoreWebsite";
+    const FULL_NAME: &'static str = "programs.v1.StoreWebsite";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreWebsite";
+}
+impl ::buffa::Message for StoreWebsite {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.code.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.code) as u64;
+        }
+        if let Some(ref v) = self.name {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.domain {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.code.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.code, buf);
+        }
+        if let Some(ref v) = self.name {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.domain {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(&mut self.code, buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.name.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.domain.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.code.clear();
+        self.name = ::core::option::Option::None;
+        self.domain = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for StoreWebsite {
+    const PROTO_FQN: &'static str = "programs.v1.StoreWebsite";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for StoreWebsite {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __STORE_WEBSITE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.StoreWebsite",
+    to_json: ::buffa::type_registry::any_to_json::<StoreWebsite>,
+    from_json: ::buffa::type_registry::any_from_json::<StoreWebsite>,
+    is_wkt: false,
+};
+/// The business unit of a store. Its code is also the PARENT of the website in the store discounts.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct BusinessUnit {
+    /// Field 1: `code`
+    #[serde(
+        rename = "code",
+        with = "::buffa::json_helpers::proto_string",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    pub code: ::buffa::alloc::string::String,
+    /// Field 2: `name`
+    #[serde(rename = "name", skip_serializing_if = "::core::option::Option::is_none")]
+    pub name: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for BusinessUnit {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("BusinessUnit")
+            .field("code", &self.code)
+            .field("name", &self.name)
+            .finish()
+    }
+}
+impl BusinessUnit {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BusinessUnit";
+}
+impl BusinessUnit {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_name(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.name = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(BusinessUnit);
+impl ::buffa::MessageName for BusinessUnit {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "BusinessUnit";
+    const FULL_NAME: &'static str = "programs.v1.BusinessUnit";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BusinessUnit";
+}
+impl ::buffa::Message for BusinessUnit {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.code.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.code) as u64;
+        }
+        if let Some(ref v) = self.name {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.code.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.code, buf);
+        }
+        if let Some(ref v) = self.name {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(&mut self.code, buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.name.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.code.clear();
+        self.name = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for BusinessUnit {
+    const PROTO_FQN: &'static str = "programs.v1.BusinessUnit";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for BusinessUnit {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __BUSINESS_UNIT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.BusinessUnit",
+    to_json: ::buffa::type_registry::any_to_json::<BusinessUnit>,
+    from_json: ::buffa::type_registry::any_from_json::<BusinessUnit>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct Store {
     /// Field 1: `path`
     #[serde(
         rename = "path",
@@ -26294,56 +27111,29 @@ pub struct Enrollment {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub application_id: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 4: `store_id`
+    /// Field 4: `bu_location`
     #[serde(
-        rename = "storeId",
-        alias = "store_id",
-        with = "::buffa::json_helpers::proto_string",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+        rename = "buLocation",
+        alias = "bu_location",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub store_id: ::buffa::alloc::string::String,
-    /// Unset = "Unresolved store".
+    pub bu_location: ::buffa::MessageField<BuLocation, ::buffa::Inline<BuLocation>>,
+    /// Field 5: `website`
+    #[serde(
+        rename = "website",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub website: ::buffa::MessageField<StoreWebsite, ::buffa::Inline<StoreWebsite>>,
+    /// Field 6: `customer_name`
+    #[serde(
+        rename = "customerName",
+        alias = "customer_name",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub customer_name: ::core::option::Option<::buffa::alloc::string::String>,
+    /// pending, active, suspended or ended. Any status can move to any other.
     ///
-    /// Field 5: `store_name`
-    #[serde(
-        rename = "storeName",
-        alias = "store_name",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub store_name: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 6: `store_resolved`
-    #[serde(
-        rename = "storeResolved",
-        alias = "store_resolved",
-        with = "::buffa::json_helpers::proto_bool",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
-    )]
-    pub store_resolved: bool,
-    /// Field 7: `website_id`
-    #[serde(
-        rename = "websiteId",
-        alias = "website_id",
-        with = "::buffa::json_helpers::proto_string",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
-    )]
-    pub website_id: ::buffa::alloc::string::String,
-    /// Field 8: `website_name`
-    #[serde(
-        rename = "websiteName",
-        alias = "website_name",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub website_name: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 9: `customer_group`
-    #[serde(
-        rename = "customerGroup",
-        alias = "customer_group",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub customer_group: ::core::option::Option<::buffa::alloc::string::String>,
-    /// pending, active, suspended or ended. Changes: pending -\> active, active \<-\> suspended, anything -\> ended.
-    ///
-    /// Field 10: `status`
+    /// Field 7: `status`
     #[serde(
         rename = "status",
         with = "::buffa::json_helpers::proto_string",
@@ -26352,21 +27142,21 @@ pub struct Enrollment {
     pub status: ::buffa::alloc::string::String,
     /// The status changes allowed from here (the Actions dropdown).
     ///
-    /// Field 11: `actions`
+    /// Field 8: `actions`
     #[serde(
         rename = "actions",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub actions: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
-    /// Field 12: `enrolled_time`
+    /// Field 9: `enrolled_time`
     #[serde(
         rename = "enrolledTime",
         alias = "enrolled_time",
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub enrolled_time: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 13: `contracts_count`
+    /// Field 10: `contracts_count`
     #[serde(
         rename = "contractsCount",
         alias = "contracts_count",
@@ -26374,14 +27164,14 @@ pub struct Enrollment {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_i32"
     )]
     pub contracts_count: i32,
-    /// Field 14: `last_contract_time`
+    /// Field 11: `last_contract_time`
     #[serde(
         rename = "lastContractTime",
         alias = "last_contract_time",
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub last_contract_time: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 15: `create_time`
+    /// Field 12: `create_time`
     #[serde(
         rename = "createTime",
         alias = "create_time",
@@ -26389,7 +27179,7 @@ pub struct Enrollment {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub create_time: ::buffa::alloc::string::String,
-    /// Field 16: `update_time`
+    /// Field 13: `update_time`
     #[serde(
         rename = "updateTime",
         alias = "update_time",
@@ -26401,18 +27191,15 @@ pub struct Enrollment {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for Enrollment {
+impl ::core::fmt::Debug for Store {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("Enrollment")
+        f.debug_struct("Store")
             .field("path", &self.path)
             .field("id", &self.id)
             .field("application_id", &self.application_id)
-            .field("store_id", &self.store_id)
-            .field("store_name", &self.store_name)
-            .field("store_resolved", &self.store_resolved)
-            .field("website_id", &self.website_id)
-            .field("website_name", &self.website_name)
-            .field("customer_group", &self.customer_group)
+            .field("bu_location", &self.bu_location)
+            .field("website", &self.website)
+            .field("customer_name", &self.customer_name)
             .field("status", &self.status)
             .field("actions", &self.actions)
             .field("enrolled_time", &self.enrolled_time)
@@ -26423,14 +27210,14 @@ impl ::core::fmt::Debug for Enrollment {
             .finish()
     }
 }
-impl Enrollment {
+impl Store {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.Enrollment";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.Store";
 }
-impl Enrollment {
+impl Store {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::application_id`] to `Some(value)`, consuming and returning `self`.
@@ -26443,32 +27230,12 @@ impl Enrollment {
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::store_name`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_store_name(
+    ///Sets [`Self::customer_name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_customer_name(
         mut self,
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
-        self.store_name = Some(value.into());
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::website_name`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_website_name(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.website_name = Some(value.into());
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::customer_group`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_customer_group(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.customer_group = Some(value.into());
+        self.customer_name = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -26492,14 +27259,14 @@ impl Enrollment {
         self
     }
 }
-::buffa::impl_default_instance!(Enrollment);
-impl ::buffa::MessageName for Enrollment {
+::buffa::impl_default_instance!(Store);
+impl ::buffa::MessageName for Store {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "Enrollment";
-    const FULL_NAME: &'static str = "programs.v1.Enrollment";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.Enrollment";
+    const NAME: &'static str = "Store";
+    const FULL_NAME: &'static str = "programs.v1.Store";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.Store";
 }
-impl ::buffa::Message for Enrollment {
+impl ::buffa::Message for Store {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -26508,7 +27275,7 @@ impl ::buffa::Message for Enrollment {
     /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
     /// points reject, never a silently wrapped size.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
@@ -26521,22 +27288,23 @@ impl ::buffa::Message for Enrollment {
         if let Some(ref v) = self.application_id {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
-        if !self.store_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+        if self.bu_location.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.bu_location.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
-        if let Some(ref v) = self.store_name {
-            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        if self.website.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.website.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
-        if self.store_resolved {
-            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
-        }
-        if !self.website_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.website_id) as u64;
-        }
-        if let Some(ref v) = self.website_name {
-            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-        }
-        if let Some(ref v) = self.customer_group {
+        if let Some(ref v) = self.customer_name {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if !self.status.is_empty() {
@@ -26559,14 +27327,14 @@ impl ::buffa::Message for Enrollment {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.create_time) as u64;
         }
         if !self.update_time.is_empty() {
-            size += 2u64 + ::buffa::types::string_encoded_len(&self.update_time) as u64;
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.update_time) as u64;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::EncodeSink,
     ) {
         #[allow(unused_imports)]
@@ -26580,44 +27348,45 @@ impl ::buffa::Message for Enrollment {
         if let Some(ref v) = self.application_id {
             ::buffa::types::put_string_field(3u32, v, buf);
         }
-        if !self.store_id.is_empty() {
-            ::buffa::types::put_string_field(4u32, &self.store_id, buf);
+        if self.bu_location.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.bu_location.write_to(__cache, buf);
         }
-        if let Some(ref v) = self.store_name {
-            ::buffa::types::put_string_field(5u32, v, buf);
+        if self.website.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                5u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.website.write_to(__cache, buf);
         }
-        if self.store_resolved {
-            ::buffa::types::put_bool_field(6u32, self.store_resolved, buf);
-        }
-        if !self.website_id.is_empty() {
-            ::buffa::types::put_string_field(7u32, &self.website_id, buf);
-        }
-        if let Some(ref v) = self.website_name {
-            ::buffa::types::put_string_field(8u32, v, buf);
-        }
-        if let Some(ref v) = self.customer_group {
-            ::buffa::types::put_string_field(9u32, v, buf);
+        if let Some(ref v) = self.customer_name {
+            ::buffa::types::put_string_field(6u32, v, buf);
         }
         if !self.status.is_empty() {
-            ::buffa::types::put_string_field(10u32, &self.status, buf);
+            ::buffa::types::put_string_field(7u32, &self.status, buf);
         }
         for v in &self.actions {
-            ::buffa::types::put_string_field(11u32, v, buf);
+            ::buffa::types::put_string_field(8u32, v, buf);
         }
         if let Some(ref v) = self.enrolled_time {
-            ::buffa::types::put_string_field(12u32, v, buf);
+            ::buffa::types::put_string_field(9u32, v, buf);
         }
         if self.contracts_count != 0i32 {
-            ::buffa::types::put_int32_field(13u32, self.contracts_count, buf);
+            ::buffa::types::put_int32_field(10u32, self.contracts_count, buf);
         }
         if let Some(ref v) = self.last_contract_time {
-            ::buffa::types::put_string_field(14u32, v, buf);
+            ::buffa::types::put_string_field(11u32, v, buf);
         }
         if !self.create_time.is_empty() {
-            ::buffa::types::put_string_field(15u32, &self.create_time, buf);
+            ::buffa::types::put_string_field(12u32, &self.create_time, buf);
         }
         if !self.update_time.is_empty() {
-            ::buffa::types::put_string_field(16u32, &self.update_time, buf);
+            ::buffa::types::put_string_field(13u32, &self.update_time, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -26663,66 +27432,43 @@ impl ::buffa::Message for Enrollment {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.store_id, buf)?;
+                ::buffa::Message::merge_length_delimited(
+                    self.bu_location.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(
-                    self
-                        .store_name
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                ::buffa::Message::merge_length_delimited(
+                    self.website.get_or_insert_default(),
                     buf,
+                    ctx,
                 )?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
-                    ::buffa::encoding::WireType::Varint,
+                    ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                self.store_resolved = ::buffa::types::decode_bool(buf)?;
+                ::buffa::types::merge_string(
+                    self
+                        .customer_name
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
             }
             7u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.website_id, buf)?;
-            }
-            8u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
-                ::buffa::types::merge_string(
-                    self
-                        .website_name
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
-                    buf,
-                )?;
-            }
-            9u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
-                ::buffa::types::merge_string(
-                    self
-                        .customer_group
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
-                    buf,
-                )?;
-            }
-            10u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
                 ::buffa::types::merge_string(&mut self.status, buf)?;
             }
-            11u32 => {
+            8u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -26733,7 +27479,7 @@ impl ::buffa::Message for Enrollment {
                 )?;
                 self.actions.push(__elem);
             }
-            12u32 => {
+            9u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -26745,14 +27491,14 @@ impl ::buffa::Message for Enrollment {
                     buf,
                 )?;
             }
-            13u32 => {
+            10u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::Varint,
                 )?;
                 self.contracts_count = ::buffa::types::decode_int32(buf)?;
             }
-            14u32 => {
+            11u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -26764,14 +27510,14 @@ impl ::buffa::Message for Enrollment {
                     buf,
                 )?;
             }
-            15u32 => {
+            12u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::types::merge_string(&mut self.create_time, buf)?;
             }
-            16u32 => {
+            13u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -26789,12 +27535,9 @@ impl ::buffa::Message for Enrollment {
         self.path.clear();
         self.id.clear();
         self.application_id = ::core::option::Option::None;
-        self.store_id.clear();
-        self.store_name = ::core::option::Option::None;
-        self.store_resolved = false;
-        self.website_id.clear();
-        self.website_name = ::core::option::Option::None;
-        self.customer_group = ::core::option::Option::None;
+        self.bu_location = ::buffa::MessageField::none();
+        self.website = ::buffa::MessageField::none();
+        self.customer_name = ::core::option::Option::None;
         self.status.clear();
         self.actions.clear();
         self.enrolled_time = ::core::option::Option::None;
@@ -26805,8 +27548,8 @@ impl ::buffa::Message for Enrollment {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for Enrollment {
-    const PROTO_FQN: &'static str = "programs.v1.Enrollment";
+impl ::buffa::ExtensionSet for Store {
+    const PROTO_FQN: &'static str = "programs.v1.Store";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -26814,7 +27557,7 @@ impl ::buffa::ExtensionSet for Enrollment {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for Enrollment {
+impl ::buffa::json_helpers::ProtoElemJson for Store {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -26828,16 +27571,16 @@ impl ::buffa::json_helpers::ProtoElemJson for Enrollment {
     }
 }
 #[doc(hidden)]
-pub const __ENROLLMENT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.Enrollment",
-    to_json: ::buffa::type_registry::any_to_json::<Enrollment>,
-    from_json: ::buffa::type_registry::any_from_json::<Enrollment>,
+pub const __STORE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.Store",
+    to_json: ::buffa::type_registry::any_to_json::<Store>,
+    from_json: ::buffa::type_registry::any_from_json::<Store>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct ListEnrollmentsRequest {
+pub struct ListStoresRequest {
     /// Field 1: `program`
     #[serde(
         rename = "program",
@@ -26845,25 +27588,25 @@ pub struct ListEnrollmentsRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub program: ::buffa::alloc::string::String,
-    /// The "All websites" filter.
+    /// The "All websites" filter: a website code, name or domain. Same as `filter` term `website=...`.
     ///
-    /// Field 2: `website_id`
-    #[serde(
-        rename = "websiteId",
-        alias = "website_id",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub website_id: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Only these statuses, comma-separated. Unset for all.
+    /// Field 2: `website`
+    #[serde(rename = "website", skip_serializing_if = "::core::option::Option::is_none")]
+    pub website: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Only these statuses, e.g. `active` or `[active,suspended]`. Same as `filter` term `status=...`.
     ///
     /// Field 3: `status`
     #[serde(rename = "status", skip_serializing_if = "::core::option::Option::is_none")]
     pub status: ::core::option::Option<::buffa::alloc::string::String>,
-    /// A prefix of the store name (case-insensitive).
+    /// BU location code contains this text. Same as `filter` term `bu_location=...`.
     ///
-    /// Field 4: `store`
-    #[serde(rename = "store", skip_serializing_if = "::core::option::Option::is_none")]
-    pub store: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 4: `bu_location`
+    #[serde(
+        rename = "buLocation",
+        alias = "bu_location",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub bu_location: ::core::option::Option<::buffa::alloc::string::String>,
     /// Field 5: `max_page_size`
     #[serde(
         rename = "maxPageSize",
@@ -26888,39 +27631,54 @@ pub struct ListEnrollmentsRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub path: ::buffa::alloc::string::String,
+    /// The search box: bare text matches the BU location code, website and customer name; `bu_location=abc`,
+    /// `website=abc` or `customer_name=abc` match one field.
+    ///
+    /// Field 8: `search`
+    #[serde(rename = "search", skip_serializing_if = "::core::option::Option::is_none")]
+    pub search: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Terms joined with `&`: `bu_location.starts_with=BU&customer_name.is_empty&website=[w1,w2]&status!=ended`.
+    /// Text fields (bu_location, website, customer_name) take an operator: contains (default), not_contains,
+    /// equals, not_equals, starts_with, ends_with, is_empty, is_not_empty (customer_name only).
+    ///
+    /// Field 9: `filter`
+    #[serde(rename = "filter", skip_serializing_if = "::core::option::Option::is_none")]
+    pub filter: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for ListEnrollmentsRequest {
+impl ::core::fmt::Debug for ListStoresRequest {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("ListEnrollmentsRequest")
+        f.debug_struct("ListStoresRequest")
             .field("program", &self.program)
-            .field("website_id", &self.website_id)
+            .field("website", &self.website)
             .field("status", &self.status)
-            .field("store", &self.store)
+            .field("bu_location", &self.bu_location)
             .field("max_page_size", &self.max_page_size)
             .field("page_token", &self.page_token)
             .field("path", &self.path)
+            .field("search", &self.search)
+            .field("filter", &self.filter)
             .finish()
     }
 }
-impl ListEnrollmentsRequest {
+impl ListStoresRequest {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListEnrollmentsRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListStoresRequest";
 }
-impl ListEnrollmentsRequest {
+impl ListStoresRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::website_id`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_website_id(
+    ///Sets [`Self::website`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_website(
         mut self,
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
-        self.website_id = Some(value.into());
+        self.website = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -26935,12 +27693,12 @@ impl ListEnrollmentsRequest {
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::store`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_store(
+    ///Sets [`Self::bu_location`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_bu_location(
         mut self,
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
-        self.store = Some(value.into());
+        self.bu_location = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -26960,15 +27718,35 @@ impl ListEnrollmentsRequest {
         self.page_token = Some(value.into());
         self
     }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::search`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_search(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.search = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::filter`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_filter(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.filter = Some(value.into());
+        self
+    }
 }
-::buffa::impl_default_instance!(ListEnrollmentsRequest);
-impl ::buffa::MessageName for ListEnrollmentsRequest {
+::buffa::impl_default_instance!(ListStoresRequest);
+impl ::buffa::MessageName for ListStoresRequest {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "ListEnrollmentsRequest";
-    const FULL_NAME: &'static str = "programs.v1.ListEnrollmentsRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListEnrollmentsRequest";
+    const NAME: &'static str = "ListStoresRequest";
+    const FULL_NAME: &'static str = "programs.v1.ListStoresRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListStoresRequest";
 }
-impl ::buffa::Message for ListEnrollmentsRequest {
+impl ::buffa::Message for ListStoresRequest {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -26984,13 +27762,13 @@ impl ::buffa::Message for ListEnrollmentsRequest {
         if !self.program.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.program) as u64;
         }
-        if let Some(ref v) = self.website_id {
+        if let Some(ref v) = self.website {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if let Some(ref v) = self.status {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
-        if let Some(ref v) = self.store {
+        if let Some(ref v) = self.bu_location {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if let Some(v) = self.max_page_size {
@@ -27001,6 +27779,12 @@ impl ::buffa::Message for ListEnrollmentsRequest {
         }
         if !self.path.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
+        }
+        if let Some(ref v) = self.search {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.filter {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
@@ -27015,13 +27799,13 @@ impl ::buffa::Message for ListEnrollmentsRequest {
         if !self.program.is_empty() {
             ::buffa::types::put_string_field(1u32, &self.program, buf);
         }
-        if let Some(ref v) = self.website_id {
+        if let Some(ref v) = self.website {
             ::buffa::types::put_string_field(2u32, v, buf);
         }
         if let Some(ref v) = self.status {
             ::buffa::types::put_string_field(3u32, v, buf);
         }
-        if let Some(ref v) = self.store {
+        if let Some(ref v) = self.bu_location {
             ::buffa::types::put_string_field(4u32, v, buf);
         }
         if let Some(v) = self.max_page_size {
@@ -27032,6 +27816,12 @@ impl ::buffa::Message for ListEnrollmentsRequest {
         }
         if !self.path.is_empty() {
             ::buffa::types::put_string_field(7u32, &self.path, buf);
+        }
+        if let Some(ref v) = self.search {
+            ::buffa::types::put_string_field(8u32, v, buf);
+        }
+        if let Some(ref v) = self.filter {
+            ::buffa::types::put_string_field(9u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -27059,9 +27849,7 @@ impl ::buffa::Message for ListEnrollmentsRequest {
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::types::merge_string(
-                    self
-                        .website_id
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    self.website.get_or_insert_with(::buffa::alloc::string::String::new),
                     buf,
                 )?;
             }
@@ -27081,7 +27869,9 @@ impl ::buffa::Message for ListEnrollmentsRequest {
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::types::merge_string(
-                    self.store.get_or_insert_with(::buffa::alloc::string::String::new),
+                    self
+                        .bu_location
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
                     buf,
                 )?;
             }
@@ -27113,6 +27903,26 @@ impl ::buffa::Message for ListEnrollmentsRequest {
                 )?;
                 ::buffa::types::merge_string(&mut self.path, buf)?;
             }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.search.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            9u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.filter.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -27122,17 +27932,19 @@ impl ::buffa::Message for ListEnrollmentsRequest {
     }
     fn clear(&mut self) {
         self.program.clear();
-        self.website_id = ::core::option::Option::None;
+        self.website = ::core::option::Option::None;
         self.status = ::core::option::Option::None;
-        self.store = ::core::option::Option::None;
+        self.bu_location = ::core::option::Option::None;
         self.max_page_size = ::core::option::Option::None;
         self.page_token = ::core::option::Option::None;
         self.path.clear();
+        self.search = ::core::option::Option::None;
+        self.filter = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for ListEnrollmentsRequest {
-    const PROTO_FQN: &'static str = "programs.v1.ListEnrollmentsRequest";
+impl ::buffa::ExtensionSet for ListStoresRequest {
+    const PROTO_FQN: &'static str = "programs.v1.ListStoresRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -27140,7 +27952,7 @@ impl ::buffa::ExtensionSet for ListEnrollmentsRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for ListEnrollmentsRequest {
+impl ::buffa::json_helpers::ProtoElemJson for ListStoresRequest {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -27154,23 +27966,23 @@ impl ::buffa::json_helpers::ProtoElemJson for ListEnrollmentsRequest {
     }
 }
 #[doc(hidden)]
-pub const __LIST_ENROLLMENTS_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.ListEnrollmentsRequest",
-    to_json: ::buffa::type_registry::any_to_json::<ListEnrollmentsRequest>,
-    from_json: ::buffa::type_registry::any_from_json::<ListEnrollmentsRequest>,
+pub const __LIST_STORES_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.ListStoresRequest",
+    to_json: ::buffa::type_registry::any_to_json::<ListStoresRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<ListStoresRequest>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct ListEnrollmentsResponse {
+pub struct ListStoresResponse {
     /// Field 1: `results`
     #[serde(
         rename = "results",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub results: ::buffa::alloc::vec::Vec<Enrollment>,
+    pub results: ::buffa::alloc::vec::Vec<Store>,
     /// Field 2: `next_page_token`
     #[serde(
         rename = "nextPageToken",
@@ -27178,7 +27990,7 @@ pub struct ListEnrollmentsResponse {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub next_page_token: ::core::option::Option<::buffa::alloc::string::String>,
-    /// How many enrollments match the filter (the "N STORES" count).
+    /// How many stores match the filter (the "N STORES" count).
     ///
     /// Field 3: `total_size`
     #[serde(
@@ -27192,23 +28004,23 @@ pub struct ListEnrollmentsResponse {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for ListEnrollmentsResponse {
+impl ::core::fmt::Debug for ListStoresResponse {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("ListEnrollmentsResponse")
+        f.debug_struct("ListStoresResponse")
             .field("results", &self.results)
             .field("next_page_token", &self.next_page_token)
             .field("total_size", &self.total_size)
             .finish()
     }
 }
-impl ListEnrollmentsResponse {
+impl ListStoresResponse {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListEnrollmentsResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListStoresResponse";
 }
-impl ListEnrollmentsResponse {
+impl ListStoresResponse {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::next_page_token`] to `Some(value)`, consuming and returning `self`.
@@ -27220,14 +28032,14 @@ impl ListEnrollmentsResponse {
         self
     }
 }
-::buffa::impl_default_instance!(ListEnrollmentsResponse);
-impl ::buffa::MessageName for ListEnrollmentsResponse {
+::buffa::impl_default_instance!(ListStoresResponse);
+impl ::buffa::MessageName for ListStoresResponse {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "ListEnrollmentsResponse";
-    const FULL_NAME: &'static str = "programs.v1.ListEnrollmentsResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListEnrollmentsResponse";
+    const NAME: &'static str = "ListStoresResponse";
+    const FULL_NAME: &'static str = "programs.v1.ListStoresResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListStoresResponse";
 }
-impl ::buffa::Message for ListEnrollmentsResponse {
+impl ::buffa::Message for ListStoresResponse {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -27336,8 +28148,8 @@ impl ::buffa::Message for ListEnrollmentsResponse {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for ListEnrollmentsResponse {
-    const PROTO_FQN: &'static str = "programs.v1.ListEnrollmentsResponse";
+impl ::buffa::ExtensionSet for ListStoresResponse {
+    const PROTO_FQN: &'static str = "programs.v1.ListStoresResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -27345,7 +28157,7 @@ impl ::buffa::ExtensionSet for ListEnrollmentsResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for ListEnrollmentsResponse {
+impl ::buffa::json_helpers::ProtoElemJson for ListStoresResponse {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -27359,16 +28171,16 @@ impl ::buffa::json_helpers::ProtoElemJson for ListEnrollmentsResponse {
     }
 }
 #[doc(hidden)]
-pub const __LIST_ENROLLMENTS_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.ListEnrollmentsResponse",
-    to_json: ::buffa::type_registry::any_to_json::<ListEnrollmentsResponse>,
-    from_json: ::buffa::type_registry::any_from_json::<ListEnrollmentsResponse>,
+pub const __LIST_STORES_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.ListStoresResponse",
+    to_json: ::buffa::type_registry::any_to_json::<ListStoresResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<ListStoresResponse>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct GetEnrollmentRequest {
+pub struct GetStoreRequest {
     /// Field 1: `program`
     #[serde(
         rename = "program",
@@ -27376,13 +28188,13 @@ pub struct GetEnrollmentRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub program: ::buffa::alloc::string::String,
-    /// Field 2: `enrollment`
+    /// Field 2: `store`
     #[serde(
-        rename = "enrollment",
+        rename = "store",
         with = "::buffa::json_helpers::proto_string",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
-    pub enrollment: ::buffa::alloc::string::String,
+    pub store: ::buffa::alloc::string::String,
     /// AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
     ///
     /// Field 3: `path`
@@ -27396,30 +28208,30 @@ pub struct GetEnrollmentRequest {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for GetEnrollmentRequest {
+impl ::core::fmt::Debug for GetStoreRequest {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("GetEnrollmentRequest")
+        f.debug_struct("GetStoreRequest")
             .field("program", &self.program)
-            .field("enrollment", &self.enrollment)
+            .field("store", &self.store)
             .field("path", &self.path)
             .finish()
     }
 }
-impl GetEnrollmentRequest {
+impl GetStoreRequest {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetEnrollmentRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetStoreRequest";
 }
-::buffa::impl_default_instance!(GetEnrollmentRequest);
-impl ::buffa::MessageName for GetEnrollmentRequest {
+::buffa::impl_default_instance!(GetStoreRequest);
+impl ::buffa::MessageName for GetStoreRequest {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "GetEnrollmentRequest";
-    const FULL_NAME: &'static str = "programs.v1.GetEnrollmentRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetEnrollmentRequest";
+    const NAME: &'static str = "GetStoreRequest";
+    const FULL_NAME: &'static str = "programs.v1.GetStoreRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetStoreRequest";
 }
-impl ::buffa::Message for GetEnrollmentRequest {
+impl ::buffa::Message for GetStoreRequest {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -27435,8 +28247,8 @@ impl ::buffa::Message for GetEnrollmentRequest {
         if !self.program.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.program) as u64;
         }
-        if !self.enrollment.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.enrollment) as u64;
+        if !self.store.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.store) as u64;
         }
         if !self.path.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
@@ -27454,8 +28266,8 @@ impl ::buffa::Message for GetEnrollmentRequest {
         if !self.program.is_empty() {
             ::buffa::types::put_string_field(1u32, &self.program, buf);
         }
-        if !self.enrollment.is_empty() {
-            ::buffa::types::put_string_field(2u32, &self.enrollment, buf);
+        if !self.store.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.store, buf);
         }
         if !self.path.is_empty() {
             ::buffa::types::put_string_field(3u32, &self.path, buf);
@@ -27485,7 +28297,7 @@ impl ::buffa::Message for GetEnrollmentRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.enrollment, buf)?;
+                ::buffa::types::merge_string(&mut self.store, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -27503,13 +28315,13 @@ impl ::buffa::Message for GetEnrollmentRequest {
     }
     fn clear(&mut self) {
         self.program.clear();
-        self.enrollment.clear();
+        self.store.clear();
         self.path.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for GetEnrollmentRequest {
-    const PROTO_FQN: &'static str = "programs.v1.GetEnrollmentRequest";
+impl ::buffa::ExtensionSet for GetStoreRequest {
+    const PROTO_FQN: &'static str = "programs.v1.GetStoreRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -27517,7 +28329,7 @@ impl ::buffa::ExtensionSet for GetEnrollmentRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for GetEnrollmentRequest {
+impl ::buffa::json_helpers::ProtoElemJson for GetStoreRequest {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -27531,48 +28343,46 @@ impl ::buffa::json_helpers::ProtoElemJson for GetEnrollmentRequest {
     }
 }
 #[doc(hidden)]
-pub const __GET_ENROLLMENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.GetEnrollmentRequest",
-    to_json: ::buffa::type_registry::any_to_json::<GetEnrollmentRequest>,
-    from_json: ::buffa::type_registry::any_from_json::<GetEnrollmentRequest>,
+pub const __GET_STORE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.GetStoreRequest",
+    to_json: ::buffa::type_registry::any_to_json::<GetStoreRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<GetStoreRequest>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct GetEnrollmentResponse {
-    /// Field 1: `enrollment`
+pub struct GetStoreResponse {
+    /// Field 1: `store`
     #[serde(
-        rename = "enrollment",
+        rename = "store",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub enrollment: ::buffa::MessageField<Enrollment, ::buffa::Inline<Enrollment>>,
+    pub store: ::buffa::MessageField<Store, ::buffa::Inline<Store>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for GetEnrollmentResponse {
+impl ::core::fmt::Debug for GetStoreResponse {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("GetEnrollmentResponse")
-            .field("enrollment", &self.enrollment)
-            .finish()
+        f.debug_struct("GetStoreResponse").field("store", &self.store).finish()
     }
 }
-impl GetEnrollmentResponse {
+impl GetStoreResponse {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetEnrollmentResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetStoreResponse";
 }
-::buffa::impl_default_instance!(GetEnrollmentResponse);
-impl ::buffa::MessageName for GetEnrollmentResponse {
+::buffa::impl_default_instance!(GetStoreResponse);
+impl ::buffa::MessageName for GetStoreResponse {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "GetEnrollmentResponse";
-    const FULL_NAME: &'static str = "programs.v1.GetEnrollmentResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetEnrollmentResponse";
+    const NAME: &'static str = "GetStoreResponse";
+    const FULL_NAME: &'static str = "programs.v1.GetStoreResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetStoreResponse";
 }
-impl ::buffa::Message for GetEnrollmentResponse {
+impl ::buffa::Message for GetStoreResponse {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -27585,9 +28395,9 @@ impl ::buffa::Message for GetEnrollmentResponse {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
-        if self.enrollment.is_set() {
+        if self.store.is_set() {
             let __slot = __cache.reserve();
-            let inner_size = self.enrollment.compute_size(__cache);
+            let inner_size = self.store.compute_size(__cache);
             __cache.set(__slot, inner_size);
             size
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -27603,13 +28413,13 @@ impl ::buffa::Message for GetEnrollmentResponse {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
-        if self.enrollment.is_set() {
+        if self.store.is_set() {
             ::buffa::types::put_len_delimited_header(
                 1u32,
                 u64::from(__cache.consume_next()),
                 buf,
             );
-            self.enrollment.write_to(__cache, buf);
+            self.store.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -27630,7 +28440,7 @@ impl ::buffa::Message for GetEnrollmentResponse {
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::Message::merge_length_delimited(
-                    self.enrollment.get_or_insert_default(),
+                    self.store.get_or_insert_default(),
                     buf,
                     ctx,
                 )?;
@@ -27643,12 +28453,12 @@ impl ::buffa::Message for GetEnrollmentResponse {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
-        self.enrollment = ::buffa::MessageField::none();
+        self.store = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for GetEnrollmentResponse {
-    const PROTO_FQN: &'static str = "programs.v1.GetEnrollmentResponse";
+impl ::buffa::ExtensionSet for GetStoreResponse {
+    const PROTO_FQN: &'static str = "programs.v1.GetStoreResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -27656,7 +28466,7 @@ impl ::buffa::ExtensionSet for GetEnrollmentResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for GetEnrollmentResponse {
+impl ::buffa::json_helpers::ProtoElemJson for GetStoreResponse {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -27670,16 +28480,16 @@ impl ::buffa::json_helpers::ProtoElemJson for GetEnrollmentResponse {
     }
 }
 #[doc(hidden)]
-pub const __GET_ENROLLMENT_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.GetEnrollmentResponse",
-    to_json: ::buffa::type_registry::any_to_json::<GetEnrollmentResponse>,
-    from_json: ::buffa::type_registry::any_from_json::<GetEnrollmentResponse>,
+pub const __GET_STORE_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.GetStoreResponse",
+    to_json: ::buffa::type_registry::any_to_json::<GetStoreResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<GetStoreResponse>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct CreateEnrollmentRequest {
+pub struct CreateStoreRequest {
     /// Field 1: `program`
     #[serde(
         rename = "program",
@@ -27692,51 +28502,34 @@ pub struct CreateEnrollmentRequest {
     /// Field 2: `id`
     #[serde(rename = "id", skip_serializing_if = "::core::option::Option::is_none")]
     pub id: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 3: `store_id`
+    /// Field 3: `bu_location`
     #[serde(
-        rename = "storeId",
-        alias = "store_id",
-        with = "::buffa::json_helpers::proto_string",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+        rename = "buLocation",
+        alias = "bu_location",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub store_id: ::buffa::alloc::string::String,
-    /// Field 4: `store_name`
+    pub bu_location: ::buffa::MessageField<BuLocation, ::buffa::Inline<BuLocation>>,
+    /// Field 4: `website`
     #[serde(
-        rename = "storeName",
-        alias = "store_name",
+        rename = "website",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub website: ::buffa::MessageField<StoreWebsite, ::buffa::Inline<StoreWebsite>>,
+    /// Field 5: `customer_name`
+    #[serde(
+        rename = "customerName",
+        alias = "customer_name",
         skip_serializing_if = "::core::option::Option::is_none"
     )]
-    pub store_name: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 5: `website_id`
-    #[serde(
-        rename = "websiteId",
-        alias = "website_id",
-        with = "::buffa::json_helpers::proto_string",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
-    )]
-    pub website_id: ::buffa::alloc::string::String,
-    /// Field 6: `website_name`
-    #[serde(
-        rename = "websiteName",
-        alias = "website_name",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub website_name: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 7: `customer_group`
-    #[serde(
-        rename = "customerGroup",
-        alias = "customer_group",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub customer_group: ::core::option::Option<::buffa::alloc::string::String>,
+    pub customer_name: ::core::option::Option<::buffa::alloc::string::String>,
     /// "pending" or "active" (default).
     ///
-    /// Field 8: `status`
+    /// Field 6: `status`
     #[serde(rename = "status", skip_serializing_if = "::core::option::Option::is_none")]
     pub status: ::core::option::Option<::buffa::alloc::string::String>,
     /// AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
     ///
-    /// Field 9: `path`
+    /// Field 7: `path`
     #[serde(
         rename = "path",
         with = "::buffa::json_helpers::proto_string",
@@ -27747,29 +28540,27 @@ pub struct CreateEnrollmentRequest {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for CreateEnrollmentRequest {
+impl ::core::fmt::Debug for CreateStoreRequest {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("CreateEnrollmentRequest")
+        f.debug_struct("CreateStoreRequest")
             .field("program", &self.program)
             .field("id", &self.id)
-            .field("store_id", &self.store_id)
-            .field("store_name", &self.store_name)
-            .field("website_id", &self.website_id)
-            .field("website_name", &self.website_name)
-            .field("customer_group", &self.customer_group)
+            .field("bu_location", &self.bu_location)
+            .field("website", &self.website)
+            .field("customer_name", &self.customer_name)
             .field("status", &self.status)
             .field("path", &self.path)
             .finish()
     }
 }
-impl CreateEnrollmentRequest {
+impl CreateStoreRequest {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateEnrollmentRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateStoreRequest";
 }
-impl CreateEnrollmentRequest {
+impl CreateStoreRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::id`] to `Some(value)`, consuming and returning `self`.
@@ -27779,32 +28570,12 @@ impl CreateEnrollmentRequest {
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::store_name`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_store_name(
+    ///Sets [`Self::customer_name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_customer_name(
         mut self,
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
-        self.store_name = Some(value.into());
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::website_name`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_website_name(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.website_name = Some(value.into());
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::customer_group`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_customer_group(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.customer_group = Some(value.into());
+        self.customer_name = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -27818,14 +28589,14 @@ impl CreateEnrollmentRequest {
         self
     }
 }
-::buffa::impl_default_instance!(CreateEnrollmentRequest);
-impl ::buffa::MessageName for CreateEnrollmentRequest {
+::buffa::impl_default_instance!(CreateStoreRequest);
+impl ::buffa::MessageName for CreateStoreRequest {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "CreateEnrollmentRequest";
-    const FULL_NAME: &'static str = "programs.v1.CreateEnrollmentRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateEnrollmentRequest";
+    const NAME: &'static str = "CreateStoreRequest";
+    const FULL_NAME: &'static str = "programs.v1.CreateStoreRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateStoreRequest";
 }
-impl ::buffa::Message for CreateEnrollmentRequest {
+impl ::buffa::Message for CreateStoreRequest {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -27834,7 +28605,7 @@ impl ::buffa::Message for CreateEnrollmentRequest {
     /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
     /// points reject, never a silently wrapped size.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
@@ -27844,19 +28615,23 @@ impl ::buffa::Message for CreateEnrollmentRequest {
         if let Some(ref v) = self.id {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
-        if !self.store_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+        if self.bu_location.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.bu_location.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
-        if let Some(ref v) = self.store_name {
-            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        if self.website.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.website.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
-        if !self.website_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.website_id) as u64;
-        }
-        if let Some(ref v) = self.website_name {
-            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-        }
-        if let Some(ref v) = self.customer_group {
+        if let Some(ref v) = self.customer_name {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if let Some(ref v) = self.status {
@@ -27870,7 +28645,7 @@ impl ::buffa::Message for CreateEnrollmentRequest {
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::EncodeSink,
     ) {
         #[allow(unused_imports)]
@@ -27881,26 +28656,30 @@ impl ::buffa::Message for CreateEnrollmentRequest {
         if let Some(ref v) = self.id {
             ::buffa::types::put_string_field(2u32, v, buf);
         }
-        if !self.store_id.is_empty() {
-            ::buffa::types::put_string_field(3u32, &self.store_id, buf);
+        if self.bu_location.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.bu_location.write_to(__cache, buf);
         }
-        if let Some(ref v) = self.store_name {
-            ::buffa::types::put_string_field(4u32, v, buf);
+        if self.website.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.website.write_to(__cache, buf);
         }
-        if !self.website_id.is_empty() {
-            ::buffa::types::put_string_field(5u32, &self.website_id, buf);
-        }
-        if let Some(ref v) = self.website_name {
-            ::buffa::types::put_string_field(6u32, v, buf);
-        }
-        if let Some(ref v) = self.customer_group {
-            ::buffa::types::put_string_field(7u32, v, buf);
+        if let Some(ref v) = self.customer_name {
+            ::buffa::types::put_string_field(5u32, v, buf);
         }
         if let Some(ref v) = self.status {
-            ::buffa::types::put_string_field(8u32, v, buf);
+            ::buffa::types::put_string_field(6u32, v, buf);
         }
         if !self.path.is_empty() {
-            ::buffa::types::put_string_field(9u32, &self.path, buf);
+            ::buffa::types::put_string_field(7u32, &self.path, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -27937,18 +28716,21 @@ impl ::buffa::Message for CreateEnrollmentRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.store_id, buf)?;
+                ::buffa::Message::merge_length_delimited(
+                    self.bu_location.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(
-                    self
-                        .store_name
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                ::buffa::Message::merge_length_delimited(
+                    self.website.get_or_insert_default(),
                     buf,
+                    ctx,
                 )?;
             }
             5u32 => {
@@ -27956,33 +28738,14 @@ impl ::buffa::Message for CreateEnrollmentRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.website_id, buf)?;
+                ::buffa::types::merge_string(
+                    self
+                        .customer_name
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
             }
             6u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
-                ::buffa::types::merge_string(
-                    self
-                        .website_name
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
-                    buf,
-                )?;
-            }
-            7u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
-                ::buffa::types::merge_string(
-                    self
-                        .customer_group
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
-                    buf,
-                )?;
-            }
-            8u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -27992,7 +28755,7 @@ impl ::buffa::Message for CreateEnrollmentRequest {
                     buf,
                 )?;
             }
-            9u32 => {
+            7u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -28009,18 +28772,16 @@ impl ::buffa::Message for CreateEnrollmentRequest {
     fn clear(&mut self) {
         self.program.clear();
         self.id = ::core::option::Option::None;
-        self.store_id.clear();
-        self.store_name = ::core::option::Option::None;
-        self.website_id.clear();
-        self.website_name = ::core::option::Option::None;
-        self.customer_group = ::core::option::Option::None;
+        self.bu_location = ::buffa::MessageField::none();
+        self.website = ::buffa::MessageField::none();
+        self.customer_name = ::core::option::Option::None;
         self.status = ::core::option::Option::None;
         self.path.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for CreateEnrollmentRequest {
-    const PROTO_FQN: &'static str = "programs.v1.CreateEnrollmentRequest";
+impl ::buffa::ExtensionSet for CreateStoreRequest {
+    const PROTO_FQN: &'static str = "programs.v1.CreateStoreRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -28028,7 +28789,7 @@ impl ::buffa::ExtensionSet for CreateEnrollmentRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for CreateEnrollmentRequest {
+impl ::buffa::json_helpers::ProtoElemJson for CreateStoreRequest {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -28042,48 +28803,46 @@ impl ::buffa::json_helpers::ProtoElemJson for CreateEnrollmentRequest {
     }
 }
 #[doc(hidden)]
-pub const __CREATE_ENROLLMENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.CreateEnrollmentRequest",
-    to_json: ::buffa::type_registry::any_to_json::<CreateEnrollmentRequest>,
-    from_json: ::buffa::type_registry::any_from_json::<CreateEnrollmentRequest>,
+pub const __CREATE_STORE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.CreateStoreRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CreateStoreRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CreateStoreRequest>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct CreateEnrollmentResponse {
-    /// Field 1: `enrollment`
+pub struct CreateStoreResponse {
+    /// Field 1: `store`
     #[serde(
-        rename = "enrollment",
+        rename = "store",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub enrollment: ::buffa::MessageField<Enrollment, ::buffa::Inline<Enrollment>>,
+    pub store: ::buffa::MessageField<Store, ::buffa::Inline<Store>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for CreateEnrollmentResponse {
+impl ::core::fmt::Debug for CreateStoreResponse {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("CreateEnrollmentResponse")
-            .field("enrollment", &self.enrollment)
-            .finish()
+        f.debug_struct("CreateStoreResponse").field("store", &self.store).finish()
     }
 }
-impl CreateEnrollmentResponse {
+impl CreateStoreResponse {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateEnrollmentResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateStoreResponse";
 }
-::buffa::impl_default_instance!(CreateEnrollmentResponse);
-impl ::buffa::MessageName for CreateEnrollmentResponse {
+::buffa::impl_default_instance!(CreateStoreResponse);
+impl ::buffa::MessageName for CreateStoreResponse {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "CreateEnrollmentResponse";
-    const FULL_NAME: &'static str = "programs.v1.CreateEnrollmentResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateEnrollmentResponse";
+    const NAME: &'static str = "CreateStoreResponse";
+    const FULL_NAME: &'static str = "programs.v1.CreateStoreResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateStoreResponse";
 }
-impl ::buffa::Message for CreateEnrollmentResponse {
+impl ::buffa::Message for CreateStoreResponse {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -28096,9 +28855,9 @@ impl ::buffa::Message for CreateEnrollmentResponse {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
-        if self.enrollment.is_set() {
+        if self.store.is_set() {
             let __slot = __cache.reserve();
-            let inner_size = self.enrollment.compute_size(__cache);
+            let inner_size = self.store.compute_size(__cache);
             __cache.set(__slot, inner_size);
             size
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -28114,13 +28873,13 @@ impl ::buffa::Message for CreateEnrollmentResponse {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
-        if self.enrollment.is_set() {
+        if self.store.is_set() {
             ::buffa::types::put_len_delimited_header(
                 1u32,
                 u64::from(__cache.consume_next()),
                 buf,
             );
-            self.enrollment.write_to(__cache, buf);
+            self.store.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -28141,7 +28900,7 @@ impl ::buffa::Message for CreateEnrollmentResponse {
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::Message::merge_length_delimited(
-                    self.enrollment.get_or_insert_default(),
+                    self.store.get_or_insert_default(),
                     buf,
                     ctx,
                 )?;
@@ -28154,12 +28913,12 @@ impl ::buffa::Message for CreateEnrollmentResponse {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
-        self.enrollment = ::buffa::MessageField::none();
+        self.store = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for CreateEnrollmentResponse {
-    const PROTO_FQN: &'static str = "programs.v1.CreateEnrollmentResponse";
+impl ::buffa::ExtensionSet for CreateStoreResponse {
+    const PROTO_FQN: &'static str = "programs.v1.CreateStoreResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -28167,7 +28926,7 @@ impl ::buffa::ExtensionSet for CreateEnrollmentResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for CreateEnrollmentResponse {
+impl ::buffa::json_helpers::ProtoElemJson for CreateStoreResponse {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -28181,16 +28940,16 @@ impl ::buffa::json_helpers::ProtoElemJson for CreateEnrollmentResponse {
     }
 }
 #[doc(hidden)]
-pub const __CREATE_ENROLLMENT_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.CreateEnrollmentResponse",
-    to_json: ::buffa::type_registry::any_to_json::<CreateEnrollmentResponse>,
-    from_json: ::buffa::type_registry::any_from_json::<CreateEnrollmentResponse>,
+pub const __CREATE_STORE_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.CreateStoreResponse",
+    to_json: ::buffa::type_registry::any_to_json::<CreateStoreResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<CreateStoreResponse>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct UpdateEnrollmentRequest {
+pub struct UpdateStoreRequest {
     /// Field 1: `program`
     #[serde(
         rename = "program",
@@ -28198,25 +28957,27 @@ pub struct UpdateEnrollmentRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub program: ::buffa::alloc::string::String,
-    /// Field 2: `enrollment`
+    /// Field 2: `store`
     #[serde(
-        rename = "enrollment",
+        rename = "store",
         with = "::buffa::json_helpers::proto_string",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
-    pub enrollment: ::buffa::alloc::string::String,
+    pub store: ::buffa::alloc::string::String,
+    /// Any of pending, active, suspended, ended.
+    ///
     /// Field 3: `status`
     #[serde(rename = "status", skip_serializing_if = "::core::option::Option::is_none")]
     pub status: ::core::option::Option<::buffa::alloc::string::String>,
-    /// An empty string clears the group.
+    /// An empty string clears the customer name.
     ///
-    /// Field 4: `customer_group`
+    /// Field 4: `customer_name`
     #[serde(
-        rename = "customerGroup",
-        alias = "customer_group",
+        rename = "customerName",
+        alias = "customer_name",
         skip_serializing_if = "::core::option::Option::is_none"
     )]
-    pub customer_group: ::core::option::Option<::buffa::alloc::string::String>,
+    pub customer_name: ::core::option::Option<::buffa::alloc::string::String>,
     /// AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
     ///
     /// Field 5: `path`
@@ -28226,29 +28987,39 @@ pub struct UpdateEnrollmentRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub path: ::buffa::alloc::string::String,
+    /// Only `bu_location.bu` is read: it replaces the business unit, and a `bu` with an empty code clears it.
+    ///
+    /// Field 6: `bu_location`
+    #[serde(
+        rename = "buLocation",
+        alias = "bu_location",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub bu_location: ::buffa::MessageField<BuLocation, ::buffa::Inline<BuLocation>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for UpdateEnrollmentRequest {
+impl ::core::fmt::Debug for UpdateStoreRequest {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("UpdateEnrollmentRequest")
+        f.debug_struct("UpdateStoreRequest")
             .field("program", &self.program)
-            .field("enrollment", &self.enrollment)
+            .field("store", &self.store)
             .field("status", &self.status)
-            .field("customer_group", &self.customer_group)
+            .field("customer_name", &self.customer_name)
             .field("path", &self.path)
+            .field("bu_location", &self.bu_location)
             .finish()
     }
 }
-impl UpdateEnrollmentRequest {
+impl UpdateStoreRequest {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateEnrollmentRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateStoreRequest";
 }
-impl UpdateEnrollmentRequest {
+impl UpdateStoreRequest {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
     ///Sets [`Self::status`] to `Some(value)`, consuming and returning `self`.
@@ -28261,23 +29032,23 @@ impl UpdateEnrollmentRequest {
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::customer_group`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_customer_group(
+    ///Sets [`Self::customer_name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_customer_name(
         mut self,
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
-        self.customer_group = Some(value.into());
+        self.customer_name = Some(value.into());
         self
     }
 }
-::buffa::impl_default_instance!(UpdateEnrollmentRequest);
-impl ::buffa::MessageName for UpdateEnrollmentRequest {
+::buffa::impl_default_instance!(UpdateStoreRequest);
+impl ::buffa::MessageName for UpdateStoreRequest {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "UpdateEnrollmentRequest";
-    const FULL_NAME: &'static str = "programs.v1.UpdateEnrollmentRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateEnrollmentRequest";
+    const NAME: &'static str = "UpdateStoreRequest";
+    const FULL_NAME: &'static str = "programs.v1.UpdateStoreRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateStoreRequest";
 }
-impl ::buffa::Message for UpdateEnrollmentRequest {
+impl ::buffa::Message for UpdateStoreRequest {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -28286,31 +29057,39 @@ impl ::buffa::Message for UpdateEnrollmentRequest {
     /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
     /// points reject, never a silently wrapped size.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
         if !self.program.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.program) as u64;
         }
-        if !self.enrollment.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.enrollment) as u64;
+        if !self.store.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.store) as u64;
         }
         if let Some(ref v) = self.status {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
-        if let Some(ref v) = self.customer_group {
+        if let Some(ref v) = self.customer_name {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if !self.path.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
+        }
+        if self.bu_location.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.bu_location.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::EncodeSink,
     ) {
         #[allow(unused_imports)]
@@ -28318,17 +29097,25 @@ impl ::buffa::Message for UpdateEnrollmentRequest {
         if !self.program.is_empty() {
             ::buffa::types::put_string_field(1u32, &self.program, buf);
         }
-        if !self.enrollment.is_empty() {
-            ::buffa::types::put_string_field(2u32, &self.enrollment, buf);
+        if !self.store.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.store, buf);
         }
         if let Some(ref v) = self.status {
             ::buffa::types::put_string_field(3u32, v, buf);
         }
-        if let Some(ref v) = self.customer_group {
+        if let Some(ref v) = self.customer_name {
             ::buffa::types::put_string_field(4u32, v, buf);
         }
         if !self.path.is_empty() {
             ::buffa::types::put_string_field(5u32, &self.path, buf);
+        }
+        if self.bu_location.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                6u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.bu_location.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -28355,7 +29142,7 @@ impl ::buffa::Message for UpdateEnrollmentRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.enrollment, buf)?;
+                ::buffa::types::merge_string(&mut self.store, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -28374,7 +29161,7 @@ impl ::buffa::Message for UpdateEnrollmentRequest {
                 )?;
                 ::buffa::types::merge_string(
                     self
-                        .customer_group
+                        .customer_name
                         .get_or_insert_with(::buffa::alloc::string::String::new),
                     buf,
                 )?;
@@ -28386,6 +29173,17 @@ impl ::buffa::Message for UpdateEnrollmentRequest {
                 )?;
                 ::buffa::types::merge_string(&mut self.path, buf)?;
             }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.bu_location.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -28395,15 +29193,16 @@ impl ::buffa::Message for UpdateEnrollmentRequest {
     }
     fn clear(&mut self) {
         self.program.clear();
-        self.enrollment.clear();
+        self.store.clear();
         self.status = ::core::option::Option::None;
-        self.customer_group = ::core::option::Option::None;
+        self.customer_name = ::core::option::Option::None;
         self.path.clear();
+        self.bu_location = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for UpdateEnrollmentRequest {
-    const PROTO_FQN: &'static str = "programs.v1.UpdateEnrollmentRequest";
+impl ::buffa::ExtensionSet for UpdateStoreRequest {
+    const PROTO_FQN: &'static str = "programs.v1.UpdateStoreRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -28411,7 +29210,7 @@ impl ::buffa::ExtensionSet for UpdateEnrollmentRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for UpdateEnrollmentRequest {
+impl ::buffa::json_helpers::ProtoElemJson for UpdateStoreRequest {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -28425,48 +29224,46 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdateEnrollmentRequest {
     }
 }
 #[doc(hidden)]
-pub const __UPDATE_ENROLLMENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.UpdateEnrollmentRequest",
-    to_json: ::buffa::type_registry::any_to_json::<UpdateEnrollmentRequest>,
-    from_json: ::buffa::type_registry::any_from_json::<UpdateEnrollmentRequest>,
+pub const __UPDATE_STORE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.UpdateStoreRequest",
+    to_json: ::buffa::type_registry::any_to_json::<UpdateStoreRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<UpdateStoreRequest>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct UpdateEnrollmentResponse {
-    /// Field 1: `enrollment`
+pub struct UpdateStoreResponse {
+    /// Field 1: `store`
     #[serde(
-        rename = "enrollment",
+        rename = "store",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub enrollment: ::buffa::MessageField<Enrollment, ::buffa::Inline<Enrollment>>,
+    pub store: ::buffa::MessageField<Store, ::buffa::Inline<Store>>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for UpdateEnrollmentResponse {
+impl ::core::fmt::Debug for UpdateStoreResponse {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("UpdateEnrollmentResponse")
-            .field("enrollment", &self.enrollment)
-            .finish()
+        f.debug_struct("UpdateStoreResponse").field("store", &self.store).finish()
     }
 }
-impl UpdateEnrollmentResponse {
+impl UpdateStoreResponse {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateEnrollmentResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateStoreResponse";
 }
-::buffa::impl_default_instance!(UpdateEnrollmentResponse);
-impl ::buffa::MessageName for UpdateEnrollmentResponse {
+::buffa::impl_default_instance!(UpdateStoreResponse);
+impl ::buffa::MessageName for UpdateStoreResponse {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "UpdateEnrollmentResponse";
-    const FULL_NAME: &'static str = "programs.v1.UpdateEnrollmentResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateEnrollmentResponse";
+    const NAME: &'static str = "UpdateStoreResponse";
+    const FULL_NAME: &'static str = "programs.v1.UpdateStoreResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateStoreResponse";
 }
-impl ::buffa::Message for UpdateEnrollmentResponse {
+impl ::buffa::Message for UpdateStoreResponse {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -28479,9 +29276,9 @@ impl ::buffa::Message for UpdateEnrollmentResponse {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
-        if self.enrollment.is_set() {
+        if self.store.is_set() {
             let __slot = __cache.reserve();
-            let inner_size = self.enrollment.compute_size(__cache);
+            let inner_size = self.store.compute_size(__cache);
             __cache.set(__slot, inner_size);
             size
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -28497,13 +29294,13 @@ impl ::buffa::Message for UpdateEnrollmentResponse {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
-        if self.enrollment.is_set() {
+        if self.store.is_set() {
             ::buffa::types::put_len_delimited_header(
                 1u32,
                 u64::from(__cache.consume_next()),
                 buf,
             );
-            self.enrollment.write_to(__cache, buf);
+            self.store.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -28524,7 +29321,7 @@ impl ::buffa::Message for UpdateEnrollmentResponse {
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::Message::merge_length_delimited(
-                    self.enrollment.get_or_insert_default(),
+                    self.store.get_or_insert_default(),
                     buf,
                     ctx,
                 )?;
@@ -28537,12 +29334,12 @@ impl ::buffa::Message for UpdateEnrollmentResponse {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
-        self.enrollment = ::buffa::MessageField::none();
+        self.store = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for UpdateEnrollmentResponse {
-    const PROTO_FQN: &'static str = "programs.v1.UpdateEnrollmentResponse";
+impl ::buffa::ExtensionSet for UpdateStoreResponse {
+    const PROTO_FQN: &'static str = "programs.v1.UpdateStoreResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -28550,7 +29347,7 @@ impl ::buffa::ExtensionSet for UpdateEnrollmentResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for UpdateEnrollmentResponse {
+impl ::buffa::json_helpers::ProtoElemJson for UpdateStoreResponse {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -28564,108 +29361,69 @@ impl ::buffa::json_helpers::ProtoElemJson for UpdateEnrollmentResponse {
     }
 }
 #[doc(hidden)]
-pub const __UPDATE_ENROLLMENT_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.UpdateEnrollmentResponse",
-    to_json: ::buffa::type_registry::any_to_json::<UpdateEnrollmentResponse>,
-    from_json: ::buffa::type_registry::any_from_json::<UpdateEnrollmentResponse>,
+pub const __UPDATE_STORE_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.UpdateStoreResponse",
+    to_json: ::buffa::type_registry::any_to_json::<UpdateStoreResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<UpdateStoreResponse>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct EnrollmentItem {
-    /// Field 1: `store_id`
+pub struct StoreItem {
+    /// Field 1: `bu_location`
     #[serde(
-        rename = "storeId",
-        alias = "store_id",
-        with = "::buffa::json_helpers::proto_string",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+        rename = "buLocation",
+        alias = "bu_location",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub store_id: ::buffa::alloc::string::String,
-    /// Field 2: `store_name`
+    pub bu_location: ::buffa::MessageField<BuLocation, ::buffa::Inline<BuLocation>>,
+    /// Field 2: `website`
     #[serde(
-        rename = "storeName",
-        alias = "store_name",
+        rename = "website",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub website: ::buffa::MessageField<StoreWebsite, ::buffa::Inline<StoreWebsite>>,
+    /// Field 3: `customer_name`
+    #[serde(
+        rename = "customerName",
+        alias = "customer_name",
         skip_serializing_if = "::core::option::Option::is_none"
     )]
-    pub store_name: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 3: `website_id`
-    #[serde(
-        rename = "websiteId",
-        alias = "website_id",
-        with = "::buffa::json_helpers::proto_string",
-        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
-    )]
-    pub website_id: ::buffa::alloc::string::String,
-    /// Field 4: `website_name`
-    #[serde(
-        rename = "websiteName",
-        alias = "website_name",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub website_name: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 5: `customer_group`
-    #[serde(
-        rename = "customerGroup",
-        alias = "customer_group",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub customer_group: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Field 6: `status`
+    pub customer_name: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 4: `status`
     #[serde(rename = "status", skip_serializing_if = "::core::option::Option::is_none")]
     pub status: ::core::option::Option<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for EnrollmentItem {
+impl ::core::fmt::Debug for StoreItem {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("EnrollmentItem")
-            .field("store_id", &self.store_id)
-            .field("store_name", &self.store_name)
-            .field("website_id", &self.website_id)
-            .field("website_name", &self.website_name)
-            .field("customer_group", &self.customer_group)
+        f.debug_struct("StoreItem")
+            .field("bu_location", &self.bu_location)
+            .field("website", &self.website)
+            .field("customer_name", &self.customer_name)
             .field("status", &self.status)
             .finish()
     }
 }
-impl EnrollmentItem {
+impl StoreItem {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.EnrollmentItem";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreItem";
 }
-impl EnrollmentItem {
+impl StoreItem {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::store_name`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_store_name(
+    ///Sets [`Self::customer_name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_customer_name(
         mut self,
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
-        self.store_name = Some(value.into());
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::website_name`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_website_name(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.website_name = Some(value.into());
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::customer_group`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_customer_group(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.customer_group = Some(value.into());
+        self.customer_name = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -28679,14 +29437,14 @@ impl EnrollmentItem {
         self
     }
 }
-::buffa::impl_default_instance!(EnrollmentItem);
-impl ::buffa::MessageName for EnrollmentItem {
+::buffa::impl_default_instance!(StoreItem);
+impl ::buffa::MessageName for StoreItem {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "EnrollmentItem";
-    const FULL_NAME: &'static str = "programs.v1.EnrollmentItem";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.EnrollmentItem";
+    const NAME: &'static str = "StoreItem";
+    const FULL_NAME: &'static str = "programs.v1.StoreItem";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreItem";
 }
-impl ::buffa::Message for EnrollmentItem {
+impl ::buffa::Message for StoreItem {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -28695,23 +29453,27 @@ impl ::buffa::Message for EnrollmentItem {
     /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
     /// points reject, never a silently wrapped size.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
-        if !self.store_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+        if self.bu_location.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.bu_location.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
-        if let Some(ref v) = self.store_name {
-            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        if self.website.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.website.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
         }
-        if !self.website_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.website_id) as u64;
-        }
-        if let Some(ref v) = self.website_name {
-            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-        }
-        if let Some(ref v) = self.customer_group {
+        if let Some(ref v) = self.customer_name {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if let Some(ref v) = self.status {
@@ -28722,28 +29484,32 @@ impl ::buffa::Message for EnrollmentItem {
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::EncodeSink,
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
-        if !self.store_id.is_empty() {
-            ::buffa::types::put_string_field(1u32, &self.store_id, buf);
+        if self.bu_location.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.bu_location.write_to(__cache, buf);
         }
-        if let Some(ref v) = self.store_name {
-            ::buffa::types::put_string_field(2u32, v, buf);
+        if self.website.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.website.write_to(__cache, buf);
         }
-        if !self.website_id.is_empty() {
-            ::buffa::types::put_string_field(3u32, &self.website_id, buf);
-        }
-        if let Some(ref v) = self.website_name {
-            ::buffa::types::put_string_field(4u32, v, buf);
-        }
-        if let Some(ref v) = self.customer_group {
-            ::buffa::types::put_string_field(5u32, v, buf);
+        if let Some(ref v) = self.customer_name {
+            ::buffa::types::put_string_field(3u32, v, buf);
         }
         if let Some(ref v) = self.status {
-            ::buffa::types::put_string_field(6u32, v, buf);
+            ::buffa::types::put_string_field(4u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -28763,18 +29529,21 @@ impl ::buffa::Message for EnrollmentItem {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.store_id, buf)?;
+                ::buffa::Message::merge_length_delimited(
+                    self.bu_location.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             2u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(
-                    self
-                        .store_name
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                ::buffa::Message::merge_length_delimited(
+                    self.website.get_or_insert_default(),
                     buf,
+                    ctx,
                 )?;
             }
             3u32 => {
@@ -28782,33 +29551,14 @@ impl ::buffa::Message for EnrollmentItem {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.website_id, buf)?;
+                ::buffa::types::merge_string(
+                    self
+                        .customer_name
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
             }
             4u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
-                ::buffa::types::merge_string(
-                    self
-                        .website_name
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
-                    buf,
-                )?;
-            }
-            5u32 => {
-                ::buffa::encoding::check_wire_type(
-                    tag,
-                    ::buffa::encoding::WireType::LengthDelimited,
-                )?;
-                ::buffa::types::merge_string(
-                    self
-                        .customer_group
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
-                    buf,
-                )?;
-            }
-            6u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
@@ -28826,17 +29576,15 @@ impl ::buffa::Message for EnrollmentItem {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
-        self.store_id.clear();
-        self.store_name = ::core::option::Option::None;
-        self.website_id.clear();
-        self.website_name = ::core::option::Option::None;
-        self.customer_group = ::core::option::Option::None;
+        self.bu_location = ::buffa::MessageField::none();
+        self.website = ::buffa::MessageField::none();
+        self.customer_name = ::core::option::Option::None;
         self.status = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for EnrollmentItem {
-    const PROTO_FQN: &'static str = "programs.v1.EnrollmentItem";
+impl ::buffa::ExtensionSet for StoreItem {
+    const PROTO_FQN: &'static str = "programs.v1.StoreItem";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -28844,7 +29592,7 @@ impl ::buffa::ExtensionSet for EnrollmentItem {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for EnrollmentItem {
+impl ::buffa::json_helpers::ProtoElemJson for StoreItem {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -28858,16 +29606,16 @@ impl ::buffa::json_helpers::ProtoElemJson for EnrollmentItem {
     }
 }
 #[doc(hidden)]
-pub const __ENROLLMENT_ITEM_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.EnrollmentItem",
-    to_json: ::buffa::type_registry::any_to_json::<EnrollmentItem>,
-    from_json: ::buffa::type_registry::any_from_json::<EnrollmentItem>,
+pub const __STORE_ITEM_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.StoreItem",
+    to_json: ::buffa::type_registry::any_to_json::<StoreItem>,
+    from_json: ::buffa::type_registry::any_from_json::<StoreItem>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct BatchCreateEnrollmentsRequest {
+pub struct BatchCreateStoresRequest {
     /// Field 1: `program`
     #[serde(
         rename = "program",
@@ -28883,7 +29631,7 @@ pub struct BatchCreateEnrollmentsRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub items: ::buffa::alloc::vec::Vec<EnrollmentItem>,
+    pub items: ::buffa::alloc::vec::Vec<StoreItem>,
     /// AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
     ///
     /// Field 3: `path`
@@ -28897,30 +29645,30 @@ pub struct BatchCreateEnrollmentsRequest {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for BatchCreateEnrollmentsRequest {
+impl ::core::fmt::Debug for BatchCreateStoresRequest {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("BatchCreateEnrollmentsRequest")
+        f.debug_struct("BatchCreateStoresRequest")
             .field("program", &self.program)
             .field("items", &self.items)
             .field("path", &self.path)
             .finish()
     }
 }
-impl BatchCreateEnrollmentsRequest {
+impl BatchCreateStoresRequest {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateEnrollmentsRequest";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateStoresRequest";
 }
-::buffa::impl_default_instance!(BatchCreateEnrollmentsRequest);
-impl ::buffa::MessageName for BatchCreateEnrollmentsRequest {
+::buffa::impl_default_instance!(BatchCreateStoresRequest);
+impl ::buffa::MessageName for BatchCreateStoresRequest {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "BatchCreateEnrollmentsRequest";
-    const FULL_NAME: &'static str = "programs.v1.BatchCreateEnrollmentsRequest";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateEnrollmentsRequest";
+    const NAME: &'static str = "BatchCreateStoresRequest";
+    const FULL_NAME: &'static str = "programs.v1.BatchCreateStoresRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateStoresRequest";
 }
-impl ::buffa::Message for BatchCreateEnrollmentsRequest {
+impl ::buffa::Message for BatchCreateStoresRequest {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -29024,8 +29772,8 @@ impl ::buffa::Message for BatchCreateEnrollmentsRequest {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for BatchCreateEnrollmentsRequest {
-    const PROTO_FQN: &'static str = "programs.v1.BatchCreateEnrollmentsRequest";
+impl ::buffa::ExtensionSet for BatchCreateStoresRequest {
+    const PROTO_FQN: &'static str = "programs.v1.BatchCreateStoresRequest";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -29033,7 +29781,7 @@ impl ::buffa::ExtensionSet for BatchCreateEnrollmentsRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for BatchCreateEnrollmentsRequest {
+impl ::buffa::json_helpers::ProtoElemJson for BatchCreateStoresRequest {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -29047,32 +29795,32 @@ impl ::buffa::json_helpers::ProtoElemJson for BatchCreateEnrollmentsRequest {
     }
 }
 #[doc(hidden)]
-pub const __BATCH_CREATE_ENROLLMENTS_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.BatchCreateEnrollmentsRequest",
-    to_json: ::buffa::type_registry::any_to_json::<BatchCreateEnrollmentsRequest>,
-    from_json: ::buffa::type_registry::any_from_json::<BatchCreateEnrollmentsRequest>,
+pub const __BATCH_CREATE_STORES_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.BatchCreateStoresRequest",
+    to_json: ::buffa::type_registry::any_to_json::<BatchCreateStoresRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<BatchCreateStoresRequest>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct EnrollmentItemResult {
-    /// Field 1: `store_id`
+pub struct StoreItemResult {
+    /// Field 1: `bu_location_code`
     #[serde(
-        rename = "storeId",
-        alias = "store_id",
+        rename = "buLocationCode",
+        alias = "bu_location_code",
         with = "::buffa::json_helpers::proto_string",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
-    pub store_id: ::buffa::alloc::string::String,
-    /// Field 2: `website_id`
+    pub bu_location_code: ::buffa::alloc::string::String,
+    /// Field 2: `website_code`
     #[serde(
-        rename = "websiteId",
-        alias = "website_id",
+        rename = "websiteCode",
+        alias = "website_code",
         with = "::buffa::json_helpers::proto_string",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
-    pub website_id: ::buffa::alloc::string::String,
+    pub website_code: ::buffa::alloc::string::String,
     /// "created", "already_enrolled" or "failed".
     ///
     /// Field 3: `outcome`
@@ -29082,13 +29830,11 @@ pub struct EnrollmentItemResult {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub outcome: ::buffa::alloc::string::String,
-    /// Field 4: `enrollment_id`
-    #[serde(
-        rename = "enrollmentId",
-        alias = "enrollment_id",
-        skip_serializing_if = "::core::option::Option::is_none"
-    )]
-    pub enrollment_id: ::core::option::Option<::buffa::alloc::string::String>,
+    /// The new store's id when it was created.
+    ///
+    /// Field 4: `id`
+    #[serde(rename = "id", skip_serializing_if = "::core::option::Option::is_none")]
+    pub id: ::core::option::Option<::buffa::alloc::string::String>,
     /// Field 5: `error`
     #[serde(rename = "error", skip_serializing_if = "::core::option::Option::is_none")]
     pub error: ::core::option::Option<::buffa::alloc::string::String>,
@@ -29096,33 +29842,30 @@ pub struct EnrollmentItemResult {
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for EnrollmentItemResult {
+impl ::core::fmt::Debug for StoreItemResult {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("EnrollmentItemResult")
-            .field("store_id", &self.store_id)
-            .field("website_id", &self.website_id)
+        f.debug_struct("StoreItemResult")
+            .field("bu_location_code", &self.bu_location_code)
+            .field("website_code", &self.website_code)
             .field("outcome", &self.outcome)
-            .field("enrollment_id", &self.enrollment_id)
+            .field("id", &self.id)
             .field("error", &self.error)
             .finish()
     }
 }
-impl EnrollmentItemResult {
+impl StoreItemResult {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.EnrollmentItemResult";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreItemResult";
 }
-impl EnrollmentItemResult {
+impl StoreItemResult {
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::enrollment_id`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_enrollment_id(
-        mut self,
-        value: impl Into<::buffa::alloc::string::String>,
-    ) -> Self {
-        self.enrollment_id = Some(value.into());
+    ///Sets [`Self::id`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_id(mut self, value: impl Into<::buffa::alloc::string::String>) -> Self {
+        self.id = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -29136,14 +29879,14 @@ impl EnrollmentItemResult {
         self
     }
 }
-::buffa::impl_default_instance!(EnrollmentItemResult);
-impl ::buffa::MessageName for EnrollmentItemResult {
+::buffa::impl_default_instance!(StoreItemResult);
+impl ::buffa::MessageName for StoreItemResult {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "EnrollmentItemResult";
-    const FULL_NAME: &'static str = "programs.v1.EnrollmentItemResult";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.EnrollmentItemResult";
+    const NAME: &'static str = "StoreItemResult";
+    const FULL_NAME: &'static str = "programs.v1.StoreItemResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreItemResult";
 }
-impl ::buffa::Message for EnrollmentItemResult {
+impl ::buffa::Message for StoreItemResult {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -29156,16 +29899,18 @@ impl ::buffa::Message for EnrollmentItemResult {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
-        if !self.store_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+        if !self.bu_location_code.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::string_encoded_len(&self.bu_location_code) as u64;
         }
-        if !self.website_id.is_empty() {
-            size += 1u64 + ::buffa::types::string_encoded_len(&self.website_id) as u64;
+        if !self.website_code.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.website_code) as u64;
         }
         if !self.outcome.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.outcome) as u64;
         }
-        if let Some(ref v) = self.enrollment_id {
+        if let Some(ref v) = self.id {
             size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
         }
         if let Some(ref v) = self.error {
@@ -29181,16 +29926,16 @@ impl ::buffa::Message for EnrollmentItemResult {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
-        if !self.store_id.is_empty() {
-            ::buffa::types::put_string_field(1u32, &self.store_id, buf);
+        if !self.bu_location_code.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.bu_location_code, buf);
         }
-        if !self.website_id.is_empty() {
-            ::buffa::types::put_string_field(2u32, &self.website_id, buf);
+        if !self.website_code.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.website_code, buf);
         }
         if !self.outcome.is_empty() {
             ::buffa::types::put_string_field(3u32, &self.outcome, buf);
         }
-        if let Some(ref v) = self.enrollment_id {
+        if let Some(ref v) = self.id {
             ::buffa::types::put_string_field(4u32, v, buf);
         }
         if let Some(ref v) = self.error {
@@ -29214,14 +29959,14 @@ impl ::buffa::Message for EnrollmentItemResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.store_id, buf)?;
+                ::buffa::types::merge_string(&mut self.bu_location_code, buf)?;
             }
             2u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.website_id, buf)?;
+                ::buffa::types::merge_string(&mut self.website_code, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -29236,9 +29981,7 @@ impl ::buffa::Message for EnrollmentItemResult {
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
                 ::buffa::types::merge_string(
-                    self
-                        .enrollment_id
-                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    self.id.get_or_insert_with(::buffa::alloc::string::String::new),
                     buf,
                 )?;
             }
@@ -29260,16 +30003,16 @@ impl ::buffa::Message for EnrollmentItemResult {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
-        self.store_id.clear();
-        self.website_id.clear();
+        self.bu_location_code.clear();
+        self.website_code.clear();
         self.outcome.clear();
-        self.enrollment_id = ::core::option::Option::None;
+        self.id = ::core::option::Option::None;
         self.error = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for EnrollmentItemResult {
-    const PROTO_FQN: &'static str = "programs.v1.EnrollmentItemResult";
+impl ::buffa::ExtensionSet for StoreItemResult {
+    const PROTO_FQN: &'static str = "programs.v1.StoreItemResult";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -29277,7 +30020,7 @@ impl ::buffa::ExtensionSet for EnrollmentItemResult {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for EnrollmentItemResult {
+impl ::buffa::json_helpers::ProtoElemJson for StoreItemResult {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -29291,16 +30034,16 @@ impl ::buffa::json_helpers::ProtoElemJson for EnrollmentItemResult {
     }
 }
 #[doc(hidden)]
-pub const __ENROLLMENT_ITEM_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.EnrollmentItemResult",
-    to_json: ::buffa::type_registry::any_to_json::<EnrollmentItemResult>,
-    from_json: ::buffa::type_registry::any_from_json::<EnrollmentItemResult>,
+pub const __STORE_ITEM_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.StoreItemResult",
+    to_json: ::buffa::type_registry::any_to_json::<StoreItemResult>,
+    from_json: ::buffa::type_registry::any_from_json::<StoreItemResult>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
-pub struct BatchCreateEnrollmentsResponse {
+pub struct BatchCreateStoresResponse {
     /// Field 1: `created`
     #[serde(
         rename = "created",
@@ -29314,34 +30057,34 @@ pub struct BatchCreateEnrollmentsResponse {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub results: ::buffa::alloc::vec::Vec<EnrollmentItemResult>,
+    pub results: ::buffa::alloc::vec::Vec<StoreItemResult>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
-impl ::core::fmt::Debug for BatchCreateEnrollmentsResponse {
+impl ::core::fmt::Debug for BatchCreateStoresResponse {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("BatchCreateEnrollmentsResponse")
+        f.debug_struct("BatchCreateStoresResponse")
             .field("created", &self.created)
             .field("results", &self.results)
             .finish()
     }
 }
-impl BatchCreateEnrollmentsResponse {
+impl BatchCreateStoresResponse {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
     ///
     /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
-    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateEnrollmentsResponse";
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateStoresResponse";
 }
-::buffa::impl_default_instance!(BatchCreateEnrollmentsResponse);
-impl ::buffa::MessageName for BatchCreateEnrollmentsResponse {
+::buffa::impl_default_instance!(BatchCreateStoresResponse);
+impl ::buffa::MessageName for BatchCreateStoresResponse {
     const PACKAGE: &'static str = "programs.v1";
-    const NAME: &'static str = "BatchCreateEnrollmentsResponse";
-    const FULL_NAME: &'static str = "programs.v1.BatchCreateEnrollmentsResponse";
-    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateEnrollmentsResponse";
+    const NAME: &'static str = "BatchCreateStoresResponse";
+    const FULL_NAME: &'static str = "programs.v1.BatchCreateStoresResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateStoresResponse";
 }
-impl ::buffa::Message for BatchCreateEnrollmentsResponse {
+impl ::buffa::Message for BatchCreateStoresResponse {
     /// Returns the total encoded size in bytes.
     ///
     /// Accumulates in `u64` (which cannot overflow for in-memory
@@ -29431,8 +30174,8 @@ impl ::buffa::Message for BatchCreateEnrollmentsResponse {
         self.__buffa_unknown_fields.clear();
     }
 }
-impl ::buffa::ExtensionSet for BatchCreateEnrollmentsResponse {
-    const PROTO_FQN: &'static str = "programs.v1.BatchCreateEnrollmentsResponse";
+impl ::buffa::ExtensionSet for BatchCreateStoresResponse {
+    const PROTO_FQN: &'static str = "programs.v1.BatchCreateStoresResponse";
     fn unknown_fields(&self) -> &::buffa::UnknownFields {
         &self.__buffa_unknown_fields
     }
@@ -29440,7 +30183,7 @@ impl ::buffa::ExtensionSet for BatchCreateEnrollmentsResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl ::buffa::json_helpers::ProtoElemJson for BatchCreateEnrollmentsResponse {
+impl ::buffa::json_helpers::ProtoElemJson for BatchCreateStoresResponse {
     fn serialize_proto_json<S: ::serde::Serializer>(
         v: &Self,
         s: S,
@@ -29454,14 +30197,14 @@ impl ::buffa::json_helpers::ProtoElemJson for BatchCreateEnrollmentsResponse {
     }
 }
 #[doc(hidden)]
-pub const __BATCH_CREATE_ENROLLMENTS_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
-    type_url: "type.googleapis.com/programs.v1.BatchCreateEnrollmentsResponse",
-    to_json: ::buffa::type_registry::any_to_json::<BatchCreateEnrollmentsResponse>,
-    from_json: ::buffa::type_registry::any_from_json::<BatchCreateEnrollmentsResponse>,
+pub const __BATCH_CREATE_STORES_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.BatchCreateStoresResponse",
+    to_json: ::buffa::type_registry::any_to_json::<BatchCreateStoresResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<BatchCreateStoresResponse>,
     is_wkt: false,
 };
 /// ---------------------------------------------------------------------------
-/// Store discounts (each enrolled store's effective discount: Program -\> Domain -\> Store)
+/// Store discounts (each enrolled store's effective discount: Program -\> Business unit -\> Website -\> Store)
 /// ---------------------------------------------------------------------------
 ///
 /// What ONE level sets. A field that is unset is inherited from the level above.
@@ -29911,7 +30654,7 @@ pub const __RESOLVED_DISCOUNT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = :
     from_json: ::buffa::type_registry::any_from_json::<ResolvedDiscount>,
     is_wkt: false,
 };
-/// Which level each resolved field came from: "program", "domain" or "store".
+/// Which level each resolved field came from: "program", "business_unit", "website" or "store".
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
@@ -30505,6 +31248,24 @@ pub struct StoreDiscount {
         ResolvedDiscount,
         ::buffa::Inline<ResolvedDiscount>,
     >,
+    /// The business unit of the store (code and name), the parent whose discount the website inherits.
+    ///
+    /// Field 13: `bu`
+    #[serde(
+        rename = "bu",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub bu: ::buffa::MessageField<BusinessUnit, ::buffa::Inline<BusinessUnit>>,
+    /// True when at least one field is taken from the business unit (the parent), not set on the website.
+    ///
+    /// Field 14: `inherited_from_parent`
+    #[serde(
+        rename = "inheritedFromParent",
+        alias = "inherited_from_parent",
+        with = "::buffa::json_helpers::proto_bool",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
+    )]
+    pub inherited_from_parent: bool,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -30524,6 +31285,8 @@ impl ::core::fmt::Debug for StoreDiscount {
             .field("set_at", &self.set_at)
             .field("store_override", &self.store_override)
             .field("inherited", &self.inherited)
+            .field("bu", &self.bu)
+            .field("inherited_from_parent", &self.inherited_from_parent)
             .finish()
     }
 }
@@ -30634,6 +31397,17 @@ impl ::buffa::Message for StoreDiscount {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if self.bu.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.bu.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.inherited_from_parent {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -30699,6 +31473,17 @@ impl ::buffa::Message for StoreDiscount {
                 buf,
             );
             self.inherited.write_to(__cache, buf);
+        }
+        if self.bu.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                13u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.bu.write_to(__cache, buf);
+        }
+        if self.inherited_from_parent {
+            ::buffa::types::put_bool_field(14u32, self.inherited_from_parent, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -30823,6 +31608,24 @@ impl ::buffa::Message for StoreDiscount {
                     ctx,
                 )?;
             }
+            13u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.bu.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            14u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.inherited_from_parent = ::buffa::types::decode_bool(buf)?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -30843,6 +31646,8 @@ impl ::buffa::Message for StoreDiscount {
         self.set_at.clear();
         self.store_override = ::buffa::MessageField::none();
         self.inherited = ::buffa::MessageField::none();
+        self.bu = ::buffa::MessageField::none();
+        self.inherited_from_parent = false;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -30893,6 +31698,15 @@ pub struct ListStoreDiscountsRequest {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub website_id: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Only the stores of this business unit.
+    ///
+    /// Field 7: `bu_unit_code`
+    #[serde(
+        rename = "buUnitCode",
+        alias = "bu_unit_code",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub bu_unit_code: ::core::option::Option<::buffa::alloc::string::String>,
     /// A prefix of the store name (case-insensitive).
     ///
     /// Field 3: `store`
@@ -30931,6 +31745,7 @@ impl ::core::fmt::Debug for ListStoreDiscountsRequest {
         f.debug_struct("ListStoreDiscountsRequest")
             .field("program", &self.program)
             .field("website_id", &self.website_id)
+            .field("bu_unit_code", &self.bu_unit_code)
             .field("store", &self.store)
             .field("max_page_size", &self.max_page_size)
             .field("page_token", &self.page_token)
@@ -30954,6 +31769,16 @@ impl ListStoreDiscountsRequest {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.website_id = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::bu_unit_code`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_bu_unit_code(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.bu_unit_code = Some(value.into());
         self
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
@@ -31022,6 +31847,9 @@ impl ::buffa::Message for ListStoreDiscountsRequest {
         if !self.path.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
         }
+        if let Some(ref v) = self.bu_unit_code {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -31049,6 +31877,9 @@ impl ::buffa::Message for ListStoreDiscountsRequest {
         }
         if !self.path.is_empty() {
             ::buffa::types::put_string_field(6u32, &self.path, buf);
+        }
+        if let Some(ref v) = self.bu_unit_code {
+            ::buffa::types::put_string_field(7u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -31120,6 +31951,18 @@ impl ::buffa::Message for ListStoreDiscountsRequest {
                 )?;
                 ::buffa::types::merge_string(&mut self.path, buf)?;
             }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .bu_unit_code
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -31134,6 +31977,7 @@ impl ::buffa::Message for ListStoreDiscountsRequest {
         self.max_page_size = ::core::option::Option::None;
         self.page_token = ::core::option::Option::None;
         self.path.clear();
+        self.bu_unit_code = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -32417,6 +33261,203 @@ pub const __BATCH_UPDATE_STORE_DISCOUNTS_RESPONSE_JSON_ANY: ::buffa::type_regist
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
+pub struct BusinessUnitDiscountLevel {
+    /// Field 1: `bu_unit_code`
+    #[serde(
+        rename = "buUnitCode",
+        alias = "bu_unit_code",
+        with = "::buffa::json_helpers::proto_string",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    pub bu_unit_code: ::buffa::alloc::string::String,
+    /// Field 2: `discount`
+    #[serde(
+        rename = "discount",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub discount: ::buffa::MessageField<DiscountConfig, ::buffa::Inline<DiscountConfig>>,
+    /// The business unit's name, from the stores enrolled with it.
+    ///
+    /// Field 3: `name`
+    #[serde(rename = "name", skip_serializing_if = "::core::option::Option::is_none")]
+    pub name: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for BusinessUnitDiscountLevel {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("BusinessUnitDiscountLevel")
+            .field("bu_unit_code", &self.bu_unit_code)
+            .field("discount", &self.discount)
+            .field("name", &self.name)
+            .finish()
+    }
+}
+impl BusinessUnitDiscountLevel {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BusinessUnitDiscountLevel";
+}
+impl BusinessUnitDiscountLevel {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_name(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.name = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(BusinessUnitDiscountLevel);
+impl ::buffa::MessageName for BusinessUnitDiscountLevel {
+    const PACKAGE: &'static str = "programs.v1";
+    const NAME: &'static str = "BusinessUnitDiscountLevel";
+    const FULL_NAME: &'static str = "programs.v1.BusinessUnitDiscountLevel";
+    const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BusinessUnitDiscountLevel";
+}
+impl ::buffa::Message for BusinessUnitDiscountLevel {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.bu_unit_code.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.bu_unit_code) as u64;
+        }
+        if self.discount.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.discount.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let Some(ref v) = self.name {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.bu_unit_code.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.bu_unit_code, buf);
+        }
+        if self.discount.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.discount.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.name {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(&mut self.bu_unit_code, buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.discount.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.name.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.bu_unit_code.clear();
+        self.discount = ::buffa::MessageField::none();
+        self.name = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for BusinessUnitDiscountLevel {
+    const PROTO_FQN: &'static str = "programs.v1.BusinessUnitDiscountLevel";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for BusinessUnitDiscountLevel {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __BUSINESS_UNIT_DISCOUNT_LEVEL_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/programs.v1.BusinessUnitDiscountLevel",
+    to_json: ::buffa::type_registry::any_to_json::<BusinessUnitDiscountLevel>,
+    from_json: ::buffa::type_registry::any_from_json::<BusinessUnitDiscountLevel>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
 pub struct DomainDiscountLevel {
     /// Field 1: `website_id`
     #[serde(
@@ -32736,13 +33777,25 @@ pub struct ListDiscountLevelsResponse {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
     pub program: ::buffa::MessageField<DiscountConfig, ::buffa::Inline<DiscountConfig>>,
-    /// Field 2: `domains`
+    /// The websites that set something of their own.
+    ///
+    /// Field 2: `websites`
     #[serde(
-        rename = "domains",
+        rename = "websites",
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
-    pub domains: ::buffa::alloc::vec::Vec<DomainDiscountLevel>,
+    pub websites: ::buffa::alloc::vec::Vec<DomainDiscountLevel>,
+    /// The business units (parents of the websites) that set something.
+    ///
+    /// Field 3: `business_units`
+    #[serde(
+        rename = "businessUnits",
+        alias = "business_units",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub business_units: ::buffa::alloc::vec::Vec<BusinessUnitDiscountLevel>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -32751,7 +33804,8 @@ impl ::core::fmt::Debug for ListDiscountLevelsResponse {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
         f.debug_struct("ListDiscountLevelsResponse")
             .field("program", &self.program)
-            .field("domains", &self.domains)
+            .field("websites", &self.websites)
+            .field("business_units", &self.business_units)
             .finish()
     }
 }
@@ -32790,7 +33844,15 @@ impl ::buffa::Message for ListDiscountLevelsResponse {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
-        for v in &self.domains {
+        for v in &self.websites {
+            let __slot = __cache.reserve();
+            let inner_size = v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        for v in &self.business_units {
             let __slot = __cache.reserve();
             let inner_size = v.compute_size(__cache);
             __cache.set(__slot, inner_size);
@@ -32816,9 +33878,17 @@ impl ::buffa::Message for ListDiscountLevelsResponse {
             );
             self.program.write_to(__cache, buf);
         }
-        for v in &self.domains {
+        for v in &self.websites {
             ::buffa::types::put_len_delimited_header(
                 2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            v.write_to(__cache, buf);
+        }
+        for v in &self.business_units {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
                 u64::from(__cache.consume_next()),
                 buf,
             );
@@ -32858,7 +33928,19 @@ impl ::buffa::Message for ListDiscountLevelsResponse {
                     ::buffa::__private::element_footprint(&elem),
                 )?;
                 ::buffa::Message::merge_length_delimited(&mut elem, buf, ctx)?;
-                self.domains.push(elem);
+                self.websites.push(elem);
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let mut elem = ::core::default::Default::default();
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&elem),
+                )?;
+                ::buffa::Message::merge_length_delimited(&mut elem, buf, ctx)?;
+                self.business_units.push(elem);
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -32869,7 +33951,8 @@ impl ::buffa::Message for ListDiscountLevelsResponse {
     }
     fn clear(&mut self) {
         self.program = ::buffa::MessageField::none();
-        self.domains.clear();
+        self.websites.clear();
+        self.business_units.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -32913,7 +33996,7 @@ pub struct UpdateDiscountLevelRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub program: ::buffa::alloc::string::String,
-    /// The website to change; unset changes the program level.
+    /// The website to change (the child). Give this or `bu_unit_code`; neither changes the program level.
     ///
     /// Field 2: `website_id`
     #[serde(
@@ -32922,6 +34005,15 @@ pub struct UpdateDiscountLevelRequest {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub website_id: ::core::option::Option<::buffa::alloc::string::String>,
+    /// The business unit to change (the parent of its websites).
+    ///
+    /// Field 5: `bu_unit_code`
+    #[serde(
+        rename = "buUnitCode",
+        alias = "bu_unit_code",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub bu_unit_code: ::core::option::Option<::buffa::alloc::string::String>,
     /// Field 3: `discount`
     #[serde(
         rename = "discount",
@@ -32946,6 +34038,7 @@ impl ::core::fmt::Debug for UpdateDiscountLevelRequest {
         f.debug_struct("UpdateDiscountLevelRequest")
             .field("program", &self.program)
             .field("website_id", &self.website_id)
+            .field("bu_unit_code", &self.bu_unit_code)
             .field("discount", &self.discount)
             .field("path", &self.path)
             .finish()
@@ -32967,6 +34060,16 @@ impl UpdateDiscountLevelRequest {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.website_id = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::bu_unit_code`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_bu_unit_code(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.bu_unit_code = Some(value.into());
         self
     }
 }
@@ -33007,6 +34110,9 @@ impl ::buffa::Message for UpdateDiscountLevelRequest {
         if !self.path.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
         }
+        if let Some(ref v) = self.bu_unit_code {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -33033,6 +34139,9 @@ impl ::buffa::Message for UpdateDiscountLevelRequest {
         }
         if !self.path.is_empty() {
             ::buffa::types::put_string_field(4u32, &self.path, buf);
+        }
+        if let Some(ref v) = self.bu_unit_code {
+            ::buffa::types::put_string_field(5u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -33084,6 +34193,18 @@ impl ::buffa::Message for UpdateDiscountLevelRequest {
                 )?;
                 ::buffa::types::merge_string(&mut self.path, buf)?;
             }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .bu_unit_code
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -33096,6 +34217,7 @@ impl ::buffa::Message for UpdateDiscountLevelRequest {
         self.website_id = ::core::option::Option::None;
         self.discount = ::buffa::MessageField::none();
         self.path.clear();
+        self.bu_unit_code = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -33132,7 +34254,7 @@ pub const __UPDATE_DISCOUNT_LEVEL_REQUEST_JSON_ANY: ::buffa::type_registry::Json
 #[derive(::serde::Serialize, ::serde::Deserialize)]
 #[serde(default)]
 pub struct UpdateDiscountLevelResponse {
-    /// "program" or "domain".
+    /// "program", "business_unit" or "website".
     ///
     /// Field 1: `level`
     #[serde(
@@ -33148,6 +34270,13 @@ pub struct UpdateDiscountLevelResponse {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub website_id: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 4: `bu_unit_code`
+    #[serde(
+        rename = "buUnitCode",
+        alias = "bu_unit_code",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub bu_unit_code: ::core::option::Option<::buffa::alloc::string::String>,
     /// What that level sets afterwards.
     ///
     /// Field 3: `discount`
@@ -33165,6 +34294,7 @@ impl ::core::fmt::Debug for UpdateDiscountLevelResponse {
         f.debug_struct("UpdateDiscountLevelResponse")
             .field("level", &self.level)
             .field("website_id", &self.website_id)
+            .field("bu_unit_code", &self.bu_unit_code)
             .field("discount", &self.discount)
             .finish()
     }
@@ -33185,6 +34315,16 @@ impl UpdateDiscountLevelResponse {
         value: impl Into<::buffa::alloc::string::String>,
     ) -> Self {
         self.website_id = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::bu_unit_code`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_bu_unit_code(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.bu_unit_code = Some(value.into());
         self
     }
 }
@@ -33222,6 +34362,9 @@ impl ::buffa::Message for UpdateDiscountLevelResponse {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if let Some(ref v) = self.bu_unit_code {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -33245,6 +34388,9 @@ impl ::buffa::Message for UpdateDiscountLevelResponse {
                 buf,
             );
             self.discount.write_to(__cache, buf);
+        }
+        if let Some(ref v) = self.bu_unit_code {
+            ::buffa::types::put_string_field(4u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -33289,6 +34435,18 @@ impl ::buffa::Message for UpdateDiscountLevelResponse {
                     ctx,
                 )?;
             }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .bu_unit_code
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -33300,6 +34458,7 @@ impl ::buffa::Message for UpdateDiscountLevelResponse {
         self.level.clear();
         self.website_id = ::core::option::Option::None;
         self.discount = ::buffa::MessageField::none();
+        self.bu_unit_code = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -47366,6 +48525,10 @@ pub mod __buffa {
             pub renewal: ::buffa::MessageFieldView<
                 super::super::__buffa::view::ProgramRenewalView<'a>,
             >,
+            /// The program's domains, e.g. \["domain1", "domain2"\].
+            ///
+            /// Field 20: `domain`
+            pub domain: ::buffa::RepeatedView<'a, &'a str>,
             /// Whether the program renews at all (false until turned on).
             ///
             /// Field 19: `renewal_enabled`
@@ -47592,6 +48755,17 @@ pub mod __buffa {
                         )?;
                         view.highlights.push(__elem);
                     }
+                    20u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.domain.push(__elem);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -47656,6 +48830,7 @@ pub mod __buffa {
                         }
                         None => ::buffa::MessageField::none(),
                     },
+                    domain: self.domain.iter().map(|s| s.to_string()).collect(),
                     renewal_enabled: self.renewal_enabled,
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
@@ -47754,6 +48929,9 @@ pub mod __buffa {
                 if self.renewal_enabled {
                     size += 2u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
                 }
+                for v in &self.domain {
+                    size += 2u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -47833,6 +49011,9 @@ pub mod __buffa {
                 }
                 if self.renewal_enabled {
                     ::buffa::types::put_bool_field(19u32, self.renewal_enabled, buf);
+                }
+                for v in &self.domain {
+                    ::buffa::types::put_string_field(20u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -47916,6 +49097,9 @@ pub mod __buffa {
                     if let ::core::option::Option::Some(__v) = self.renewal.as_option() {
                         __map.serialize_entry("renewal", __v)?;
                     }
+                }
+                if !self.domain.is_empty() {
+                    __map.serialize_entry("domain", &*self.domain)?;
                 }
                 if self.renewal_enabled {
                     __map.serialize_entry("renewalEnabled", &self.renewal_enabled)?;
@@ -48125,6 +49309,13 @@ pub mod __buffa {
                 super::super::__buffa::view::ProgramRenewalView<'_>,
             > {
                 &self.0.reborrow().renewal
+            }
+            /// The program's domains, e.g. \["domain1", "domain2"\].
+            ///
+            /// Field 20: `domain`
+            #[must_use]
+            pub fn domain(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().domain
             }
             /// Whether the program renews at all (false until turned on).
             ///
@@ -49112,6 +50303,268 @@ pub mod __buffa {
             type ViewHandle = HighlightListOwnedView;
         }
         impl ::serde::Serialize for HighlightListOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// The domains of an update: present replaces the whole list (an empty list clears it).
+        #[derive(Clone, Debug, Default)]
+        pub struct DomainListView<'a> {
+            /// Field 1: `items`
+            pub items: ::buffa::RepeatedView<'a, &'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for DomainListView<'a> {
+            type Owned = super::super::DomainList;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.items.push(__elem);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<super::super::DomainList, ::buffa::DecodeError> {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<super::super::DomainList, ::buffa::DecodeError> {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::DomainList {
+                    items: self.items.iter().map(|s| s.to_string()).collect(),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for DomainListView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                for v in &self.items {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                for v in &self.items {
+                    ::buffa::types::put_string_field(1u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for DomainListView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !self.items.is_empty() {
+                    __map.serialize_entry("items", &*self.items)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for DomainListView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "DomainList";
+            const FULL_NAME: &'static str = "programs.v1.DomainList";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.DomainList";
+        }
+        ::buffa::impl_default_view_instance!(DomainListView);
+        ::buffa::impl_view_reborrow!(DomainListView);
+        /** Self-contained, `'static` owned view of a `DomainList` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`DomainListView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`DomainListView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct DomainListOwnedView(::buffa::OwnedView<DomainListView<'static>>);
+        impl DomainListOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    DomainListOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    DomainListOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::DomainList,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    DomainListOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`DomainListView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &DomainListView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::DomainList {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `items`
+            #[must_use]
+            pub fn items(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().items
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<DomainListView<'static>>>
+        for DomainListOwnedView {
+            fn from(inner: ::buffa::OwnedView<DomainListView<'static>>) -> Self {
+                DomainListOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<DomainListOwnedView>
+        for ::buffa::OwnedView<DomainListView<'static>> {
+            fn from(wrapper: DomainListOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<DomainListView<'static>>>
+        for DomainListOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<DomainListView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::DomainList {
+            type View<'a> = DomainListView<'a>;
+            type ViewHandle = DomainListOwnedView;
+        }
+        impl ::serde::Serialize for DomainListOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -55069,6 +56522,10 @@ pub mod __buffa {
             ///
             /// Field 6: `filter`
             pub filter: ::core::option::Option<&'a str>,
+            /// `name`, `name asc` or `name desc` (case-insensitive). Empty keeps creation order.
+            ///
+            /// Field 7: `order_by`
+            pub order_by: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ListProgramsRequestView<'a> {
@@ -55153,6 +56610,13 @@ pub mod __buffa {
                         )?;
                         view.filter = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    7u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.order_by = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -55188,6 +56652,7 @@ pub mod __buffa {
                     show_archived: self.show_archived,
                     search: self.search.map(|s| s.to_string()),
                     filter: self.filter.map(|s| s.to_string()),
+                    order_by: self.order_by.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -55220,6 +56685,9 @@ pub mod __buffa {
                 if let Some(ref v) = self.filter {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
+                if let Some(ref v) = self.order_by {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -55248,6 +56716,9 @@ pub mod __buffa {
                 }
                 if let Some(ref v) = self.filter {
                     ::buffa::types::put_string_field(6u32, v, buf);
+                }
+                if let Some(ref v) = self.order_by {
+                    ::buffa::types::put_string_field(7u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -55291,6 +56762,9 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.filter {
                     __map.serialize_entry("filter", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.order_by {
+                    __map.serialize_entry("orderBy", __v)?;
                 }
                 __map.end()
             }
@@ -55424,6 +56898,13 @@ pub mod __buffa {
             #[must_use]
             pub fn filter(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().filter
+            }
+            /// `name`, `name asc` or `name desc` (case-insensitive). Empty keeps creation order.
+            ///
+            /// Field 7: `order_by`
+            #[must_use]
+            pub fn order_by(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().order_by
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<ListProgramsRequestView<'static>>>
@@ -56529,6 +58010,10 @@ pub mod __buffa {
             ///
             /// Field 9: `highlights`
             pub highlights: ::buffa::RepeatedView<'a, &'a str>,
+            /// The program's domains, e.g. \["domain1", "domain2"\].
+            ///
+            /// Field 13: `domain`
+            pub domain: ::buffa::RepeatedView<'a, &'a str>,
             /// Field 10: `branding`
             pub branding: ::buffa::MessageFieldView<
                 super::super::__buffa::view::ProgramBrandingView<'a>,
@@ -56720,6 +58205,17 @@ pub mod __buffa {
                         )?;
                         view.highlights.push(__elem);
                     }
+                    13u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __elem = ::buffa::types::borrow_str(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::buffa::__private::element_footprint(&__elem),
+                        )?;
+                        view.domain.push(__elem);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -56762,6 +58258,7 @@ pub mod __buffa {
                         .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
                     about: self.about.map(|s| s.to_string()),
                     highlights: self.highlights.iter().map(|s| s.to_string()).collect(),
+                    domain: self.domain.iter().map(|s| s.to_string()).collect(),
                     branding: match self.branding.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
@@ -56846,6 +58343,9 @@ pub mod __buffa {
                 if self.renewal_enabled.is_some() {
                     size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
                 }
+                for v in &self.domain {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -56908,6 +58408,9 @@ pub mod __buffa {
                 if let Some(v) = self.renewal_enabled {
                     ::buffa::types::put_bool_field(12u32, v, buf);
                 }
+                for v in &self.domain {
+                    ::buffa::types::put_string_field(13u32, v, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -56955,6 +58458,9 @@ pub mod __buffa {
                 }
                 if !self.highlights.is_empty() {
                     __map.serialize_entry("highlights", &*self.highlights)?;
+                }
+                if !self.domain.is_empty() {
+                    __map.serialize_entry("domain", &*self.domain)?;
                 }
                 {
                     if let ::core::option::Option::Some(__v) = self.branding.as_option()
@@ -57127,6 +58633,13 @@ pub mod __buffa {
             #[must_use]
             pub fn highlights(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
                 &self.0.reborrow().highlights
+            }
+            /// The program's domains, e.g. \["domain1", "domain2"\].
+            ///
+            /// Field 13: `domain`
+            #[must_use]
+            pub fn domain(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().domain
             }
             /// Field 10: `branding`
             #[must_use]
@@ -57595,6 +59108,12 @@ pub mod __buffa {
             pub highlights: ::buffa::MessageFieldView<
                 super::super::__buffa::view::HighlightListView<'a>,
             >,
+            /// Present replaces the whole domain list (an empty list clears it).
+            ///
+            /// Field 13: `domain`
+            pub domain: ::buffa::MessageFieldView<
+                super::super::__buffa::view::DomainListView<'a>,
+            >,
             /// Field 10: `branding`
             pub branding: ::buffa::MessageFieldView<
                 super::super::__buffa::view::ProgramBrandingView<'a>,
@@ -57710,6 +59229,31 @@ pub mod __buffa {
                             None => {
                                 view.highlights = ::buffa::MessageFieldView::set(
                                     <super::super::__buffa::view::HighlightListView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    13u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.domain.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.domain = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::DomainListView as ::buffa::MessageView>::decode_view_ctx(
                                         sub,
                                         __sub_ctx,
                                     )?,
@@ -57846,6 +59390,15 @@ pub mod __buffa {
                         }
                         None => ::buffa::MessageField::none(),
                     },
+                    domain: match self.domain.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::DomainList,
+                                ::buffa::Inline<super::super::DomainList>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     branding: match self.branding.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
@@ -57937,6 +59490,14 @@ pub mod __buffa {
                 if self.renewal_enabled.is_some() {
                     size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
                 }
+                if self.domain.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.domain.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -58004,6 +59565,14 @@ pub mod __buffa {
                 if let Some(v) = self.renewal_enabled {
                     ::buffa::types::put_bool_field(12u32, v, buf);
                 }
+                if self.domain.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        13u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.domain.write_to(__cache, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -58055,6 +59624,11 @@ pub mod __buffa {
                         .as_option()
                     {
                         __map.serialize_entry("highlights", __v)?;
+                    }
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.domain.as_option() {
+                        __map.serialize_entry("domain", __v)?;
                     }
                 }
                 {
@@ -58228,6 +59802,17 @@ pub mod __buffa {
                 super::super::__buffa::view::HighlightListView<'_>,
             > {
                 &self.0.reborrow().highlights
+            }
+            /// Present replaces the whole domain list (an empty list clears it).
+            ///
+            /// Field 13: `domain`
+            #[must_use]
+            pub fn domain(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::DomainListView<'_>,
+            > {
+                &self.0.reborrow().domain
             }
             /// Field 10: `branding`
             #[must_use]
@@ -89405,10 +90990,979 @@ pub mod __buffa {
             }
         }
         /// ---------------------------------------------------------------------------
-        /// Enrollments (a store enrolled in a program on one website)
+        /// Stores (a store enrolled in a program on one website)
         /// ---------------------------------------------------------------------------
+        ///
+        /// The BU location a store belongs to.
         #[derive(Clone, Debug, Default)]
-        pub struct EnrollmentView<'a> {
+        pub struct BuLocationView<'a> {
+            /// Its unique code.
+            ///
+            /// Field 1: `code`
+            pub code: &'a str,
+            /// The name of the location; unset when it was not known. On update an empty string clears it.
+            ///
+            /// Field 5: `name`
+            pub name: ::core::option::Option<&'a str>,
+            /// The business unit of the location, code and name; unset when none was sent. On update a `bu` with an
+            /// empty code clears it.
+            ///
+            /// Field 4: `bu`
+            pub bu: ::buffa::MessageFieldView<
+                super::super::__buffa::view::BusinessUnitView<'a>,
+            >,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for BuLocationView<'a> {
+            type Owned = super::super::BuLocation;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.code = ::buffa::types::borrow_str(&mut cur)?;
+                    }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.name = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.bu.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.bu = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::BusinessUnitView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<super::super::BuLocation, ::buffa::DecodeError> {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<super::super::BuLocation, ::buffa::DecodeError> {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::BuLocation {
+                    code: self.code.to_string(),
+                    name: self.name.map(|s| s.to_string()),
+                    bu: match self.bu.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::BusinessUnit,
+                                ::buffa::Inline<super::super::BusinessUnit>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for BuLocationView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if !self.code.is_empty() {
+                    size += 1u64 + ::buffa::types::string_encoded_len(&self.code) as u64;
+                }
+                if self.bu.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.bu.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if let Some(ref v) = self.name {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                __cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if !self.code.is_empty() {
+                    ::buffa::types::put_string_field(1u32, &self.code, buf);
+                }
+                if self.bu.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.bu.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.name {
+                    ::buffa::types::put_string_field(5u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for BuLocationView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.code) {
+                    __map.serialize_entry("code", self.code)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.name {
+                    __map.serialize_entry("name", __v)?;
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.bu.as_option() {
+                        __map.serialize_entry("bu", __v)?;
+                    }
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for BuLocationView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "BuLocation";
+            const FULL_NAME: &'static str = "programs.v1.BuLocation";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BuLocation";
+        }
+        ::buffa::impl_default_view_instance!(BuLocationView);
+        ::buffa::impl_view_reborrow!(BuLocationView);
+        /** Self-contained, `'static` owned view of a `BuLocation` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`BuLocationView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BuLocationView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct BuLocationOwnedView(::buffa::OwnedView<BuLocationView<'static>>);
+        impl BuLocationOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BuLocationOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BuLocationOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::BuLocation,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BuLocationOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`BuLocationView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &BuLocationView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::BuLocation {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Its unique code.
+            ///
+            /// Field 1: `code`
+            #[must_use]
+            pub fn code(&self) -> &'_ str {
+                self.0.reborrow().code
+            }
+            /// The name of the location; unset when it was not known. On update an empty string clears it.
+            ///
+            /// Field 5: `name`
+            #[must_use]
+            pub fn name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().name
+            }
+            /// The business unit of the location, code and name; unset when none was sent. On update a `bu` with an
+            /// empty code clears it.
+            ///
+            /// Field 4: `bu`
+            #[must_use]
+            pub fn bu(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::BusinessUnitView<'_>,
+            > {
+                &self.0.reborrow().bu
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<BuLocationView<'static>>>
+        for BuLocationOwnedView {
+            fn from(inner: ::buffa::OwnedView<BuLocationView<'static>>) -> Self {
+                BuLocationOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<BuLocationOwnedView>
+        for ::buffa::OwnedView<BuLocationView<'static>> {
+            fn from(wrapper: BuLocationOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<BuLocationView<'static>>>
+        for BuLocationOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<BuLocationView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::BuLocation {
+            type View<'a> = BuLocationView<'a>;
+            type ViewHandle = BuLocationOwnedView;
+        }
+        impl ::serde::Serialize for BuLocationOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// The website a store is enrolled on.
+        #[derive(Clone, Debug, Default)]
+        pub struct StoreWebsiteView<'a> {
+            /// Its unique code.
+            ///
+            /// Field 1: `code`
+            pub code: &'a str,
+            /// Field 2: `name`
+            pub name: ::core::option::Option<&'a str>,
+            /// Field 3: `domain`
+            pub domain: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for StoreWebsiteView<'a> {
+            type Owned = super::super::StoreWebsite;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.code = ::buffa::types::borrow_str(&mut cur)?;
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.name = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.domain = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::StoreWebsite,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::StoreWebsite,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::StoreWebsite {
+                    code: self.code.to_string(),
+                    name: self.name.map(|s| s.to_string()),
+                    domain: self.domain.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for StoreWebsiteView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if !self.code.is_empty() {
+                    size += 1u64 + ::buffa::types::string_encoded_len(&self.code) as u64;
+                }
+                if let Some(ref v) = self.name {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if let Some(ref v) = self.domain {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if !self.code.is_empty() {
+                    ::buffa::types::put_string_field(1u32, &self.code, buf);
+                }
+                if let Some(ref v) = self.name {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.domain {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for StoreWebsiteView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.code) {
+                    __map.serialize_entry("code", self.code)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.name {
+                    __map.serialize_entry("name", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.domain {
+                    __map.serialize_entry("domain", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for StoreWebsiteView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "StoreWebsite";
+            const FULL_NAME: &'static str = "programs.v1.StoreWebsite";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreWebsite";
+        }
+        ::buffa::impl_default_view_instance!(StoreWebsiteView);
+        ::buffa::impl_view_reborrow!(StoreWebsiteView);
+        /** Self-contained, `'static` owned view of a `StoreWebsite` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`StoreWebsiteView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`StoreWebsiteView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct StoreWebsiteOwnedView(::buffa::OwnedView<StoreWebsiteView<'static>>);
+        impl StoreWebsiteOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    StoreWebsiteOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    StoreWebsiteOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::StoreWebsite,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    StoreWebsiteOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`StoreWebsiteView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &StoreWebsiteView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::StoreWebsite {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Its unique code.
+            ///
+            /// Field 1: `code`
+            #[must_use]
+            pub fn code(&self) -> &'_ str {
+                self.0.reborrow().code
+            }
+            /// Field 2: `name`
+            #[must_use]
+            pub fn name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().name
+            }
+            /// Field 3: `domain`
+            #[must_use]
+            pub fn domain(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().domain
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<StoreWebsiteView<'static>>>
+        for StoreWebsiteOwnedView {
+            fn from(inner: ::buffa::OwnedView<StoreWebsiteView<'static>>) -> Self {
+                StoreWebsiteOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<StoreWebsiteOwnedView>
+        for ::buffa::OwnedView<StoreWebsiteView<'static>> {
+            fn from(wrapper: StoreWebsiteOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<StoreWebsiteView<'static>>>
+        for StoreWebsiteOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<StoreWebsiteView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::StoreWebsite {
+            type View<'a> = StoreWebsiteView<'a>;
+            type ViewHandle = StoreWebsiteOwnedView;
+        }
+        impl ::serde::Serialize for StoreWebsiteOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// The business unit of a store. Its code is also the PARENT of the website in the store discounts.
+        #[derive(Clone, Debug, Default)]
+        pub struct BusinessUnitView<'a> {
+            /// Field 1: `code`
+            pub code: &'a str,
+            /// Field 2: `name`
+            pub name: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for BusinessUnitView<'a> {
+            type Owned = super::super::BusinessUnit;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.code = ::buffa::types::borrow_str(&mut cur)?;
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.name = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::BusinessUnit,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::BusinessUnit,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::BusinessUnit {
+                    code: self.code.to_string(),
+                    name: self.name.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for BusinessUnitView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if !self.code.is_empty() {
+                    size += 1u64 + ::buffa::types::string_encoded_len(&self.code) as u64;
+                }
+                if let Some(ref v) = self.name {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if !self.code.is_empty() {
+                    ::buffa::types::put_string_field(1u32, &self.code, buf);
+                }
+                if let Some(ref v) = self.name {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for BusinessUnitView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.code) {
+                    __map.serialize_entry("code", self.code)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.name {
+                    __map.serialize_entry("name", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for BusinessUnitView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "BusinessUnit";
+            const FULL_NAME: &'static str = "programs.v1.BusinessUnit";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BusinessUnit";
+        }
+        ::buffa::impl_default_view_instance!(BusinessUnitView);
+        ::buffa::impl_view_reborrow!(BusinessUnitView);
+        /** Self-contained, `'static` owned view of a `BusinessUnit` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`BusinessUnitView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BusinessUnitView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct BusinessUnitOwnedView(::buffa::OwnedView<BusinessUnitView<'static>>);
+        impl BusinessUnitOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BusinessUnitOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BusinessUnitOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::BusinessUnit,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BusinessUnitOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`BusinessUnitView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &BusinessUnitView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::BusinessUnit {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `code`
+            #[must_use]
+            pub fn code(&self) -> &'_ str {
+                self.0.reborrow().code
+            }
+            /// Field 2: `name`
+            #[must_use]
+            pub fn name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().name
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<BusinessUnitView<'static>>>
+        for BusinessUnitOwnedView {
+            fn from(inner: ::buffa::OwnedView<BusinessUnitView<'static>>) -> Self {
+                BusinessUnitOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<BusinessUnitOwnedView>
+        for ::buffa::OwnedView<BusinessUnitView<'static>> {
+            fn from(wrapper: BusinessUnitOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<BusinessUnitView<'static>>>
+        for BusinessUnitOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<BusinessUnitView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::BusinessUnit {
+            type View<'a> = BusinessUnitView<'a>;
+            type ViewHandle = BusinessUnitOwnedView;
+        }
+        impl ::serde::Serialize for BusinessUnitOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        #[derive(Clone, Debug, Default)]
+        pub struct StoreView<'a> {
             /// Field 1: `path`
             pub path: &'a str,
             /// Field 2: `id`
@@ -89417,42 +91971,38 @@ pub mod __buffa {
             ///
             /// Field 3: `application_id`
             pub application_id: ::core::option::Option<&'a str>,
-            /// Field 4: `store_id`
-            pub store_id: &'a str,
-            /// Unset = "Unresolved store".
+            /// Field 4: `bu_location`
+            pub bu_location: ::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'a>,
+            >,
+            /// Field 5: `website`
+            pub website: ::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreWebsiteView<'a>,
+            >,
+            /// Field 6: `customer_name`
+            pub customer_name: ::core::option::Option<&'a str>,
+            /// pending, active, suspended or ended. Any status can move to any other.
             ///
-            /// Field 5: `store_name`
-            pub store_name: ::core::option::Option<&'a str>,
-            /// Field 6: `store_resolved`
-            pub store_resolved: bool,
-            /// Field 7: `website_id`
-            pub website_id: &'a str,
-            /// Field 8: `website_name`
-            pub website_name: ::core::option::Option<&'a str>,
-            /// Field 9: `customer_group`
-            pub customer_group: ::core::option::Option<&'a str>,
-            /// pending, active, suspended or ended. Changes: pending -\> active, active \<-\> suspended, anything -\> ended.
-            ///
-            /// Field 10: `status`
+            /// Field 7: `status`
             pub status: &'a str,
             /// The status changes allowed from here (the Actions dropdown).
             ///
-            /// Field 11: `actions`
+            /// Field 8: `actions`
             pub actions: ::buffa::RepeatedView<'a, &'a str>,
-            /// Field 12: `enrolled_time`
+            /// Field 9: `enrolled_time`
             pub enrolled_time: ::core::option::Option<&'a str>,
-            /// Field 13: `contracts_count`
+            /// Field 10: `contracts_count`
             pub contracts_count: i32,
-            /// Field 14: `last_contract_time`
+            /// Field 11: `last_contract_time`
             pub last_contract_time: ::core::option::Option<&'a str>,
-            /// Field 15: `create_time`
+            /// Field 12: `create_time`
             pub create_time: &'a str,
-            /// Field 16: `update_time`
+            /// Field 13: `update_time`
             pub update_time: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for EnrollmentView<'a> {
-            type Owned = super::super::Enrollment;
+        impl<'a> ::buffa::MessageView<'a> for StoreView<'a> {
+            type Owned = super::super::Store;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -89515,67 +92065,80 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_id = ::buffa::types::borrow_str(&mut cur)?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.bu_location.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.bu_location = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::BuLocationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     5u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_name = Some(::buffa::types::borrow_str(&mut cur)?);
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.website.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.website = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::StoreWebsiteView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     6u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
-                            ::buffa::encoding::WireType::Varint,
+                            ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_resolved = ::buffa::types::decode_bool(&mut cur)?;
+                        view.customer_name = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     7u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.website_id = ::buffa::types::borrow_str(&mut cur)?;
-                    }
-                    8u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
-                        view.website_name = Some(::buffa::types::borrow_str(&mut cur)?);
+                        view.status = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     9u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.customer_group = Some(
-                            ::buffa::types::borrow_str(&mut cur)?,
-                        );
-                    }
-                    10u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
-                        view.status = ::buffa::types::borrow_str(&mut cur)?;
-                    }
-                    12u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
                         view.enrolled_time = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
-                    13u32 => {
+                    10u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::Varint,
                         )?;
                         view.contracts_count = ::buffa::types::decode_int32(&mut cur)?;
                     }
-                    14u32 => {
+                    11u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
@@ -89584,21 +92147,21 @@ pub mod __buffa {
                             ::buffa::types::borrow_str(&mut cur)?,
                         );
                     }
-                    15u32 => {
+                    12u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
                         view.create_time = ::buffa::types::borrow_str(&mut cur)?;
                     }
-                    16u32 => {
+                    13u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
                         view.update_time = ::buffa::types::borrow_str(&mut cur)?;
                     }
-                    11u32 => {
+                    8u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
@@ -89620,27 +92183,40 @@ pub mod __buffa {
             }
             fn to_owned_message(
                 &self,
-            ) -> ::core::result::Result<super::super::Enrollment, ::buffa::DecodeError> {
+            ) -> ::core::result::Result<super::super::Store, ::buffa::DecodeError> {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> ::core::result::Result<super::super::Enrollment, ::buffa::DecodeError> {
+            ) -> ::core::result::Result<super::super::Store, ::buffa::DecodeError> {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::Enrollment {
+                ::core::result::Result::Ok(super::super::Store {
                     path: self.path.to_string(),
                     id: self.id.to_string(),
                     application_id: self.application_id.map(|s| s.to_string()),
-                    store_id: self.store_id.to_string(),
-                    store_name: self.store_name.map(|s| s.to_string()),
-                    store_resolved: self.store_resolved,
-                    website_id: self.website_id.to_string(),
-                    website_name: self.website_name.map(|s| s.to_string()),
-                    customer_group: self.customer_group.map(|s| s.to_string()),
+                    bu_location: match self.bu_location.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::BuLocation,
+                                ::buffa::Inline<super::super::BuLocation>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    website: match self.website.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::StoreWebsite,
+                                ::buffa::Inline<super::super::StoreWebsite>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    customer_name: self.customer_name.map(|s| s.to_string()),
                     status: self.status.to_string(),
                     actions: self.actions.iter().map(|s| s.to_string()).collect(),
                     enrolled_time: self.enrolled_time.map(|s| s.to_string()),
@@ -89656,9 +92232,9 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for EnrollmentView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for StoreView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
@@ -89671,27 +92247,23 @@ pub mod __buffa {
                 if let Some(ref v) = self.application_id {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
-                if !self.store_id.is_empty() {
+                if self.bu_location.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.bu_location.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
-                if let Some(ref v) = self.store_name {
-                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-                }
-                if self.store_resolved {
-                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
-                }
-                if !self.website_id.is_empty() {
+                if self.website.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.website.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.website_id)
-                                as u64;
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
-                if let Some(ref v) = self.website_name {
-                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-                }
-                if let Some(ref v) = self.customer_group {
+                if let Some(ref v) = self.customer_name {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if !self.status.is_empty() {
@@ -89722,7 +92294,7 @@ pub mod __buffa {
                 }
                 if !self.update_time.is_empty() {
                     size
-                        += 2u64
+                        += 1u64
                             + ::buffa::types::string_encoded_len(&self.update_time)
                                 as u64;
                 }
@@ -89732,7 +92304,7 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::EncodeSink,
             ) {
                 #[allow(unused_imports)]
@@ -89746,44 +92318,45 @@ pub mod __buffa {
                 if let Some(ref v) = self.application_id {
                     ::buffa::types::put_string_field(3u32, v, buf);
                 }
-                if !self.store_id.is_empty() {
-                    ::buffa::types::put_string_field(4u32, &self.store_id, buf);
+                if self.bu_location.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.bu_location.write_to(__cache, buf);
                 }
-                if let Some(ref v) = self.store_name {
-                    ::buffa::types::put_string_field(5u32, v, buf);
+                if self.website.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        5u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.website.write_to(__cache, buf);
                 }
-                if self.store_resolved {
-                    ::buffa::types::put_bool_field(6u32, self.store_resolved, buf);
-                }
-                if !self.website_id.is_empty() {
-                    ::buffa::types::put_string_field(7u32, &self.website_id, buf);
-                }
-                if let Some(ref v) = self.website_name {
-                    ::buffa::types::put_string_field(8u32, v, buf);
-                }
-                if let Some(ref v) = self.customer_group {
-                    ::buffa::types::put_string_field(9u32, v, buf);
+                if let Some(ref v) = self.customer_name {
+                    ::buffa::types::put_string_field(6u32, v, buf);
                 }
                 if !self.status.is_empty() {
-                    ::buffa::types::put_string_field(10u32, &self.status, buf);
+                    ::buffa::types::put_string_field(7u32, &self.status, buf);
                 }
                 for v in &self.actions {
-                    ::buffa::types::put_string_field(11u32, v, buf);
+                    ::buffa::types::put_string_field(8u32, v, buf);
                 }
                 if let Some(ref v) = self.enrolled_time {
-                    ::buffa::types::put_string_field(12u32, v, buf);
+                    ::buffa::types::put_string_field(9u32, v, buf);
                 }
                 if self.contracts_count != 0i32 {
-                    ::buffa::types::put_int32_field(13u32, self.contracts_count, buf);
+                    ::buffa::types::put_int32_field(10u32, self.contracts_count, buf);
                 }
                 if let Some(ref v) = self.last_contract_time {
-                    ::buffa::types::put_string_field(14u32, v, buf);
+                    ::buffa::types::put_string_field(11u32, v, buf);
                 }
                 if !self.create_time.is_empty() {
-                    ::buffa::types::put_string_field(15u32, &self.create_time, buf);
+                    ::buffa::types::put_string_field(12u32, &self.create_time, buf);
                 }
                 if !self.update_time.is_empty() {
-                    ::buffa::types::put_string_field(16u32, &self.update_time, buf);
+                    ::buffa::types::put_string_field(13u32, &self.update_time, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -89799,7 +92372,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for EnrollmentView<'__a> {
+        impl<'__a> ::serde::Serialize for StoreView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -89815,23 +92388,21 @@ pub mod __buffa {
                 if let ::core::option::Option::Some(__v) = self.application_id {
                     __map.serialize_entry("applicationId", __v)?;
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.store_id) {
-                    __map.serialize_entry("storeId", self.store_id)?;
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .bu_location
+                        .as_option()
+                    {
+                        __map.serialize_entry("buLocation", __v)?;
+                    }
                 }
-                if let ::core::option::Option::Some(__v) = self.store_name {
-                    __map.serialize_entry("storeName", __v)?;
+                {
+                    if let ::core::option::Option::Some(__v) = self.website.as_option() {
+                        __map.serialize_entry("website", __v)?;
+                    }
                 }
-                if self.store_resolved {
-                    __map.serialize_entry("storeResolved", &self.store_resolved)?;
-                }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.website_id) {
-                    __map.serialize_entry("websiteId", self.website_id)?;
-                }
-                if let ::core::option::Option::Some(__v) = self.website_name {
-                    __map.serialize_entry("websiteName", __v)?;
-                }
-                if let ::core::option::Option::Some(__v) = self.customer_group {
-                    __map.serialize_entry("customerGroup", __v)?;
+                if let ::core::option::Option::Some(__v) = self.customer_name {
+                    __map.serialize_entry("customerName", __v)?;
                 }
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.status) {
                     __map.serialize_entry("status", self.status)?;
@@ -89861,22 +92432,22 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for EnrollmentView<'a> {
+        impl<'a> ::buffa::MessageName for StoreView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "Enrollment";
-            const FULL_NAME: &'static str = "programs.v1.Enrollment";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.Enrollment";
+            const NAME: &'static str = "Store";
+            const FULL_NAME: &'static str = "programs.v1.Store";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.Store";
         }
-        ::buffa::impl_default_view_instance!(EnrollmentView);
-        ::buffa::impl_view_reborrow!(EnrollmentView);
-        /** Self-contained, `'static` owned view of a `Enrollment` message.
+        ::buffa::impl_default_view_instance!(StoreView);
+        ::buffa::impl_view_reborrow!(StoreView);
+        /** Self-contained, `'static` owned view of a `Store` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`EnrollmentView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`StoreView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`EnrollmentView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`StoreView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct EnrollmentOwnedView(::buffa::OwnedView<EnrollmentView<'static>>);
-        impl EnrollmentOwnedView {
+        pub struct StoreOwnedView(::buffa::OwnedView<StoreView<'static>>);
+        impl StoreOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -89890,7 +92461,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    StoreOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -89905,9 +92476,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentOwnedView(
-                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
-                    ),
+                    StoreOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
                 )
             }
             /// Build from an owned message via an encode → decode round-trip.
@@ -89919,15 +92488,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::Enrollment,
+                msg: &super::super::Store,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    StoreOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`EnrollmentView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`StoreView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &EnrollmentView<'_> {
+            pub fn view(&self) -> &StoreView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -89938,7 +92507,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::Enrollment {
+            pub fn to_owned_message(&self) -> super::super::Store {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -89968,101 +92537,92 @@ pub mod __buffa {
             pub fn application_id(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().application_id
             }
-            /// Field 4: `store_id`
+            /// Field 4: `bu_location`
             #[must_use]
-            pub fn store_id(&self) -> &'_ str {
-                self.0.reborrow().store_id
+            pub fn bu_location(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'_>,
+            > {
+                &self.0.reborrow().bu_location
             }
-            /// Unset = "Unresolved store".
+            /// Field 5: `website`
+            #[must_use]
+            pub fn website(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreWebsiteView<'_>,
+            > {
+                &self.0.reborrow().website
+            }
+            /// Field 6: `customer_name`
+            #[must_use]
+            pub fn customer_name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().customer_name
+            }
+            /// pending, active, suspended or ended. Any status can move to any other.
             ///
-            /// Field 5: `store_name`
-            #[must_use]
-            pub fn store_name(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().store_name
-            }
-            /// Field 6: `store_resolved`
-            #[must_use]
-            pub fn store_resolved(&self) -> bool {
-                self.0.reborrow().store_resolved
-            }
-            /// Field 7: `website_id`
-            #[must_use]
-            pub fn website_id(&self) -> &'_ str {
-                self.0.reborrow().website_id
-            }
-            /// Field 8: `website_name`
-            #[must_use]
-            pub fn website_name(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().website_name
-            }
-            /// Field 9: `customer_group`
-            #[must_use]
-            pub fn customer_group(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().customer_group
-            }
-            /// pending, active, suspended or ended. Changes: pending -\> active, active \<-\> suspended, anything -\> ended.
-            ///
-            /// Field 10: `status`
+            /// Field 7: `status`
             #[must_use]
             pub fn status(&self) -> &'_ str {
                 self.0.reborrow().status
             }
             /// The status changes allowed from here (the Actions dropdown).
             ///
-            /// Field 11: `actions`
+            /// Field 8: `actions`
             #[must_use]
             pub fn actions(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
                 &self.0.reborrow().actions
             }
-            /// Field 12: `enrolled_time`
+            /// Field 9: `enrolled_time`
             #[must_use]
             pub fn enrolled_time(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().enrolled_time
             }
-            /// Field 13: `contracts_count`
+            /// Field 10: `contracts_count`
             #[must_use]
             pub fn contracts_count(&self) -> i32 {
                 self.0.reborrow().contracts_count
             }
-            /// Field 14: `last_contract_time`
+            /// Field 11: `last_contract_time`
             #[must_use]
             pub fn last_contract_time(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().last_contract_time
             }
-            /// Field 15: `create_time`
+            /// Field 12: `create_time`
             #[must_use]
             pub fn create_time(&self) -> &'_ str {
                 self.0.reborrow().create_time
             }
-            /// Field 16: `update_time`
+            /// Field 13: `update_time`
             #[must_use]
             pub fn update_time(&self) -> &'_ str {
                 self.0.reborrow().update_time
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<EnrollmentView<'static>>>
-        for EnrollmentOwnedView {
-            fn from(inner: ::buffa::OwnedView<EnrollmentView<'static>>) -> Self {
-                EnrollmentOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<StoreView<'static>>>
+        for StoreOwnedView {
+            fn from(inner: ::buffa::OwnedView<StoreView<'static>>) -> Self {
+                StoreOwnedView(inner)
             }
         }
-        impl ::core::convert::From<EnrollmentOwnedView>
-        for ::buffa::OwnedView<EnrollmentView<'static>> {
-            fn from(wrapper: EnrollmentOwnedView) -> Self {
+        impl ::core::convert::From<StoreOwnedView>
+        for ::buffa::OwnedView<StoreView<'static>> {
+            fn from(wrapper: StoreOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<::buffa::OwnedView<EnrollmentView<'static>>>
-        for EnrollmentOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<EnrollmentView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<StoreView<'static>>>
+        for StoreOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<StoreView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::Enrollment {
-            type View<'a> = EnrollmentView<'a>;
-            type ViewHandle = EnrollmentOwnedView;
+        impl ::buffa::HasMessageView for super::super::Store {
+            type View<'a> = StoreView<'a>;
+            type ViewHandle = StoreOwnedView;
         }
-        impl ::serde::Serialize for EnrollmentOwnedView {
+        impl ::serde::Serialize for StoreOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -90071,21 +92631,21 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct ListEnrollmentsRequestView<'a> {
+        pub struct ListStoresRequestView<'a> {
             /// Field 1: `program`
             pub program: &'a str,
-            /// The "All websites" filter.
+            /// The "All websites" filter: a website code, name or domain. Same as `filter` term `website=...`.
             ///
-            /// Field 2: `website_id`
-            pub website_id: ::core::option::Option<&'a str>,
-            /// Only these statuses, comma-separated. Unset for all.
+            /// Field 2: `website`
+            pub website: ::core::option::Option<&'a str>,
+            /// Only these statuses, e.g. `active` or `[active,suspended]`. Same as `filter` term `status=...`.
             ///
             /// Field 3: `status`
             pub status: ::core::option::Option<&'a str>,
-            /// A prefix of the store name (case-insensitive).
+            /// BU location code contains this text. Same as `filter` term `bu_location=...`.
             ///
-            /// Field 4: `store`
-            pub store: ::core::option::Option<&'a str>,
+            /// Field 4: `bu_location`
+            pub bu_location: ::core::option::Option<&'a str>,
             /// Field 5: `max_page_size`
             pub max_page_size: ::core::option::Option<i64>,
             /// Field 6: `page_token`
@@ -90094,10 +92654,21 @@ pub mod __buffa {
             ///
             /// Field 7: `path`
             pub path: &'a str,
+            /// The search box: bare text matches the BU location code, website and customer name; `bu_location=abc`,
+            /// `website=abc` or `customer_name=abc` match one field.
+            ///
+            /// Field 8: `search`
+            pub search: ::core::option::Option<&'a str>,
+            /// Terms joined with `&`: `bu_location.starts_with=BU&customer_name.is_empty&website=[w1,w2]&status!=ended`.
+            /// Text fields (bu_location, website, customer_name) take an operator: contains (default), not_contains,
+            /// equals, not_equals, starts_with, ends_with, is_empty, is_not_empty (customer_name only).
+            ///
+            /// Field 9: `filter`
+            pub filter: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for ListEnrollmentsRequestView<'a> {
-            type Owned = super::super::ListEnrollmentsRequest;
+        impl<'a> ::buffa::MessageView<'a> for ListStoresRequestView<'a> {
+            type Owned = super::super::ListStoresRequest;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -90144,7 +92715,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.website_id = Some(::buffa::types::borrow_str(&mut cur)?);
+                        view.website = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -90158,7 +92729,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store = Some(::buffa::types::borrow_str(&mut cur)?);
+                        view.bu_location = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     5u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -90183,6 +92754,20 @@ pub mod __buffa {
                         )?;
                         view.path = ::buffa::types::borrow_str(&mut cur)?;
                     }
+                    8u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.search = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    9u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.filter = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -90195,7 +92780,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::ListEnrollmentsRequest,
+                super::super::ListStoresRequest,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -90205,20 +92790,22 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::ListEnrollmentsRequest,
+                super::super::ListStoresRequest,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::ListEnrollmentsRequest {
+                ::core::result::Result::Ok(super::super::ListStoresRequest {
                     program: self.program.to_string(),
-                    website_id: self.website_id.map(|s| s.to_string()),
+                    website: self.website.map(|s| s.to_string()),
                     status: self.status.map(|s| s.to_string()),
-                    store: self.store.map(|s| s.to_string()),
+                    bu_location: self.bu_location.map(|s| s.to_string()),
                     max_page_size: self.max_page_size,
                     page_token: self.page_token.map(|s| s.to_string()),
                     path: self.path.to_string(),
+                    search: self.search.map(|s| s.to_string()),
+                    filter: self.filter.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -90227,7 +92814,7 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for ListEnrollmentsRequestView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for ListStoresRequestView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -90238,13 +92825,13 @@ pub mod __buffa {
                         += 1u64
                             + ::buffa::types::string_encoded_len(&self.program) as u64;
                 }
-                if let Some(ref v) = self.website_id {
+                if let Some(ref v) = self.website {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if let Some(ref v) = self.status {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
-                if let Some(ref v) = self.store {
+                if let Some(ref v) = self.bu_location {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if let Some(v) = self.max_page_size {
@@ -90255,6 +92842,12 @@ pub mod __buffa {
                 }
                 if !self.path.is_empty() {
                     size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
+                }
+                if let Some(ref v) = self.search {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                if let Some(ref v) = self.filter {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
@@ -90270,13 +92863,13 @@ pub mod __buffa {
                 if !self.program.is_empty() {
                     ::buffa::types::put_string_field(1u32, &self.program, buf);
                 }
-                if let Some(ref v) = self.website_id {
+                if let Some(ref v) = self.website {
                     ::buffa::types::put_string_field(2u32, v, buf);
                 }
                 if let Some(ref v) = self.status {
                     ::buffa::types::put_string_field(3u32, v, buf);
                 }
-                if let Some(ref v) = self.store {
+                if let Some(ref v) = self.bu_location {
                     ::buffa::types::put_string_field(4u32, v, buf);
                 }
                 if let Some(v) = self.max_page_size {
@@ -90287,6 +92880,12 @@ pub mod __buffa {
                 }
                 if !self.path.is_empty() {
                     ::buffa::types::put_string_field(7u32, &self.path, buf);
+                }
+                if let Some(ref v) = self.search {
+                    ::buffa::types::put_string_field(8u32, v, buf);
+                }
+                if let Some(ref v) = self.filter {
+                    ::buffa::types::put_string_field(9u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -90302,7 +92901,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for ListEnrollmentsRequestView<'__a> {
+        impl<'__a> ::serde::Serialize for ListStoresRequestView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -90312,14 +92911,14 @@ pub mod __buffa {
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.program) {
                     __map.serialize_entry("program", self.program)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.website_id {
-                    __map.serialize_entry("websiteId", __v)?;
+                if let ::core::option::Option::Some(__v) = self.website {
+                    __map.serialize_entry("website", __v)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.status {
                     __map.serialize_entry("status", __v)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.store {
-                    __map.serialize_entry("store", __v)?;
+                if let ::core::option::Option::Some(__v) = self.bu_location {
+                    __map.serialize_entry("buLocation", __v)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.max_page_size {
                     __map
@@ -90334,27 +92933,33 @@ pub mod __buffa {
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.path) {
                     __map.serialize_entry("path", self.path)?;
                 }
+                if let ::core::option::Option::Some(__v) = self.search {
+                    __map.serialize_entry("search", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.filter {
+                    __map.serialize_entry("filter", __v)?;
+                }
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for ListEnrollmentsRequestView<'a> {
+        impl<'a> ::buffa::MessageName for ListStoresRequestView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "ListEnrollmentsRequest";
-            const FULL_NAME: &'static str = "programs.v1.ListEnrollmentsRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListEnrollmentsRequest";
+            const NAME: &'static str = "ListStoresRequest";
+            const FULL_NAME: &'static str = "programs.v1.ListStoresRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListStoresRequest";
         }
-        ::buffa::impl_default_view_instance!(ListEnrollmentsRequestView);
-        ::buffa::impl_view_reborrow!(ListEnrollmentsRequestView);
-        /** Self-contained, `'static` owned view of a `ListEnrollmentsRequest` message.
+        ::buffa::impl_default_view_instance!(ListStoresRequestView);
+        ::buffa::impl_view_reborrow!(ListStoresRequestView);
+        /** Self-contained, `'static` owned view of a `ListStoresRequest` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`ListEnrollmentsRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`ListStoresRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ListEnrollmentsRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ListStoresRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct ListEnrollmentsRequestOwnedView(
-            ::buffa::OwnedView<ListEnrollmentsRequestView<'static>>,
+        pub struct ListStoresRequestOwnedView(
+            ::buffa::OwnedView<ListStoresRequestView<'static>>,
         );
-        impl ListEnrollmentsRequestOwnedView {
+        impl ListStoresRequestOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -90368,7 +92973,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    ListEnrollmentsRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    ListStoresRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -90383,7 +92988,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    ListEnrollmentsRequestOwnedView(
+                    ListStoresRequestOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -90397,15 +93002,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::ListEnrollmentsRequest,
+                msg: &super::super::ListStoresRequest,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    ListEnrollmentsRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    ListStoresRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`ListEnrollmentsRequestView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`ListStoresRequestView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &ListEnrollmentsRequestView<'_> {
+            pub fn view(&self) -> &ListStoresRequestView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -90416,7 +93021,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::ListEnrollmentsRequest {
+            pub fn to_owned_message(&self) -> super::super::ListStoresRequest {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -90434,26 +93039,26 @@ pub mod __buffa {
             pub fn program(&self) -> &'_ str {
                 self.0.reborrow().program
             }
-            /// The "All websites" filter.
+            /// The "All websites" filter: a website code, name or domain. Same as `filter` term `website=...`.
             ///
-            /// Field 2: `website_id`
+            /// Field 2: `website`
             #[must_use]
-            pub fn website_id(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().website_id
+            pub fn website(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().website
             }
-            /// Only these statuses, comma-separated. Unset for all.
+            /// Only these statuses, e.g. `active` or `[active,suspended]`. Same as `filter` term `status=...`.
             ///
             /// Field 3: `status`
             #[must_use]
             pub fn status(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().status
             }
-            /// A prefix of the store name (case-insensitive).
+            /// BU location code contains this text. Same as `filter` term `bu_location=...`.
             ///
-            /// Field 4: `store`
+            /// Field 4: `bu_location`
             #[must_use]
-            pub fn store(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().store
+            pub fn bu_location(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().bu_location
             }
             /// Field 5: `max_page_size`
             #[must_use]
@@ -90472,36 +93077,47 @@ pub mod __buffa {
             pub fn path(&self) -> &'_ str {
                 self.0.reborrow().path
             }
-        }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<ListEnrollmentsRequestView<'static>>,
-        > for ListEnrollmentsRequestOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<ListEnrollmentsRequestView<'static>>,
-            ) -> Self {
-                ListEnrollmentsRequestOwnedView(inner)
+            /// The search box: bare text matches the BU location code, website and customer name; `bu_location=abc`,
+            /// `website=abc` or `customer_name=abc` match one field.
+            ///
+            /// Field 8: `search`
+            #[must_use]
+            pub fn search(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().search
+            }
+            /// Terms joined with `&`: `bu_location.starts_with=BU&customer_name.is_empty&website=[w1,w2]&status!=ended`.
+            /// Text fields (bu_location, website, customer_name) take an operator: contains (default), not_contains,
+            /// equals, not_equals, starts_with, ends_with, is_empty, is_not_empty (customer_name only).
+            ///
+            /// Field 9: `filter`
+            #[must_use]
+            pub fn filter(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().filter
             }
         }
-        impl ::core::convert::From<ListEnrollmentsRequestOwnedView>
-        for ::buffa::OwnedView<ListEnrollmentsRequestView<'static>> {
-            fn from(wrapper: ListEnrollmentsRequestOwnedView) -> Self {
+        impl ::core::convert::From<::buffa::OwnedView<ListStoresRequestView<'static>>>
+        for ListStoresRequestOwnedView {
+            fn from(inner: ::buffa::OwnedView<ListStoresRequestView<'static>>) -> Self {
+                ListStoresRequestOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<ListStoresRequestOwnedView>
+        for ::buffa::OwnedView<ListStoresRequestView<'static>> {
+            fn from(wrapper: ListStoresRequestOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<ListEnrollmentsRequestView<'static>>,
-        > for ListEnrollmentsRequestOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<ListEnrollmentsRequestView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<ListStoresRequestView<'static>>>
+        for ListStoresRequestOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<ListStoresRequestView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::ListEnrollmentsRequest {
-            type View<'a> = ListEnrollmentsRequestView<'a>;
-            type ViewHandle = ListEnrollmentsRequestOwnedView;
+        impl ::buffa::HasMessageView for super::super::ListStoresRequest {
+            type View<'a> = ListStoresRequestView<'a>;
+            type ViewHandle = ListStoresRequestOwnedView;
         }
-        impl ::serde::Serialize for ListEnrollmentsRequestOwnedView {
+        impl ::serde::Serialize for ListStoresRequestOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -90510,22 +93126,22 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct ListEnrollmentsResponseView<'a> {
+        pub struct ListStoresResponseView<'a> {
             /// Field 1: `results`
             pub results: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::EnrollmentView<'a>,
+                super::super::__buffa::view::StoreView<'a>,
             >,
             /// Field 2: `next_page_token`
             pub next_page_token: ::core::option::Option<&'a str>,
-            /// How many enrollments match the filter (the "N STORES" count).
+            /// How many stores match the filter (the "N STORES" count).
             ///
             /// Field 3: `total_size`
             pub total_size: i64,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for ListEnrollmentsResponseView<'a> {
-            type Owned = super::super::ListEnrollmentsResponse;
+        impl<'a> ::buffa::MessageView<'a> for ListStoresResponseView<'a> {
+            type Owned = super::super::ListStoresResponse;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -90585,12 +93201,12 @@ pub mod __buffa {
                         let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                         ctx.register_element_memory(
                             ::core::mem::size_of::<
-                                super::super::__buffa::view::EnrollmentView,
+                                super::super::__buffa::view::StoreView,
                             >(),
                         )?;
                         view.results
                             .push(
-                                <super::super::__buffa::view::EnrollmentView as ::buffa::MessageView>::decode_view_ctx(
+                                <super::super::__buffa::view::StoreView as ::buffa::MessageView>::decode_view_ctx(
                                     sub,
                                     __sub_ctx,
                                 )?,
@@ -90608,7 +93224,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::ListEnrollmentsResponse,
+                super::super::ListStoresResponse,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -90618,13 +93234,13 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::ListEnrollmentsResponse,
+                super::super::ListStoresResponse,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::ListEnrollmentsResponse {
+                ::core::result::Result::Ok(super::super::ListStoresResponse {
                     results: self
                         .results
                         .iter()
@@ -90640,7 +93256,7 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for ListEnrollmentsResponseView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for ListStoresResponseView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -90701,7 +93317,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for ListEnrollmentsResponseView<'__a> {
+        impl<'__a> ::serde::Serialize for ListStoresResponseView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -90724,24 +93340,24 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for ListEnrollmentsResponseView<'a> {
+        impl<'a> ::buffa::MessageName for ListStoresResponseView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "ListEnrollmentsResponse";
-            const FULL_NAME: &'static str = "programs.v1.ListEnrollmentsResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListEnrollmentsResponse";
+            const NAME: &'static str = "ListStoresResponse";
+            const FULL_NAME: &'static str = "programs.v1.ListStoresResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.ListStoresResponse";
         }
-        ::buffa::impl_default_view_instance!(ListEnrollmentsResponseView);
-        ::buffa::impl_view_reborrow!(ListEnrollmentsResponseView);
-        /** Self-contained, `'static` owned view of a `ListEnrollmentsResponse` message.
+        ::buffa::impl_default_view_instance!(ListStoresResponseView);
+        ::buffa::impl_view_reborrow!(ListStoresResponseView);
+        /** Self-contained, `'static` owned view of a `ListStoresResponse` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`ListEnrollmentsResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`ListStoresResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ListEnrollmentsResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ListStoresResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct ListEnrollmentsResponseOwnedView(
-            ::buffa::OwnedView<ListEnrollmentsResponseView<'static>>,
+        pub struct ListStoresResponseOwnedView(
+            ::buffa::OwnedView<ListStoresResponseView<'static>>,
         );
-        impl ListEnrollmentsResponseOwnedView {
+        impl ListStoresResponseOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -90755,7 +93371,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    ListEnrollmentsResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    ListStoresResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -90770,7 +93386,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    ListEnrollmentsResponseOwnedView(
+                    ListStoresResponseOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -90784,17 +93400,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::ListEnrollmentsResponse,
+                msg: &super::super::ListStoresResponse,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    ListEnrollmentsResponseOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    ListStoresResponseOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`ListEnrollmentsResponseView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`ListStoresResponseView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &ListEnrollmentsResponseView<'_> {
+            pub fn view(&self) -> &ListStoresResponseView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -90805,7 +93419,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::ListEnrollmentsResponse {
+            pub fn to_owned_message(&self) -> super::super::ListStoresResponse {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -90822,10 +93436,7 @@ pub mod __buffa {
             #[must_use]
             pub fn results(
                 &self,
-            ) -> &::buffa::RepeatedView<
-                '_,
-                super::super::__buffa::view::EnrollmentView<'_>,
-            > {
+            ) -> &::buffa::RepeatedView<'_, super::super::__buffa::view::StoreView<'_>> {
                 &self.0.reborrow().results
             }
             /// Field 2: `next_page_token`
@@ -90833,7 +93444,7 @@ pub mod __buffa {
             pub fn next_page_token(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().next_page_token
             }
-            /// How many enrollments match the filter (the "N STORES" count).
+            /// How many stores match the filter (the "N STORES" count).
             ///
             /// Field 3: `total_size`
             #[must_use]
@@ -90841,35 +93452,29 @@ pub mod __buffa {
                 self.0.reborrow().total_size
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<ListEnrollmentsResponseView<'static>>,
-        > for ListEnrollmentsResponseOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<ListEnrollmentsResponseView<'static>>,
-            ) -> Self {
-                ListEnrollmentsResponseOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<ListStoresResponseView<'static>>>
+        for ListStoresResponseOwnedView {
+            fn from(inner: ::buffa::OwnedView<ListStoresResponseView<'static>>) -> Self {
+                ListStoresResponseOwnedView(inner)
             }
         }
-        impl ::core::convert::From<ListEnrollmentsResponseOwnedView>
-        for ::buffa::OwnedView<ListEnrollmentsResponseView<'static>> {
-            fn from(wrapper: ListEnrollmentsResponseOwnedView) -> Self {
+        impl ::core::convert::From<ListStoresResponseOwnedView>
+        for ::buffa::OwnedView<ListStoresResponseView<'static>> {
+            fn from(wrapper: ListStoresResponseOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<ListEnrollmentsResponseView<'static>>,
-        > for ListEnrollmentsResponseOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<ListEnrollmentsResponseView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<ListStoresResponseView<'static>>>
+        for ListStoresResponseOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<ListStoresResponseView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::ListEnrollmentsResponse {
-            type View<'a> = ListEnrollmentsResponseView<'a>;
-            type ViewHandle = ListEnrollmentsResponseOwnedView;
+        impl ::buffa::HasMessageView for super::super::ListStoresResponse {
+            type View<'a> = ListStoresResponseView<'a>;
+            type ViewHandle = ListStoresResponseOwnedView;
         }
-        impl ::serde::Serialize for ListEnrollmentsResponseOwnedView {
+        impl ::serde::Serialize for ListStoresResponseOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -90878,19 +93483,19 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct GetEnrollmentRequestView<'a> {
+        pub struct GetStoreRequestView<'a> {
             /// Field 1: `program`
             pub program: &'a str,
-            /// Field 2: `enrollment`
-            pub enrollment: &'a str,
+            /// Field 2: `store`
+            pub store: &'a str,
             /// AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
             ///
             /// Field 3: `path`
             pub path: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for GetEnrollmentRequestView<'a> {
-            type Owned = super::super::GetEnrollmentRequest;
+        impl<'a> ::buffa::MessageView<'a> for GetStoreRequestView<'a> {
+            type Owned = super::super::GetStoreRequest;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -90937,7 +93542,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.enrollment = ::buffa::types::borrow_str(&mut cur)?;
+                        view.store = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -90958,7 +93563,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::GetEnrollmentRequest,
+                super::super::GetStoreRequest,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -90968,15 +93573,15 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::GetEnrollmentRequest,
+                super::super::GetStoreRequest,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::GetEnrollmentRequest {
+                ::core::result::Result::Ok(super::super::GetStoreRequest {
                     program: self.program.to_string(),
-                    enrollment: self.enrollment.to_string(),
+                    store: self.store.to_string(),
                     path: self.path.to_string(),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
@@ -90986,7 +93591,7 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for GetEnrollmentRequestView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for GetStoreRequestView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -90997,11 +93602,9 @@ pub mod __buffa {
                         += 1u64
                             + ::buffa::types::string_encoded_len(&self.program) as u64;
                 }
-                if !self.enrollment.is_empty() {
+                if !self.store.is_empty() {
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.enrollment)
-                                as u64;
+                        += 1u64 + ::buffa::types::string_encoded_len(&self.store) as u64;
                 }
                 if !self.path.is_empty() {
                     size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
@@ -91020,8 +93623,8 @@ pub mod __buffa {
                 if !self.program.is_empty() {
                     ::buffa::types::put_string_field(1u32, &self.program, buf);
                 }
-                if !self.enrollment.is_empty() {
-                    ::buffa::types::put_string_field(2u32, &self.enrollment, buf);
+                if !self.store.is_empty() {
+                    ::buffa::types::put_string_field(2u32, &self.store, buf);
                 }
                 if !self.path.is_empty() {
                     ::buffa::types::put_string_field(3u32, &self.path, buf);
@@ -91040,7 +93643,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for GetEnrollmentRequestView<'__a> {
+        impl<'__a> ::serde::Serialize for GetStoreRequestView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -91050,8 +93653,8 @@ pub mod __buffa {
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.program) {
                     __map.serialize_entry("program", self.program)?;
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.enrollment) {
-                    __map.serialize_entry("enrollment", self.enrollment)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.store) {
+                    __map.serialize_entry("store", self.store)?;
                 }
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.path) {
                     __map.serialize_entry("path", self.path)?;
@@ -91059,24 +93662,24 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for GetEnrollmentRequestView<'a> {
+        impl<'a> ::buffa::MessageName for GetStoreRequestView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "GetEnrollmentRequest";
-            const FULL_NAME: &'static str = "programs.v1.GetEnrollmentRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetEnrollmentRequest";
+            const NAME: &'static str = "GetStoreRequest";
+            const FULL_NAME: &'static str = "programs.v1.GetStoreRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetStoreRequest";
         }
-        ::buffa::impl_default_view_instance!(GetEnrollmentRequestView);
-        ::buffa::impl_view_reborrow!(GetEnrollmentRequestView);
-        /** Self-contained, `'static` owned view of a `GetEnrollmentRequest` message.
+        ::buffa::impl_default_view_instance!(GetStoreRequestView);
+        ::buffa::impl_view_reborrow!(GetStoreRequestView);
+        /** Self-contained, `'static` owned view of a `GetStoreRequest` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`GetEnrollmentRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`GetStoreRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`GetEnrollmentRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`GetStoreRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct GetEnrollmentRequestOwnedView(
-            ::buffa::OwnedView<GetEnrollmentRequestView<'static>>,
+        pub struct GetStoreRequestOwnedView(
+            ::buffa::OwnedView<GetStoreRequestView<'static>>,
         );
-        impl GetEnrollmentRequestOwnedView {
+        impl GetStoreRequestOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -91090,7 +93693,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    GetEnrollmentRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    GetStoreRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -91105,7 +93708,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    GetEnrollmentRequestOwnedView(
+                    GetStoreRequestOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -91119,15 +93722,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::GetEnrollmentRequest,
+                msg: &super::super::GetStoreRequest,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    GetEnrollmentRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    GetStoreRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`GetEnrollmentRequestView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`GetStoreRequestView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &GetEnrollmentRequestView<'_> {
+            pub fn view(&self) -> &GetStoreRequestView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -91138,7 +93741,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::GetEnrollmentRequest {
+            pub fn to_owned_message(&self) -> super::super::GetStoreRequest {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -91156,10 +93759,10 @@ pub mod __buffa {
             pub fn program(&self) -> &'_ str {
                 self.0.reborrow().program
             }
-            /// Field 2: `enrollment`
+            /// Field 2: `store`
             #[must_use]
-            pub fn enrollment(&self) -> &'_ str {
-                self.0.reborrow().enrollment
+            pub fn store(&self) -> &'_ str {
+                self.0.reborrow().store
             }
             /// AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
             ///
@@ -91169,32 +93772,29 @@ pub mod __buffa {
                 self.0.reborrow().path
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<GetEnrollmentRequestView<'static>>>
-        for GetEnrollmentRequestOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<GetEnrollmentRequestView<'static>>,
-            ) -> Self {
-                GetEnrollmentRequestOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<GetStoreRequestView<'static>>>
+        for GetStoreRequestOwnedView {
+            fn from(inner: ::buffa::OwnedView<GetStoreRequestView<'static>>) -> Self {
+                GetStoreRequestOwnedView(inner)
             }
         }
-        impl ::core::convert::From<GetEnrollmentRequestOwnedView>
-        for ::buffa::OwnedView<GetEnrollmentRequestView<'static>> {
-            fn from(wrapper: GetEnrollmentRequestOwnedView) -> Self {
+        impl ::core::convert::From<GetStoreRequestOwnedView>
+        for ::buffa::OwnedView<GetStoreRequestView<'static>> {
+            fn from(wrapper: GetStoreRequestOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<GetEnrollmentRequestView<'static>>,
-        > for GetEnrollmentRequestOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<GetEnrollmentRequestView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<GetStoreRequestView<'static>>>
+        for GetStoreRequestOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<GetStoreRequestView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::GetEnrollmentRequest {
-            type View<'a> = GetEnrollmentRequestView<'a>;
-            type ViewHandle = GetEnrollmentRequestOwnedView;
+        impl ::buffa::HasMessageView for super::super::GetStoreRequest {
+            type View<'a> = GetStoreRequestView<'a>;
+            type ViewHandle = GetStoreRequestOwnedView;
         }
-        impl ::serde::Serialize for GetEnrollmentRequestOwnedView {
+        impl ::serde::Serialize for GetStoreRequestOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -91203,15 +93803,15 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct GetEnrollmentResponseView<'a> {
-            /// Field 1: `enrollment`
-            pub enrollment: ::buffa::MessageFieldView<
-                super::super::__buffa::view::EnrollmentView<'a>,
+        pub struct GetStoreResponseView<'a> {
+            /// Field 1: `store`
+            pub store: ::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreView<'a>,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for GetEnrollmentResponseView<'a> {
-            type Owned = super::super::GetEnrollmentResponse;
+        impl<'a> ::buffa::MessageView<'a> for GetStoreResponseView<'a> {
+            type Owned = super::super::GetStoreResponse;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -91253,7 +93853,7 @@ pub mod __buffa {
                         )?;
                         let __sub_ctx = ctx.descend()?;
                         let sub = ::buffa::types::borrow_bytes(&mut cur)?;
-                        match view.enrollment.as_mut() {
+                        match view.store.as_mut() {
                             Some(existing) => {
                                 ::buffa::MessageView::merge_into_view(
                                     existing,
@@ -91262,8 +93862,8 @@ pub mod __buffa {
                                 )?
                             }
                             None => {
-                                view.enrollment = ::buffa::MessageFieldView::set(
-                                    <super::super::__buffa::view::EnrollmentView as ::buffa::MessageView>::decode_view_ctx(
+                                view.store = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::StoreView as ::buffa::MessageView>::decode_view_ctx(
                                         sub,
                                         __sub_ctx,
                                     )?,
@@ -91283,7 +93883,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::GetEnrollmentResponse,
+                super::super::GetStoreResponse,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -91293,18 +93893,18 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::GetEnrollmentResponse,
+                super::super::GetStoreResponse,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::GetEnrollmentResponse {
-                    enrollment: match self.enrollment.as_option() {
+                ::core::result::Result::Ok(super::super::GetStoreResponse {
+                    store: match self.store.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
-                                super::super::Enrollment,
-                                ::buffa::Inline<super::super::Enrollment>,
+                                super::super::Store,
+                                ::buffa::Inline<super::super::Store>,
                             >::some(v.to_owned_from_source(__buffa_src)?)
                         }
                         None => ::buffa::MessageField::none(),
@@ -91317,15 +93917,15 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for GetEnrollmentResponseView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for GetStoreResponseView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
-                if self.enrollment.is_set() {
+                if self.store.is_set() {
                     let __slot = __cache.reserve();
-                    let inner_size = self.enrollment.compute_size(__cache);
+                    let inner_size = self.store.compute_size(__cache);
                     __cache.set(__slot, inner_size);
                     size
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -91342,13 +93942,13 @@ pub mod __buffa {
             ) {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
-                if self.enrollment.is_set() {
+                if self.store.is_set() {
                     ::buffa::types::put_len_delimited_header(
                         1u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
-                    self.enrollment.write_to(__cache, buf);
+                    self.store.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -91364,7 +93964,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for GetEnrollmentResponseView<'__a> {
+        impl<'__a> ::serde::Serialize for GetStoreResponseView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -91372,34 +93972,31 @@ pub mod __buffa {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
                 {
-                    if let ::core::option::Option::Some(__v) = self
-                        .enrollment
-                        .as_option()
-                    {
-                        __map.serialize_entry("enrollment", __v)?;
+                    if let ::core::option::Option::Some(__v) = self.store.as_option() {
+                        __map.serialize_entry("store", __v)?;
                     }
                 }
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for GetEnrollmentResponseView<'a> {
+        impl<'a> ::buffa::MessageName for GetStoreResponseView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "GetEnrollmentResponse";
-            const FULL_NAME: &'static str = "programs.v1.GetEnrollmentResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetEnrollmentResponse";
+            const NAME: &'static str = "GetStoreResponse";
+            const FULL_NAME: &'static str = "programs.v1.GetStoreResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.GetStoreResponse";
         }
-        ::buffa::impl_default_view_instance!(GetEnrollmentResponseView);
-        ::buffa::impl_view_reborrow!(GetEnrollmentResponseView);
-        /** Self-contained, `'static` owned view of a `GetEnrollmentResponse` message.
+        ::buffa::impl_default_view_instance!(GetStoreResponseView);
+        ::buffa::impl_view_reborrow!(GetStoreResponseView);
+        /** Self-contained, `'static` owned view of a `GetStoreResponse` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`GetEnrollmentResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`GetStoreResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`GetEnrollmentResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`GetStoreResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct GetEnrollmentResponseOwnedView(
-            ::buffa::OwnedView<GetEnrollmentResponseView<'static>>,
+        pub struct GetStoreResponseOwnedView(
+            ::buffa::OwnedView<GetStoreResponseView<'static>>,
         );
-        impl GetEnrollmentResponseOwnedView {
+        impl GetStoreResponseOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -91413,7 +94010,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    GetEnrollmentResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    GetStoreResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -91428,7 +94025,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    GetEnrollmentResponseOwnedView(
+                    GetStoreResponseOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -91442,15 +94039,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::GetEnrollmentResponse,
+                msg: &super::super::GetStoreResponse,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    GetEnrollmentResponseOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    GetStoreResponseOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`GetEnrollmentResponseView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`GetStoreResponseView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &GetEnrollmentResponseView<'_> {
+            pub fn view(&self) -> &GetStoreResponseView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -91461,7 +94058,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::GetEnrollmentResponse {
+            pub fn to_owned_message(&self) -> super::super::GetStoreResponse {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -91474,43 +94071,37 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// Field 1: `enrollment`
+            /// Field 1: `store`
             #[must_use]
-            pub fn enrollment(
+            pub fn store(
                 &self,
-            ) -> &::buffa::MessageFieldView<
-                super::super::__buffa::view::EnrollmentView<'_>,
-            > {
-                &self.0.reborrow().enrollment
+            ) -> &::buffa::MessageFieldView<super::super::__buffa::view::StoreView<'_>> {
+                &self.0.reborrow().store
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<GetEnrollmentResponseView<'static>>,
-        > for GetEnrollmentResponseOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<GetEnrollmentResponseView<'static>>,
-            ) -> Self {
-                GetEnrollmentResponseOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<GetStoreResponseView<'static>>>
+        for GetStoreResponseOwnedView {
+            fn from(inner: ::buffa::OwnedView<GetStoreResponseView<'static>>) -> Self {
+                GetStoreResponseOwnedView(inner)
             }
         }
-        impl ::core::convert::From<GetEnrollmentResponseOwnedView>
-        for ::buffa::OwnedView<GetEnrollmentResponseView<'static>> {
-            fn from(wrapper: GetEnrollmentResponseOwnedView) -> Self {
+        impl ::core::convert::From<GetStoreResponseOwnedView>
+        for ::buffa::OwnedView<GetStoreResponseView<'static>> {
+            fn from(wrapper: GetStoreResponseOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<GetEnrollmentResponseView<'static>>,
-        > for GetEnrollmentResponseOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<GetEnrollmentResponseView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<GetStoreResponseView<'static>>>
+        for GetStoreResponseOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<GetStoreResponseView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::GetEnrollmentResponse {
-            type View<'a> = GetEnrollmentResponseView<'a>;
-            type ViewHandle = GetEnrollmentResponseOwnedView;
+        impl ::buffa::HasMessageView for super::super::GetStoreResponse {
+            type View<'a> = GetStoreResponseView<'a>;
+            type ViewHandle = GetStoreResponseOwnedView;
         }
-        impl ::serde::Serialize for GetEnrollmentResponseOwnedView {
+        impl ::serde::Serialize for GetStoreResponseOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -91519,35 +94110,35 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct CreateEnrollmentRequestView<'a> {
+        pub struct CreateStoreRequestView<'a> {
             /// Field 1: `program`
             pub program: &'a str,
             /// Optional client-specified ID (AEP-133); server generates one if omitted.
             ///
             /// Field 2: `id`
             pub id: ::core::option::Option<&'a str>,
-            /// Field 3: `store_id`
-            pub store_id: &'a str,
-            /// Field 4: `store_name`
-            pub store_name: ::core::option::Option<&'a str>,
-            /// Field 5: `website_id`
-            pub website_id: &'a str,
-            /// Field 6: `website_name`
-            pub website_name: ::core::option::Option<&'a str>,
-            /// Field 7: `customer_group`
-            pub customer_group: ::core::option::Option<&'a str>,
+            /// Field 3: `bu_location`
+            pub bu_location: ::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'a>,
+            >,
+            /// Field 4: `website`
+            pub website: ::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreWebsiteView<'a>,
+            >,
+            /// Field 5: `customer_name`
+            pub customer_name: ::core::option::Option<&'a str>,
             /// "pending" or "active" (default).
             ///
-            /// Field 8: `status`
+            /// Field 6: `status`
             pub status: ::core::option::Option<&'a str>,
             /// AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
             ///
-            /// Field 9: `path`
+            /// Field 7: `path`
             pub path: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for CreateEnrollmentRequestView<'a> {
-            type Owned = super::super::CreateEnrollmentRequest;
+        impl<'a> ::buffa::MessageView<'a> for CreateStoreRequestView<'a> {
+            type Owned = super::super::CreateStoreRequest;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -91601,46 +94192,66 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_id = ::buffa::types::borrow_str(&mut cur)?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.bu_location.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.bu_location = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::BuLocationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     4u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_name = Some(::buffa::types::borrow_str(&mut cur)?);
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.website.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.website = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::StoreWebsiteView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     5u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.website_id = ::buffa::types::borrow_str(&mut cur)?;
+                        view.customer_name = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     6u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.website_name = Some(::buffa::types::borrow_str(&mut cur)?);
-                    }
-                    7u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
-                        view.customer_group = Some(
-                            ::buffa::types::borrow_str(&mut cur)?,
-                        );
-                    }
-                    8u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
                         view.status = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
-                    9u32 => {
+                    7u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
@@ -91659,7 +94270,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::CreateEnrollmentRequest,
+                super::super::CreateStoreRequest,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -91669,20 +94280,34 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::CreateEnrollmentRequest,
+                super::super::CreateStoreRequest,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::CreateEnrollmentRequest {
+                ::core::result::Result::Ok(super::super::CreateStoreRequest {
                     program: self.program.to_string(),
                     id: self.id.map(|s| s.to_string()),
-                    store_id: self.store_id.to_string(),
-                    store_name: self.store_name.map(|s| s.to_string()),
-                    website_id: self.website_id.to_string(),
-                    website_name: self.website_name.map(|s| s.to_string()),
-                    customer_group: self.customer_group.map(|s| s.to_string()),
+                    bu_location: match self.bu_location.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::BuLocation,
+                                ::buffa::Inline<super::super::BuLocation>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    website: match self.website.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::StoreWebsite,
+                                ::buffa::Inline<super::super::StoreWebsite>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    customer_name: self.customer_name.map(|s| s.to_string()),
                     status: self.status.map(|s| s.to_string()),
                     path: self.path.to_string(),
                     __buffa_unknown_fields: self
@@ -91693,9 +94318,9 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for CreateEnrollmentRequestView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for CreateStoreRequestView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
@@ -91707,24 +94332,23 @@ pub mod __buffa {
                 if let Some(ref v) = self.id {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
-                if !self.store_id.is_empty() {
+                if self.bu_location.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.bu_location.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
-                if let Some(ref v) = self.store_name {
-                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-                }
-                if !self.website_id.is_empty() {
+                if self.website.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.website.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.website_id)
-                                as u64;
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
-                if let Some(ref v) = self.website_name {
-                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-                }
-                if let Some(ref v) = self.customer_group {
+                if let Some(ref v) = self.customer_name {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if let Some(ref v) = self.status {
@@ -91739,7 +94363,7 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::EncodeSink,
             ) {
                 #[allow(unused_imports)]
@@ -91750,26 +94374,30 @@ pub mod __buffa {
                 if let Some(ref v) = self.id {
                     ::buffa::types::put_string_field(2u32, v, buf);
                 }
-                if !self.store_id.is_empty() {
-                    ::buffa::types::put_string_field(3u32, &self.store_id, buf);
+                if self.bu_location.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.bu_location.write_to(__cache, buf);
                 }
-                if let Some(ref v) = self.store_name {
-                    ::buffa::types::put_string_field(4u32, v, buf);
+                if self.website.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.website.write_to(__cache, buf);
                 }
-                if !self.website_id.is_empty() {
-                    ::buffa::types::put_string_field(5u32, &self.website_id, buf);
-                }
-                if let Some(ref v) = self.website_name {
-                    ::buffa::types::put_string_field(6u32, v, buf);
-                }
-                if let Some(ref v) = self.customer_group {
-                    ::buffa::types::put_string_field(7u32, v, buf);
+                if let Some(ref v) = self.customer_name {
+                    ::buffa::types::put_string_field(5u32, v, buf);
                 }
                 if let Some(ref v) = self.status {
-                    ::buffa::types::put_string_field(8u32, v, buf);
+                    ::buffa::types::put_string_field(6u32, v, buf);
                 }
                 if !self.path.is_empty() {
-                    ::buffa::types::put_string_field(9u32, &self.path, buf);
+                    ::buffa::types::put_string_field(7u32, &self.path, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -91785,7 +94413,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for CreateEnrollmentRequestView<'__a> {
+        impl<'__a> ::serde::Serialize for CreateStoreRequestView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -91798,20 +94426,21 @@ pub mod __buffa {
                 if let ::core::option::Option::Some(__v) = self.id {
                     __map.serialize_entry("id", __v)?;
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.store_id) {
-                    __map.serialize_entry("storeId", self.store_id)?;
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .bu_location
+                        .as_option()
+                    {
+                        __map.serialize_entry("buLocation", __v)?;
+                    }
                 }
-                if let ::core::option::Option::Some(__v) = self.store_name {
-                    __map.serialize_entry("storeName", __v)?;
+                {
+                    if let ::core::option::Option::Some(__v) = self.website.as_option() {
+                        __map.serialize_entry("website", __v)?;
+                    }
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.website_id) {
-                    __map.serialize_entry("websiteId", self.website_id)?;
-                }
-                if let ::core::option::Option::Some(__v) = self.website_name {
-                    __map.serialize_entry("websiteName", __v)?;
-                }
-                if let ::core::option::Option::Some(__v) = self.customer_group {
-                    __map.serialize_entry("customerGroup", __v)?;
+                if let ::core::option::Option::Some(__v) = self.customer_name {
+                    __map.serialize_entry("customerName", __v)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.status {
                     __map.serialize_entry("status", __v)?;
@@ -91822,24 +94451,24 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for CreateEnrollmentRequestView<'a> {
+        impl<'a> ::buffa::MessageName for CreateStoreRequestView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "CreateEnrollmentRequest";
-            const FULL_NAME: &'static str = "programs.v1.CreateEnrollmentRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateEnrollmentRequest";
+            const NAME: &'static str = "CreateStoreRequest";
+            const FULL_NAME: &'static str = "programs.v1.CreateStoreRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateStoreRequest";
         }
-        ::buffa::impl_default_view_instance!(CreateEnrollmentRequestView);
-        ::buffa::impl_view_reborrow!(CreateEnrollmentRequestView);
-        /** Self-contained, `'static` owned view of a `CreateEnrollmentRequest` message.
+        ::buffa::impl_default_view_instance!(CreateStoreRequestView);
+        ::buffa::impl_view_reborrow!(CreateStoreRequestView);
+        /** Self-contained, `'static` owned view of a `CreateStoreRequest` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`CreateEnrollmentRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`CreateStoreRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CreateEnrollmentRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CreateStoreRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct CreateEnrollmentRequestOwnedView(
-            ::buffa::OwnedView<CreateEnrollmentRequestView<'static>>,
+        pub struct CreateStoreRequestOwnedView(
+            ::buffa::OwnedView<CreateStoreRequestView<'static>>,
         );
-        impl CreateEnrollmentRequestOwnedView {
+        impl CreateStoreRequestOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -91853,7 +94482,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    CreateEnrollmentRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    CreateStoreRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -91868,7 +94497,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    CreateEnrollmentRequestOwnedView(
+                    CreateStoreRequestOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -91882,17 +94511,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::CreateEnrollmentRequest,
+                msg: &super::super::CreateStoreRequest,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    CreateEnrollmentRequestOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    CreateStoreRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`CreateEnrollmentRequestView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`CreateStoreRequestView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &CreateEnrollmentRequestView<'_> {
+            pub fn view(&self) -> &CreateStoreRequestView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -91903,7 +94530,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::CreateEnrollmentRequest {
+            pub fn to_owned_message(&self) -> super::super::CreateStoreRequest {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -91928,75 +94555,67 @@ pub mod __buffa {
             pub fn id(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().id
             }
-            /// Field 3: `store_id`
+            /// Field 3: `bu_location`
             #[must_use]
-            pub fn store_id(&self) -> &'_ str {
-                self.0.reborrow().store_id
+            pub fn bu_location(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'_>,
+            > {
+                &self.0.reborrow().bu_location
             }
-            /// Field 4: `store_name`
+            /// Field 4: `website`
             #[must_use]
-            pub fn store_name(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().store_name
+            pub fn website(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreWebsiteView<'_>,
+            > {
+                &self.0.reborrow().website
             }
-            /// Field 5: `website_id`
+            /// Field 5: `customer_name`
             #[must_use]
-            pub fn website_id(&self) -> &'_ str {
-                self.0.reborrow().website_id
-            }
-            /// Field 6: `website_name`
-            #[must_use]
-            pub fn website_name(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().website_name
-            }
-            /// Field 7: `customer_group`
-            #[must_use]
-            pub fn customer_group(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().customer_group
+            pub fn customer_name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().customer_name
             }
             /// "pending" or "active" (default).
             ///
-            /// Field 8: `status`
+            /// Field 6: `status`
             #[must_use]
             pub fn status(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().status
             }
             /// AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
             ///
-            /// Field 9: `path`
+            /// Field 7: `path`
             #[must_use]
             pub fn path(&self) -> &'_ str {
                 self.0.reborrow().path
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<CreateEnrollmentRequestView<'static>>,
-        > for CreateEnrollmentRequestOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<CreateEnrollmentRequestView<'static>>,
-            ) -> Self {
-                CreateEnrollmentRequestOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<CreateStoreRequestView<'static>>>
+        for CreateStoreRequestOwnedView {
+            fn from(inner: ::buffa::OwnedView<CreateStoreRequestView<'static>>) -> Self {
+                CreateStoreRequestOwnedView(inner)
             }
         }
-        impl ::core::convert::From<CreateEnrollmentRequestOwnedView>
-        for ::buffa::OwnedView<CreateEnrollmentRequestView<'static>> {
-            fn from(wrapper: CreateEnrollmentRequestOwnedView) -> Self {
+        impl ::core::convert::From<CreateStoreRequestOwnedView>
+        for ::buffa::OwnedView<CreateStoreRequestView<'static>> {
+            fn from(wrapper: CreateStoreRequestOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<CreateEnrollmentRequestView<'static>>,
-        > for CreateEnrollmentRequestOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<CreateEnrollmentRequestView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<CreateStoreRequestView<'static>>>
+        for CreateStoreRequestOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<CreateStoreRequestView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::CreateEnrollmentRequest {
-            type View<'a> = CreateEnrollmentRequestView<'a>;
-            type ViewHandle = CreateEnrollmentRequestOwnedView;
+        impl ::buffa::HasMessageView for super::super::CreateStoreRequest {
+            type View<'a> = CreateStoreRequestView<'a>;
+            type ViewHandle = CreateStoreRequestOwnedView;
         }
-        impl ::serde::Serialize for CreateEnrollmentRequestOwnedView {
+        impl ::serde::Serialize for CreateStoreRequestOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -92005,15 +94624,15 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct CreateEnrollmentResponseView<'a> {
-            /// Field 1: `enrollment`
-            pub enrollment: ::buffa::MessageFieldView<
-                super::super::__buffa::view::EnrollmentView<'a>,
+        pub struct CreateStoreResponseView<'a> {
+            /// Field 1: `store`
+            pub store: ::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreView<'a>,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for CreateEnrollmentResponseView<'a> {
-            type Owned = super::super::CreateEnrollmentResponse;
+        impl<'a> ::buffa::MessageView<'a> for CreateStoreResponseView<'a> {
+            type Owned = super::super::CreateStoreResponse;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -92055,7 +94674,7 @@ pub mod __buffa {
                         )?;
                         let __sub_ctx = ctx.descend()?;
                         let sub = ::buffa::types::borrow_bytes(&mut cur)?;
-                        match view.enrollment.as_mut() {
+                        match view.store.as_mut() {
                             Some(existing) => {
                                 ::buffa::MessageView::merge_into_view(
                                     existing,
@@ -92064,8 +94683,8 @@ pub mod __buffa {
                                 )?
                             }
                             None => {
-                                view.enrollment = ::buffa::MessageFieldView::set(
-                                    <super::super::__buffa::view::EnrollmentView as ::buffa::MessageView>::decode_view_ctx(
+                                view.store = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::StoreView as ::buffa::MessageView>::decode_view_ctx(
                                         sub,
                                         __sub_ctx,
                                     )?,
@@ -92085,7 +94704,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::CreateEnrollmentResponse,
+                super::super::CreateStoreResponse,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -92095,18 +94714,18 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::CreateEnrollmentResponse,
+                super::super::CreateStoreResponse,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::CreateEnrollmentResponse {
-                    enrollment: match self.enrollment.as_option() {
+                ::core::result::Result::Ok(super::super::CreateStoreResponse {
+                    store: match self.store.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
-                                super::super::Enrollment,
-                                ::buffa::Inline<super::super::Enrollment>,
+                                super::super::Store,
+                                ::buffa::Inline<super::super::Store>,
                             >::some(v.to_owned_from_source(__buffa_src)?)
                         }
                         None => ::buffa::MessageField::none(),
@@ -92119,15 +94738,15 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for CreateEnrollmentResponseView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for CreateStoreResponseView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
-                if self.enrollment.is_set() {
+                if self.store.is_set() {
                     let __slot = __cache.reserve();
-                    let inner_size = self.enrollment.compute_size(__cache);
+                    let inner_size = self.store.compute_size(__cache);
                     __cache.set(__slot, inner_size);
                     size
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -92144,13 +94763,13 @@ pub mod __buffa {
             ) {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
-                if self.enrollment.is_set() {
+                if self.store.is_set() {
                     ::buffa::types::put_len_delimited_header(
                         1u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
-                    self.enrollment.write_to(__cache, buf);
+                    self.store.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -92166,7 +94785,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for CreateEnrollmentResponseView<'__a> {
+        impl<'__a> ::serde::Serialize for CreateStoreResponseView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -92174,34 +94793,31 @@ pub mod __buffa {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
                 {
-                    if let ::core::option::Option::Some(__v) = self
-                        .enrollment
-                        .as_option()
-                    {
-                        __map.serialize_entry("enrollment", __v)?;
+                    if let ::core::option::Option::Some(__v) = self.store.as_option() {
+                        __map.serialize_entry("store", __v)?;
                     }
                 }
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for CreateEnrollmentResponseView<'a> {
+        impl<'a> ::buffa::MessageName for CreateStoreResponseView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "CreateEnrollmentResponse";
-            const FULL_NAME: &'static str = "programs.v1.CreateEnrollmentResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateEnrollmentResponse";
+            const NAME: &'static str = "CreateStoreResponse";
+            const FULL_NAME: &'static str = "programs.v1.CreateStoreResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.CreateStoreResponse";
         }
-        ::buffa::impl_default_view_instance!(CreateEnrollmentResponseView);
-        ::buffa::impl_view_reborrow!(CreateEnrollmentResponseView);
-        /** Self-contained, `'static` owned view of a `CreateEnrollmentResponse` message.
+        ::buffa::impl_default_view_instance!(CreateStoreResponseView);
+        ::buffa::impl_view_reborrow!(CreateStoreResponseView);
+        /** Self-contained, `'static` owned view of a `CreateStoreResponse` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`CreateEnrollmentResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`CreateStoreResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CreateEnrollmentResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CreateStoreResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct CreateEnrollmentResponseOwnedView(
-            ::buffa::OwnedView<CreateEnrollmentResponseView<'static>>,
+        pub struct CreateStoreResponseOwnedView(
+            ::buffa::OwnedView<CreateStoreResponseView<'static>>,
         );
-        impl CreateEnrollmentResponseOwnedView {
+        impl CreateStoreResponseOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -92215,7 +94831,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    CreateEnrollmentResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    CreateStoreResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -92230,7 +94846,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    CreateEnrollmentResponseOwnedView(
+                    CreateStoreResponseOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -92244,17 +94860,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::CreateEnrollmentResponse,
+                msg: &super::super::CreateStoreResponse,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    CreateEnrollmentResponseOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    CreateStoreResponseOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`CreateEnrollmentResponseView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`CreateStoreResponseView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &CreateEnrollmentResponseView<'_> {
+            pub fn view(&self) -> &CreateStoreResponseView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -92265,7 +94879,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::CreateEnrollmentResponse {
+            pub fn to_owned_message(&self) -> super::super::CreateStoreResponse {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -92278,45 +94892,39 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// Field 1: `enrollment`
+            /// Field 1: `store`
             #[must_use]
-            pub fn enrollment(
+            pub fn store(
                 &self,
-            ) -> &::buffa::MessageFieldView<
-                super::super::__buffa::view::EnrollmentView<'_>,
-            > {
-                &self.0.reborrow().enrollment
+            ) -> &::buffa::MessageFieldView<super::super::__buffa::view::StoreView<'_>> {
+                &self.0.reborrow().store
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<CreateEnrollmentResponseView<'static>>,
-        > for CreateEnrollmentResponseOwnedView {
+        impl ::core::convert::From<::buffa::OwnedView<CreateStoreResponseView<'static>>>
+        for CreateStoreResponseOwnedView {
             fn from(
-                inner: ::buffa::OwnedView<CreateEnrollmentResponseView<'static>>,
+                inner: ::buffa::OwnedView<CreateStoreResponseView<'static>>,
             ) -> Self {
-                CreateEnrollmentResponseOwnedView(inner)
+                CreateStoreResponseOwnedView(inner)
             }
         }
-        impl ::core::convert::From<CreateEnrollmentResponseOwnedView>
-        for ::buffa::OwnedView<CreateEnrollmentResponseView<'static>> {
-            fn from(wrapper: CreateEnrollmentResponseOwnedView) -> Self {
+        impl ::core::convert::From<CreateStoreResponseOwnedView>
+        for ::buffa::OwnedView<CreateStoreResponseView<'static>> {
+            fn from(wrapper: CreateStoreResponseOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<CreateEnrollmentResponseView<'static>>,
-        > for CreateEnrollmentResponseOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<CreateEnrollmentResponseView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<CreateStoreResponseView<'static>>>
+        for CreateStoreResponseOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<CreateStoreResponseView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::CreateEnrollmentResponse {
-            type View<'a> = CreateEnrollmentResponseView<'a>;
-            type ViewHandle = CreateEnrollmentResponseOwnedView;
+        impl ::buffa::HasMessageView for super::super::CreateStoreResponse {
+            type View<'a> = CreateStoreResponseView<'a>;
+            type ViewHandle = CreateStoreResponseOwnedView;
         }
-        impl ::serde::Serialize for CreateEnrollmentResponseOwnedView {
+        impl ::serde::Serialize for CreateStoreResponseOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -92325,25 +94933,33 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct UpdateEnrollmentRequestView<'a> {
+        pub struct UpdateStoreRequestView<'a> {
             /// Field 1: `program`
             pub program: &'a str,
-            /// Field 2: `enrollment`
-            pub enrollment: &'a str,
+            /// Field 2: `store`
+            pub store: &'a str,
+            /// Any of pending, active, suspended, ended.
+            ///
             /// Field 3: `status`
             pub status: ::core::option::Option<&'a str>,
-            /// An empty string clears the group.
+            /// An empty string clears the customer name.
             ///
-            /// Field 4: `customer_group`
-            pub customer_group: ::core::option::Option<&'a str>,
+            /// Field 4: `customer_name`
+            pub customer_name: ::core::option::Option<&'a str>,
             /// AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
             ///
             /// Field 5: `path`
             pub path: &'a str,
+            /// Only `bu_location.bu` is read: it replaces the business unit, and a `bu` with an empty code clears it.
+            ///
+            /// Field 6: `bu_location`
+            pub bu_location: ::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'a>,
+            >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for UpdateEnrollmentRequestView<'a> {
-            type Owned = super::super::UpdateEnrollmentRequest;
+        impl<'a> ::buffa::MessageView<'a> for UpdateStoreRequestView<'a> {
+            type Owned = super::super::UpdateStoreRequest;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -92390,7 +95006,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.enrollment = ::buffa::types::borrow_str(&mut cur)?;
+                        view.store = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -92404,9 +95020,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.customer_group = Some(
-                            ::buffa::types::borrow_str(&mut cur)?,
-                        );
+                        view.customer_name = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     5u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -92414,6 +95028,31 @@ pub mod __buffa {
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
                         view.path = ::buffa::types::borrow_str(&mut cur)?;
+                    }
+                    6u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.bu_location.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.bu_location = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::BuLocationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
@@ -92427,7 +95066,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::UpdateEnrollmentRequest,
+                super::super::UpdateStoreRequest,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -92437,18 +95076,27 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::UpdateEnrollmentRequest,
+                super::super::UpdateStoreRequest,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::UpdateEnrollmentRequest {
+                ::core::result::Result::Ok(super::super::UpdateStoreRequest {
                     program: self.program.to_string(),
-                    enrollment: self.enrollment.to_string(),
+                    store: self.store.to_string(),
                     status: self.status.map(|s| s.to_string()),
-                    customer_group: self.customer_group.map(|s| s.to_string()),
+                    customer_name: self.customer_name.map(|s| s.to_string()),
                     path: self.path.to_string(),
+                    bu_location: match self.bu_location.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::BuLocation,
+                                ::buffa::Inline<super::super::BuLocation>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -92457,9 +95105,9 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for UpdateEnrollmentRequestView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for UpdateStoreRequestView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
@@ -92468,20 +95116,26 @@ pub mod __buffa {
                         += 1u64
                             + ::buffa::types::string_encoded_len(&self.program) as u64;
                 }
-                if !self.enrollment.is_empty() {
+                if !self.store.is_empty() {
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.enrollment)
-                                as u64;
+                        += 1u64 + ::buffa::types::string_encoded_len(&self.store) as u64;
                 }
                 if let Some(ref v) = self.status {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
-                if let Some(ref v) = self.customer_group {
+                if let Some(ref v) = self.customer_name {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if !self.path.is_empty() {
                     size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
+                }
+                if self.bu_location.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.bu_location.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
@@ -92489,7 +95143,7 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::EncodeSink,
             ) {
                 #[allow(unused_imports)]
@@ -92497,17 +95151,25 @@ pub mod __buffa {
                 if !self.program.is_empty() {
                     ::buffa::types::put_string_field(1u32, &self.program, buf);
                 }
-                if !self.enrollment.is_empty() {
-                    ::buffa::types::put_string_field(2u32, &self.enrollment, buf);
+                if !self.store.is_empty() {
+                    ::buffa::types::put_string_field(2u32, &self.store, buf);
                 }
                 if let Some(ref v) = self.status {
                     ::buffa::types::put_string_field(3u32, v, buf);
                 }
-                if let Some(ref v) = self.customer_group {
+                if let Some(ref v) = self.customer_name {
                     ::buffa::types::put_string_field(4u32, v, buf);
                 }
                 if !self.path.is_empty() {
                     ::buffa::types::put_string_field(5u32, &self.path, buf);
+                }
+                if self.bu_location.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        6u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.bu_location.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -92523,7 +95185,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for UpdateEnrollmentRequestView<'__a> {
+        impl<'__a> ::serde::Serialize for UpdateStoreRequestView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -92533,39 +95195,47 @@ pub mod __buffa {
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.program) {
                     __map.serialize_entry("program", self.program)?;
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.enrollment) {
-                    __map.serialize_entry("enrollment", self.enrollment)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.store) {
+                    __map.serialize_entry("store", self.store)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.status {
                     __map.serialize_entry("status", __v)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.customer_group {
-                    __map.serialize_entry("customerGroup", __v)?;
+                if let ::core::option::Option::Some(__v) = self.customer_name {
+                    __map.serialize_entry("customerName", __v)?;
                 }
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.path) {
                     __map.serialize_entry("path", self.path)?;
                 }
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .bu_location
+                        .as_option()
+                    {
+                        __map.serialize_entry("buLocation", __v)?;
+                    }
+                }
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for UpdateEnrollmentRequestView<'a> {
+        impl<'a> ::buffa::MessageName for UpdateStoreRequestView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "UpdateEnrollmentRequest";
-            const FULL_NAME: &'static str = "programs.v1.UpdateEnrollmentRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateEnrollmentRequest";
+            const NAME: &'static str = "UpdateStoreRequest";
+            const FULL_NAME: &'static str = "programs.v1.UpdateStoreRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateStoreRequest";
         }
-        ::buffa::impl_default_view_instance!(UpdateEnrollmentRequestView);
-        ::buffa::impl_view_reborrow!(UpdateEnrollmentRequestView);
-        /** Self-contained, `'static` owned view of a `UpdateEnrollmentRequest` message.
+        ::buffa::impl_default_view_instance!(UpdateStoreRequestView);
+        ::buffa::impl_view_reborrow!(UpdateStoreRequestView);
+        /** Self-contained, `'static` owned view of a `UpdateStoreRequest` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`UpdateEnrollmentRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`UpdateStoreRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`UpdateEnrollmentRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`UpdateStoreRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct UpdateEnrollmentRequestOwnedView(
-            ::buffa::OwnedView<UpdateEnrollmentRequestView<'static>>,
+        pub struct UpdateStoreRequestOwnedView(
+            ::buffa::OwnedView<UpdateStoreRequestView<'static>>,
         );
-        impl UpdateEnrollmentRequestOwnedView {
+        impl UpdateStoreRequestOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -92579,7 +95249,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    UpdateEnrollmentRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    UpdateStoreRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -92594,7 +95264,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    UpdateEnrollmentRequestOwnedView(
+                    UpdateStoreRequestOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -92608,17 +95278,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::UpdateEnrollmentRequest,
+                msg: &super::super::UpdateStoreRequest,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    UpdateEnrollmentRequestOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    UpdateStoreRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`UpdateEnrollmentRequestView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`UpdateStoreRequestView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &UpdateEnrollmentRequestView<'_> {
+            pub fn view(&self) -> &UpdateStoreRequestView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -92629,7 +95297,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::UpdateEnrollmentRequest {
+            pub fn to_owned_message(&self) -> super::super::UpdateStoreRequest {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -92647,22 +95315,24 @@ pub mod __buffa {
             pub fn program(&self) -> &'_ str {
                 self.0.reborrow().program
             }
-            /// Field 2: `enrollment`
+            /// Field 2: `store`
             #[must_use]
-            pub fn enrollment(&self) -> &'_ str {
-                self.0.reborrow().enrollment
+            pub fn store(&self) -> &'_ str {
+                self.0.reborrow().store
             }
+            /// Any of pending, active, suspended, ended.
+            ///
             /// Field 3: `status`
             #[must_use]
             pub fn status(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().status
             }
-            /// An empty string clears the group.
+            /// An empty string clears the customer name.
             ///
-            /// Field 4: `customer_group`
+            /// Field 4: `customer_name`
             #[must_use]
-            pub fn customer_group(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().customer_group
+            pub fn customer_name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().customer_name
             }
             /// AEP resource path (gRPC-only; required for authorization). HTTP is unaffected.
             ///
@@ -92671,36 +95341,41 @@ pub mod __buffa {
             pub fn path(&self) -> &'_ str {
                 self.0.reborrow().path
             }
-        }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<UpdateEnrollmentRequestView<'static>>,
-        > for UpdateEnrollmentRequestOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<UpdateEnrollmentRequestView<'static>>,
-            ) -> Self {
-                UpdateEnrollmentRequestOwnedView(inner)
+            /// Only `bu_location.bu` is read: it replaces the business unit, and a `bu` with an empty code clears it.
+            ///
+            /// Field 6: `bu_location`
+            #[must_use]
+            pub fn bu_location(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'_>,
+            > {
+                &self.0.reborrow().bu_location
             }
         }
-        impl ::core::convert::From<UpdateEnrollmentRequestOwnedView>
-        for ::buffa::OwnedView<UpdateEnrollmentRequestView<'static>> {
-            fn from(wrapper: UpdateEnrollmentRequestOwnedView) -> Self {
+        impl ::core::convert::From<::buffa::OwnedView<UpdateStoreRequestView<'static>>>
+        for UpdateStoreRequestOwnedView {
+            fn from(inner: ::buffa::OwnedView<UpdateStoreRequestView<'static>>) -> Self {
+                UpdateStoreRequestOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<UpdateStoreRequestOwnedView>
+        for ::buffa::OwnedView<UpdateStoreRequestView<'static>> {
+            fn from(wrapper: UpdateStoreRequestOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<UpdateEnrollmentRequestView<'static>>,
-        > for UpdateEnrollmentRequestOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<UpdateEnrollmentRequestView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<UpdateStoreRequestView<'static>>>
+        for UpdateStoreRequestOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<UpdateStoreRequestView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::UpdateEnrollmentRequest {
-            type View<'a> = UpdateEnrollmentRequestView<'a>;
-            type ViewHandle = UpdateEnrollmentRequestOwnedView;
+        impl ::buffa::HasMessageView for super::super::UpdateStoreRequest {
+            type View<'a> = UpdateStoreRequestView<'a>;
+            type ViewHandle = UpdateStoreRequestOwnedView;
         }
-        impl ::serde::Serialize for UpdateEnrollmentRequestOwnedView {
+        impl ::serde::Serialize for UpdateStoreRequestOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -92709,15 +95384,15 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct UpdateEnrollmentResponseView<'a> {
-            /// Field 1: `enrollment`
-            pub enrollment: ::buffa::MessageFieldView<
-                super::super::__buffa::view::EnrollmentView<'a>,
+        pub struct UpdateStoreResponseView<'a> {
+            /// Field 1: `store`
+            pub store: ::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreView<'a>,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for UpdateEnrollmentResponseView<'a> {
-            type Owned = super::super::UpdateEnrollmentResponse;
+        impl<'a> ::buffa::MessageView<'a> for UpdateStoreResponseView<'a> {
+            type Owned = super::super::UpdateStoreResponse;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -92759,7 +95434,7 @@ pub mod __buffa {
                         )?;
                         let __sub_ctx = ctx.descend()?;
                         let sub = ::buffa::types::borrow_bytes(&mut cur)?;
-                        match view.enrollment.as_mut() {
+                        match view.store.as_mut() {
                             Some(existing) => {
                                 ::buffa::MessageView::merge_into_view(
                                     existing,
@@ -92768,8 +95443,8 @@ pub mod __buffa {
                                 )?
                             }
                             None => {
-                                view.enrollment = ::buffa::MessageFieldView::set(
-                                    <super::super::__buffa::view::EnrollmentView as ::buffa::MessageView>::decode_view_ctx(
+                                view.store = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::StoreView as ::buffa::MessageView>::decode_view_ctx(
                                         sub,
                                         __sub_ctx,
                                     )?,
@@ -92789,7 +95464,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::UpdateEnrollmentResponse,
+                super::super::UpdateStoreResponse,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -92799,18 +95474,18 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::UpdateEnrollmentResponse,
+                super::super::UpdateStoreResponse,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::UpdateEnrollmentResponse {
-                    enrollment: match self.enrollment.as_option() {
+                ::core::result::Result::Ok(super::super::UpdateStoreResponse {
+                    store: match self.store.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
-                                super::super::Enrollment,
-                                ::buffa::Inline<super::super::Enrollment>,
+                                super::super::Store,
+                                ::buffa::Inline<super::super::Store>,
                             >::some(v.to_owned_from_source(__buffa_src)?)
                         }
                         None => ::buffa::MessageField::none(),
@@ -92823,15 +95498,15 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for UpdateEnrollmentResponseView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for UpdateStoreResponseView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
-                if self.enrollment.is_set() {
+                if self.store.is_set() {
                     let __slot = __cache.reserve();
-                    let inner_size = self.enrollment.compute_size(__cache);
+                    let inner_size = self.store.compute_size(__cache);
                     __cache.set(__slot, inner_size);
                     size
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
@@ -92848,13 +95523,13 @@ pub mod __buffa {
             ) {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
-                if self.enrollment.is_set() {
+                if self.store.is_set() {
                     ::buffa::types::put_len_delimited_header(
                         1u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
-                    self.enrollment.write_to(__cache, buf);
+                    self.store.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -92870,7 +95545,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for UpdateEnrollmentResponseView<'__a> {
+        impl<'__a> ::serde::Serialize for UpdateStoreResponseView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -92878,34 +95553,31 @@ pub mod __buffa {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
                 {
-                    if let ::core::option::Option::Some(__v) = self
-                        .enrollment
-                        .as_option()
-                    {
-                        __map.serialize_entry("enrollment", __v)?;
+                    if let ::core::option::Option::Some(__v) = self.store.as_option() {
+                        __map.serialize_entry("store", __v)?;
                     }
                 }
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for UpdateEnrollmentResponseView<'a> {
+        impl<'a> ::buffa::MessageName for UpdateStoreResponseView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "UpdateEnrollmentResponse";
-            const FULL_NAME: &'static str = "programs.v1.UpdateEnrollmentResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateEnrollmentResponse";
+            const NAME: &'static str = "UpdateStoreResponse";
+            const FULL_NAME: &'static str = "programs.v1.UpdateStoreResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.UpdateStoreResponse";
         }
-        ::buffa::impl_default_view_instance!(UpdateEnrollmentResponseView);
-        ::buffa::impl_view_reborrow!(UpdateEnrollmentResponseView);
-        /** Self-contained, `'static` owned view of a `UpdateEnrollmentResponse` message.
+        ::buffa::impl_default_view_instance!(UpdateStoreResponseView);
+        ::buffa::impl_view_reborrow!(UpdateStoreResponseView);
+        /** Self-contained, `'static` owned view of a `UpdateStoreResponse` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`UpdateEnrollmentResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`UpdateStoreResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`UpdateEnrollmentResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`UpdateStoreResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct UpdateEnrollmentResponseOwnedView(
-            ::buffa::OwnedView<UpdateEnrollmentResponseView<'static>>,
+        pub struct UpdateStoreResponseOwnedView(
+            ::buffa::OwnedView<UpdateStoreResponseView<'static>>,
         );
-        impl UpdateEnrollmentResponseOwnedView {
+        impl UpdateStoreResponseOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -92919,7 +95591,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    UpdateEnrollmentResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    UpdateStoreResponseOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -92934,7 +95606,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    UpdateEnrollmentResponseOwnedView(
+                    UpdateStoreResponseOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -92948,17 +95620,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::UpdateEnrollmentResponse,
+                msg: &super::super::UpdateStoreResponse,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    UpdateEnrollmentResponseOwnedView(
-                        ::buffa::OwnedView::from_owned(msg)?,
-                    ),
+                    UpdateStoreResponseOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`UpdateEnrollmentResponseView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`UpdateStoreResponseView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &UpdateEnrollmentResponseView<'_> {
+            pub fn view(&self) -> &UpdateStoreResponseView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -92969,7 +95639,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::UpdateEnrollmentResponse {
+            pub fn to_owned_message(&self) -> super::super::UpdateStoreResponse {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -92982,45 +95652,39 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// Field 1: `enrollment`
+            /// Field 1: `store`
             #[must_use]
-            pub fn enrollment(
+            pub fn store(
                 &self,
-            ) -> &::buffa::MessageFieldView<
-                super::super::__buffa::view::EnrollmentView<'_>,
-            > {
-                &self.0.reborrow().enrollment
+            ) -> &::buffa::MessageFieldView<super::super::__buffa::view::StoreView<'_>> {
+                &self.0.reborrow().store
             }
         }
-        impl ::core::convert::From<
-            ::buffa::OwnedView<UpdateEnrollmentResponseView<'static>>,
-        > for UpdateEnrollmentResponseOwnedView {
+        impl ::core::convert::From<::buffa::OwnedView<UpdateStoreResponseView<'static>>>
+        for UpdateStoreResponseOwnedView {
             fn from(
-                inner: ::buffa::OwnedView<UpdateEnrollmentResponseView<'static>>,
+                inner: ::buffa::OwnedView<UpdateStoreResponseView<'static>>,
             ) -> Self {
-                UpdateEnrollmentResponseOwnedView(inner)
+                UpdateStoreResponseOwnedView(inner)
             }
         }
-        impl ::core::convert::From<UpdateEnrollmentResponseOwnedView>
-        for ::buffa::OwnedView<UpdateEnrollmentResponseView<'static>> {
-            fn from(wrapper: UpdateEnrollmentResponseOwnedView) -> Self {
+        impl ::core::convert::From<UpdateStoreResponseOwnedView>
+        for ::buffa::OwnedView<UpdateStoreResponseView<'static>> {
+            fn from(wrapper: UpdateStoreResponseOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<UpdateEnrollmentResponseView<'static>>,
-        > for UpdateEnrollmentResponseOwnedView {
-            fn as_ref(
-                &self,
-            ) -> &::buffa::OwnedView<UpdateEnrollmentResponseView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<UpdateStoreResponseView<'static>>>
+        for UpdateStoreResponseOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<UpdateStoreResponseView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::UpdateEnrollmentResponse {
-            type View<'a> = UpdateEnrollmentResponseView<'a>;
-            type ViewHandle = UpdateEnrollmentResponseOwnedView;
+        impl ::buffa::HasMessageView for super::super::UpdateStoreResponse {
+            type View<'a> = UpdateStoreResponseView<'a>;
+            type ViewHandle = UpdateStoreResponseOwnedView;
         }
-        impl ::serde::Serialize for UpdateEnrollmentResponseOwnedView {
+        impl ::serde::Serialize for UpdateStoreResponseOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -93029,23 +95693,23 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct EnrollmentItemView<'a> {
-            /// Field 1: `store_id`
-            pub store_id: &'a str,
-            /// Field 2: `store_name`
-            pub store_name: ::core::option::Option<&'a str>,
-            /// Field 3: `website_id`
-            pub website_id: &'a str,
-            /// Field 4: `website_name`
-            pub website_name: ::core::option::Option<&'a str>,
-            /// Field 5: `customer_group`
-            pub customer_group: ::core::option::Option<&'a str>,
-            /// Field 6: `status`
+        pub struct StoreItemView<'a> {
+            /// Field 1: `bu_location`
+            pub bu_location: ::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'a>,
+            >,
+            /// Field 2: `website`
+            pub website: ::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreWebsiteView<'a>,
+            >,
+            /// Field 3: `customer_name`
+            pub customer_name: ::core::option::Option<&'a str>,
+            /// Field 4: `status`
             pub status: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for EnrollmentItemView<'a> {
-            type Owned = super::super::EnrollmentItem;
+        impl<'a> ::buffa::MessageView<'a> for StoreItemView<'a> {
+            type Owned = super::super::StoreItem;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -93085,39 +95749,59 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_id = ::buffa::types::borrow_str(&mut cur)?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.bu_location.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.bu_location = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::BuLocationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     2u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_name = Some(::buffa::types::borrow_str(&mut cur)?);
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.website.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.website = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::StoreWebsiteView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.website_id = ::buffa::types::borrow_str(&mut cur)?;
+                        view.customer_name = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     4u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
-                        view.website_name = Some(::buffa::types::borrow_str(&mut cur)?);
-                    }
-                    5u32 => {
-                        ::buffa::encoding::check_wire_type(
-                            tag,
-                            ::buffa::encoding::WireType::LengthDelimited,
-                        )?;
-                        view.customer_group = Some(
-                            ::buffa::types::borrow_str(&mut cur)?,
-                        );
-                    }
-                    6u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
@@ -93135,29 +95819,37 @@ pub mod __buffa {
             }
             fn to_owned_message(
                 &self,
-            ) -> ::core::result::Result<
-                super::super::EnrollmentItem,
-                ::buffa::DecodeError,
-            > {
+            ) -> ::core::result::Result<super::super::StoreItem, ::buffa::DecodeError> {
                 self.to_owned_from_source(None)
             }
             #[allow(clippy::useless_conversion, clippy::needless_update)]
             fn to_owned_from_source(
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
-            ) -> ::core::result::Result<
-                super::super::EnrollmentItem,
-                ::buffa::DecodeError,
-            > {
+            ) -> ::core::result::Result<super::super::StoreItem, ::buffa::DecodeError> {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::EnrollmentItem {
-                    store_id: self.store_id.to_string(),
-                    store_name: self.store_name.map(|s| s.to_string()),
-                    website_id: self.website_id.to_string(),
-                    website_name: self.website_name.map(|s| s.to_string()),
-                    customer_group: self.customer_group.map(|s| s.to_string()),
+                ::core::result::Result::Ok(super::super::StoreItem {
+                    bu_location: match self.bu_location.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::BuLocation,
+                                ::buffa::Inline<super::super::BuLocation>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    website: match self.website.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::StoreWebsite,
+                                ::buffa::Inline<super::super::StoreWebsite>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    customer_name: self.customer_name.map(|s| s.to_string()),
                     status: self.status.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
@@ -93167,30 +95859,29 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for EnrollmentItemView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for StoreItemView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
-                if !self.store_id.is_empty() {
+                if self.bu_location.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.bu_location.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
-                if let Some(ref v) = self.store_name {
-                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-                }
-                if !self.website_id.is_empty() {
+                if self.website.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.website.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
                     size
-                        += 1u64
-                            + ::buffa::types::string_encoded_len(&self.website_id)
-                                as u64;
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
                 }
-                if let Some(ref v) = self.website_name {
-                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
-                }
-                if let Some(ref v) = self.customer_group {
+                if let Some(ref v) = self.customer_name {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if let Some(ref v) = self.status {
@@ -93202,28 +95893,32 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::EncodeSink,
             ) {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
-                if !self.store_id.is_empty() {
-                    ::buffa::types::put_string_field(1u32, &self.store_id, buf);
+                if self.bu_location.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.bu_location.write_to(__cache, buf);
                 }
-                if let Some(ref v) = self.store_name {
-                    ::buffa::types::put_string_field(2u32, v, buf);
+                if self.website.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.website.write_to(__cache, buf);
                 }
-                if !self.website_id.is_empty() {
-                    ::buffa::types::put_string_field(3u32, &self.website_id, buf);
-                }
-                if let Some(ref v) = self.website_name {
-                    ::buffa::types::put_string_field(4u32, v, buf);
-                }
-                if let Some(ref v) = self.customer_group {
-                    ::buffa::types::put_string_field(5u32, v, buf);
+                if let Some(ref v) = self.customer_name {
+                    ::buffa::types::put_string_field(3u32, v, buf);
                 }
                 if let Some(ref v) = self.status {
-                    ::buffa::types::put_string_field(6u32, v, buf);
+                    ::buffa::types::put_string_field(4u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -93239,27 +95934,28 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for EnrollmentItemView<'__a> {
+        impl<'__a> ::serde::Serialize for StoreItemView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
             ) -> ::core::result::Result<__S::Ok, __S::Error> {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.store_id) {
-                    __map.serialize_entry("storeId", self.store_id)?;
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .bu_location
+                        .as_option()
+                    {
+                        __map.serialize_entry("buLocation", __v)?;
+                    }
                 }
-                if let ::core::option::Option::Some(__v) = self.store_name {
-                    __map.serialize_entry("storeName", __v)?;
+                {
+                    if let ::core::option::Option::Some(__v) = self.website.as_option() {
+                        __map.serialize_entry("website", __v)?;
+                    }
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.website_id) {
-                    __map.serialize_entry("websiteId", self.website_id)?;
-                }
-                if let ::core::option::Option::Some(__v) = self.website_name {
-                    __map.serialize_entry("websiteName", __v)?;
-                }
-                if let ::core::option::Option::Some(__v) = self.customer_group {
-                    __map.serialize_entry("customerGroup", __v)?;
+                if let ::core::option::Option::Some(__v) = self.customer_name {
+                    __map.serialize_entry("customerName", __v)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.status {
                     __map.serialize_entry("status", __v)?;
@@ -93267,24 +95963,22 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for EnrollmentItemView<'a> {
+        impl<'a> ::buffa::MessageName for StoreItemView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "EnrollmentItem";
-            const FULL_NAME: &'static str = "programs.v1.EnrollmentItem";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.EnrollmentItem";
+            const NAME: &'static str = "StoreItem";
+            const FULL_NAME: &'static str = "programs.v1.StoreItem";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreItem";
         }
-        ::buffa::impl_default_view_instance!(EnrollmentItemView);
-        ::buffa::impl_view_reborrow!(EnrollmentItemView);
-        /** Self-contained, `'static` owned view of a `EnrollmentItem` message.
+        ::buffa::impl_default_view_instance!(StoreItemView);
+        ::buffa::impl_view_reborrow!(StoreItemView);
+        /** Self-contained, `'static` owned view of a `StoreItem` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`EnrollmentItemView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`StoreItemView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`EnrollmentItemView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`StoreItemView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct EnrollmentItemOwnedView(
-            ::buffa::OwnedView<EnrollmentItemView<'static>>,
-        );
-        impl EnrollmentItemOwnedView {
+        pub struct StoreItemOwnedView(::buffa::OwnedView<StoreItemView<'static>>);
+        impl StoreItemOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -93298,7 +95992,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentItemOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    StoreItemOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -93313,7 +96007,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentItemOwnedView(
+                    StoreItemOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -93327,15 +96021,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::EnrollmentItem,
+                msg: &super::super::StoreItem,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentItemOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    StoreItemOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`EnrollmentItemView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`StoreItemView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &EnrollmentItemView<'_> {
+            pub fn view(&self) -> &StoreItemView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -93346,7 +96040,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::EnrollmentItem {
+            pub fn to_owned_message(&self) -> super::super::StoreItem {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -93359,60 +96053,58 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// Field 1: `store_id`
+            /// Field 1: `bu_location`
             #[must_use]
-            pub fn store_id(&self) -> &'_ str {
-                self.0.reborrow().store_id
+            pub fn bu_location(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::BuLocationView<'_>,
+            > {
+                &self.0.reborrow().bu_location
             }
-            /// Field 2: `store_name`
+            /// Field 2: `website`
             #[must_use]
-            pub fn store_name(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().store_name
+            pub fn website(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::StoreWebsiteView<'_>,
+            > {
+                &self.0.reborrow().website
             }
-            /// Field 3: `website_id`
+            /// Field 3: `customer_name`
             #[must_use]
-            pub fn website_id(&self) -> &'_ str {
-                self.0.reborrow().website_id
+            pub fn customer_name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().customer_name
             }
-            /// Field 4: `website_name`
-            #[must_use]
-            pub fn website_name(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().website_name
-            }
-            /// Field 5: `customer_group`
-            #[must_use]
-            pub fn customer_group(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().customer_group
-            }
-            /// Field 6: `status`
+            /// Field 4: `status`
             #[must_use]
             pub fn status(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().status
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<EnrollmentItemView<'static>>>
-        for EnrollmentItemOwnedView {
-            fn from(inner: ::buffa::OwnedView<EnrollmentItemView<'static>>) -> Self {
-                EnrollmentItemOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<StoreItemView<'static>>>
+        for StoreItemOwnedView {
+            fn from(inner: ::buffa::OwnedView<StoreItemView<'static>>) -> Self {
+                StoreItemOwnedView(inner)
             }
         }
-        impl ::core::convert::From<EnrollmentItemOwnedView>
-        for ::buffa::OwnedView<EnrollmentItemView<'static>> {
-            fn from(wrapper: EnrollmentItemOwnedView) -> Self {
+        impl ::core::convert::From<StoreItemOwnedView>
+        for ::buffa::OwnedView<StoreItemView<'static>> {
+            fn from(wrapper: StoreItemOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<::buffa::OwnedView<EnrollmentItemView<'static>>>
-        for EnrollmentItemOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<EnrollmentItemView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<StoreItemView<'static>>>
+        for StoreItemOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<StoreItemView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::EnrollmentItem {
-            type View<'a> = EnrollmentItemView<'a>;
-            type ViewHandle = EnrollmentItemOwnedView;
+        impl ::buffa::HasMessageView for super::super::StoreItem {
+            type View<'a> = StoreItemView<'a>;
+            type ViewHandle = StoreItemOwnedView;
         }
-        impl ::serde::Serialize for EnrollmentItemOwnedView {
+        impl ::serde::Serialize for StoreItemOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -93421,7 +96113,7 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct BatchCreateEnrollmentsRequestView<'a> {
+        pub struct BatchCreateStoresRequestView<'a> {
             /// Field 1: `program`
             pub program: &'a str,
             /// Up to 500 stores.
@@ -93429,7 +96121,7 @@ pub mod __buffa {
             /// Field 2: `items`
             pub items: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::EnrollmentItemView<'a>,
+                super::super::__buffa::view::StoreItemView<'a>,
             >,
             /// AEP resource path of the PARENT this request scopes to (gRPC-only; required for authorization). HTTP is unaffected.
             ///
@@ -93437,8 +96129,8 @@ pub mod __buffa {
             pub path: &'a str,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for BatchCreateEnrollmentsRequestView<'a> {
-            type Owned = super::super::BatchCreateEnrollmentsRequest;
+        impl<'a> ::buffa::MessageView<'a> for BatchCreateStoresRequestView<'a> {
+            type Owned = super::super::BatchCreateStoresRequest;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -93496,12 +96188,12 @@ pub mod __buffa {
                         let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                         ctx.register_element_memory(
                             ::core::mem::size_of::<
-                                super::super::__buffa::view::EnrollmentItemView,
+                                super::super::__buffa::view::StoreItemView,
                             >(),
                         )?;
                         view.items
                             .push(
-                                <super::super::__buffa::view::EnrollmentItemView as ::buffa::MessageView>::decode_view_ctx(
+                                <super::super::__buffa::view::StoreItemView as ::buffa::MessageView>::decode_view_ctx(
                                     sub,
                                     __sub_ctx,
                                 )?,
@@ -93519,7 +96211,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::BatchCreateEnrollmentsRequest,
+                super::super::BatchCreateStoresRequest,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -93529,13 +96221,13 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::BatchCreateEnrollmentsRequest,
+                super::super::BatchCreateStoresRequest,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::BatchCreateEnrollmentsRequest {
+                ::core::result::Result::Ok(super::super::BatchCreateStoresRequest {
                     program: self.program.to_string(),
                     items: self
                         .items
@@ -93551,7 +96243,7 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for BatchCreateEnrollmentsRequestView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for BatchCreateStoresRequestView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -93612,7 +96304,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for BatchCreateEnrollmentsRequestView<'__a> {
+        impl<'__a> ::serde::Serialize for BatchCreateStoresRequestView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -93631,24 +96323,24 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for BatchCreateEnrollmentsRequestView<'a> {
+        impl<'a> ::buffa::MessageName for BatchCreateStoresRequestView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "BatchCreateEnrollmentsRequest";
-            const FULL_NAME: &'static str = "programs.v1.BatchCreateEnrollmentsRequest";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateEnrollmentsRequest";
+            const NAME: &'static str = "BatchCreateStoresRequest";
+            const FULL_NAME: &'static str = "programs.v1.BatchCreateStoresRequest";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateStoresRequest";
         }
-        ::buffa::impl_default_view_instance!(BatchCreateEnrollmentsRequestView);
-        ::buffa::impl_view_reborrow!(BatchCreateEnrollmentsRequestView);
-        /** Self-contained, `'static` owned view of a `BatchCreateEnrollmentsRequest` message.
+        ::buffa::impl_default_view_instance!(BatchCreateStoresRequestView);
+        ::buffa::impl_view_reborrow!(BatchCreateStoresRequestView);
+        /** Self-contained, `'static` owned view of a `BatchCreateStoresRequest` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`BatchCreateEnrollmentsRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`BatchCreateStoresRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BatchCreateEnrollmentsRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BatchCreateStoresRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct BatchCreateEnrollmentsRequestOwnedView(
-            ::buffa::OwnedView<BatchCreateEnrollmentsRequestView<'static>>,
+        pub struct BatchCreateStoresRequestOwnedView(
+            ::buffa::OwnedView<BatchCreateStoresRequestView<'static>>,
         );
-        impl BatchCreateEnrollmentsRequestOwnedView {
+        impl BatchCreateStoresRequestOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -93662,9 +96354,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    BatchCreateEnrollmentsRequestOwnedView(
-                        ::buffa::OwnedView::decode(bytes)?,
-                    ),
+                    BatchCreateStoresRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -93679,7 +96369,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    BatchCreateEnrollmentsRequestOwnedView(
+                    BatchCreateStoresRequestOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -93693,17 +96383,17 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::BatchCreateEnrollmentsRequest,
+                msg: &super::super::BatchCreateStoresRequest,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    BatchCreateEnrollmentsRequestOwnedView(
+                    BatchCreateStoresRequestOwnedView(
                         ::buffa::OwnedView::from_owned(msg)?,
                     ),
                 )
             }
-            /// Borrow the full [`BatchCreateEnrollmentsRequestView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`BatchCreateStoresRequestView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &BatchCreateEnrollmentsRequestView<'_> {
+            pub fn view(&self) -> &BatchCreateStoresRequestView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -93714,9 +96404,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(
-                &self,
-            ) -> super::super::BatchCreateEnrollmentsRequest {
+            pub fn to_owned_message(&self) -> super::super::BatchCreateStoresRequest {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -93742,7 +96430,7 @@ pub mod __buffa {
                 &self,
             ) -> &::buffa::RepeatedView<
                 '_,
-                super::super::__buffa::view::EnrollmentItemView<'_>,
+                super::super::__buffa::view::StoreItemView<'_>,
             > {
                 &self.0.reborrow().items
             }
@@ -93755,34 +96443,34 @@ pub mod __buffa {
             }
         }
         impl ::core::convert::From<
-            ::buffa::OwnedView<BatchCreateEnrollmentsRequestView<'static>>,
-        > for BatchCreateEnrollmentsRequestOwnedView {
+            ::buffa::OwnedView<BatchCreateStoresRequestView<'static>>,
+        > for BatchCreateStoresRequestOwnedView {
             fn from(
-                inner: ::buffa::OwnedView<BatchCreateEnrollmentsRequestView<'static>>,
+                inner: ::buffa::OwnedView<BatchCreateStoresRequestView<'static>>,
             ) -> Self {
-                BatchCreateEnrollmentsRequestOwnedView(inner)
+                BatchCreateStoresRequestOwnedView(inner)
             }
         }
-        impl ::core::convert::From<BatchCreateEnrollmentsRequestOwnedView>
-        for ::buffa::OwnedView<BatchCreateEnrollmentsRequestView<'static>> {
-            fn from(wrapper: BatchCreateEnrollmentsRequestOwnedView) -> Self {
+        impl ::core::convert::From<BatchCreateStoresRequestOwnedView>
+        for ::buffa::OwnedView<BatchCreateStoresRequestView<'static>> {
+            fn from(wrapper: BatchCreateStoresRequestOwnedView) -> Self {
                 wrapper.0
             }
         }
         impl ::core::convert::AsRef<
-            ::buffa::OwnedView<BatchCreateEnrollmentsRequestView<'static>>,
-        > for BatchCreateEnrollmentsRequestOwnedView {
+            ::buffa::OwnedView<BatchCreateStoresRequestView<'static>>,
+        > for BatchCreateStoresRequestOwnedView {
             fn as_ref(
                 &self,
-            ) -> &::buffa::OwnedView<BatchCreateEnrollmentsRequestView<'static>> {
+            ) -> &::buffa::OwnedView<BatchCreateStoresRequestView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::BatchCreateEnrollmentsRequest {
-            type View<'a> = BatchCreateEnrollmentsRequestView<'a>;
-            type ViewHandle = BatchCreateEnrollmentsRequestOwnedView;
+        impl ::buffa::HasMessageView for super::super::BatchCreateStoresRequest {
+            type View<'a> = BatchCreateStoresRequestView<'a>;
+            type ViewHandle = BatchCreateStoresRequestOwnedView;
         }
-        impl ::serde::Serialize for BatchCreateEnrollmentsRequestOwnedView {
+        impl ::serde::Serialize for BatchCreateStoresRequestOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -93791,23 +96479,25 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct EnrollmentItemResultView<'a> {
-            /// Field 1: `store_id`
-            pub store_id: &'a str,
-            /// Field 2: `website_id`
-            pub website_id: &'a str,
+        pub struct StoreItemResultView<'a> {
+            /// Field 1: `bu_location_code`
+            pub bu_location_code: &'a str,
+            /// Field 2: `website_code`
+            pub website_code: &'a str,
             /// "created", "already_enrolled" or "failed".
             ///
             /// Field 3: `outcome`
             pub outcome: &'a str,
-            /// Field 4: `enrollment_id`
-            pub enrollment_id: ::core::option::Option<&'a str>,
+            /// The new store's id when it was created.
+            ///
+            /// Field 4: `id`
+            pub id: ::core::option::Option<&'a str>,
             /// Field 5: `error`
             pub error: ::core::option::Option<&'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for EnrollmentItemResultView<'a> {
-            type Owned = super::super::EnrollmentItemResult;
+        impl<'a> ::buffa::MessageView<'a> for StoreItemResultView<'a> {
+            type Owned = super::super::StoreItemResult;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -93847,14 +96537,14 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.store_id = ::buffa::types::borrow_str(&mut cur)?;
+                        view.bu_location_code = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     2u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.website_id = ::buffa::types::borrow_str(&mut cur)?;
+                        view.website_code = ::buffa::types::borrow_str(&mut cur)?;
                     }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -93868,7 +96558,7 @@ pub mod __buffa {
                             tag,
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.enrollment_id = Some(::buffa::types::borrow_str(&mut cur)?);
+                        view.id = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     5u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -93889,7 +96579,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::EnrollmentItemResult,
+                super::super::StoreItemResult,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -93899,17 +96589,17 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::EnrollmentItemResult,
+                super::super::StoreItemResult,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::EnrollmentItemResult {
-                    store_id: self.store_id.to_string(),
-                    website_id: self.website_id.to_string(),
+                ::core::result::Result::Ok(super::super::StoreItemResult {
+                    bu_location_code: self.bu_location_code.to_string(),
+                    website_code: self.website_code.to_string(),
                     outcome: self.outcome.to_string(),
-                    enrollment_id: self.enrollment_id.map(|s| s.to_string()),
+                    id: self.id.map(|s| s.to_string()),
                     error: self.error.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
@@ -93919,21 +96609,22 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for EnrollmentItemResultView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for StoreItemResultView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u64;
-                if !self.store_id.is_empty() {
+                if !self.bu_location_code.is_empty() {
                     size
                         += 1u64
-                            + ::buffa::types::string_encoded_len(&self.store_id) as u64;
+                            + ::buffa::types::string_encoded_len(&self.bu_location_code)
+                                as u64;
                 }
-                if !self.website_id.is_empty() {
+                if !self.website_code.is_empty() {
                     size
                         += 1u64
-                            + ::buffa::types::string_encoded_len(&self.website_id)
+                            + ::buffa::types::string_encoded_len(&self.website_code)
                                 as u64;
                 }
                 if !self.outcome.is_empty() {
@@ -93941,7 +96632,7 @@ pub mod __buffa {
                         += 1u64
                             + ::buffa::types::string_encoded_len(&self.outcome) as u64;
                 }
-                if let Some(ref v) = self.enrollment_id {
+                if let Some(ref v) = self.id {
                     size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
                 }
                 if let Some(ref v) = self.error {
@@ -93958,16 +96649,16 @@ pub mod __buffa {
             ) {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
-                if !self.store_id.is_empty() {
-                    ::buffa::types::put_string_field(1u32, &self.store_id, buf);
+                if !self.bu_location_code.is_empty() {
+                    ::buffa::types::put_string_field(1u32, &self.bu_location_code, buf);
                 }
-                if !self.website_id.is_empty() {
-                    ::buffa::types::put_string_field(2u32, &self.website_id, buf);
+                if !self.website_code.is_empty() {
+                    ::buffa::types::put_string_field(2u32, &self.website_code, buf);
                 }
                 if !self.outcome.is_empty() {
                     ::buffa::types::put_string_field(3u32, &self.outcome, buf);
                 }
-                if let Some(ref v) = self.enrollment_id {
+                if let Some(ref v) = self.id {
                     ::buffa::types::put_string_field(4u32, v, buf);
                 }
                 if let Some(ref v) = self.error {
@@ -93987,24 +96678,24 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for EnrollmentItemResultView<'__a> {
+        impl<'__a> ::serde::Serialize for StoreItemResultView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
             ) -> ::core::result::Result<__S::Ok, __S::Error> {
                 use ::serde::ser::SerializeMap as _;
                 let mut __map = __s.serialize_map(::core::option::Option::None)?;
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.store_id) {
-                    __map.serialize_entry("storeId", self.store_id)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.bu_location_code) {
+                    __map.serialize_entry("buLocationCode", self.bu_location_code)?;
                 }
-                if !::buffa::json_helpers::skip_if::is_empty_str(self.website_id) {
-                    __map.serialize_entry("websiteId", self.website_id)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.website_code) {
+                    __map.serialize_entry("websiteCode", self.website_code)?;
                 }
                 if !::buffa::json_helpers::skip_if::is_empty_str(self.outcome) {
                     __map.serialize_entry("outcome", self.outcome)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.enrollment_id {
-                    __map.serialize_entry("enrollmentId", __v)?;
+                if let ::core::option::Option::Some(__v) = self.id {
+                    __map.serialize_entry("id", __v)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.error {
                     __map.serialize_entry("error", __v)?;
@@ -94012,24 +96703,24 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for EnrollmentItemResultView<'a> {
+        impl<'a> ::buffa::MessageName for StoreItemResultView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "EnrollmentItemResult";
-            const FULL_NAME: &'static str = "programs.v1.EnrollmentItemResult";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.EnrollmentItemResult";
+            const NAME: &'static str = "StoreItemResult";
+            const FULL_NAME: &'static str = "programs.v1.StoreItemResult";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.StoreItemResult";
         }
-        ::buffa::impl_default_view_instance!(EnrollmentItemResultView);
-        ::buffa::impl_view_reborrow!(EnrollmentItemResultView);
-        /** Self-contained, `'static` owned view of a `EnrollmentItemResult` message.
+        ::buffa::impl_default_view_instance!(StoreItemResultView);
+        ::buffa::impl_view_reborrow!(StoreItemResultView);
+        /** Self-contained, `'static` owned view of a `StoreItemResult` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`EnrollmentItemResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`StoreItemResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`EnrollmentItemResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`StoreItemResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct EnrollmentItemResultOwnedView(
-            ::buffa::OwnedView<EnrollmentItemResultView<'static>>,
+        pub struct StoreItemResultOwnedView(
+            ::buffa::OwnedView<StoreItemResultView<'static>>,
         );
-        impl EnrollmentItemResultOwnedView {
+        impl StoreItemResultOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -94043,7 +96734,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentItemResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+                    StoreItemResultOwnedView(::buffa::OwnedView::decode(bytes)?),
                 )
             }
             /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
@@ -94058,7 +96749,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentItemResultOwnedView(
+                    StoreItemResultOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -94072,15 +96763,15 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::EnrollmentItemResult,
+                msg: &super::super::StoreItemResult,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    EnrollmentItemResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                    StoreItemResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
                 )
             }
-            /// Borrow the full [`EnrollmentItemResultView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`StoreItemResultView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &EnrollmentItemResultView<'_> {
+            pub fn view(&self) -> &StoreItemResultView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -94091,7 +96782,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(&self) -> super::super::EnrollmentItemResult {
+            pub fn to_owned_message(&self) -> super::super::StoreItemResult {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -94104,15 +96795,15 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// Field 1: `store_id`
+            /// Field 1: `bu_location_code`
             #[must_use]
-            pub fn store_id(&self) -> &'_ str {
-                self.0.reborrow().store_id
+            pub fn bu_location_code(&self) -> &'_ str {
+                self.0.reborrow().bu_location_code
             }
-            /// Field 2: `website_id`
+            /// Field 2: `website_code`
             #[must_use]
-            pub fn website_id(&self) -> &'_ str {
-                self.0.reborrow().website_id
+            pub fn website_code(&self) -> &'_ str {
+                self.0.reborrow().website_code
             }
             /// "created", "already_enrolled" or "failed".
             ///
@@ -94121,10 +96812,12 @@ pub mod __buffa {
             pub fn outcome(&self) -> &'_ str {
                 self.0.reborrow().outcome
             }
-            /// Field 4: `enrollment_id`
+            /// The new store's id when it was created.
+            ///
+            /// Field 4: `id`
             #[must_use]
-            pub fn enrollment_id(&self) -> ::core::option::Option<&'_ str> {
-                self.0.reborrow().enrollment_id
+            pub fn id(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().id
             }
             /// Field 5: `error`
             #[must_use]
@@ -94132,32 +96825,29 @@ pub mod __buffa {
                 self.0.reborrow().error
             }
         }
-        impl ::core::convert::From<::buffa::OwnedView<EnrollmentItemResultView<'static>>>
-        for EnrollmentItemResultOwnedView {
-            fn from(
-                inner: ::buffa::OwnedView<EnrollmentItemResultView<'static>>,
-            ) -> Self {
-                EnrollmentItemResultOwnedView(inner)
+        impl ::core::convert::From<::buffa::OwnedView<StoreItemResultView<'static>>>
+        for StoreItemResultOwnedView {
+            fn from(inner: ::buffa::OwnedView<StoreItemResultView<'static>>) -> Self {
+                StoreItemResultOwnedView(inner)
             }
         }
-        impl ::core::convert::From<EnrollmentItemResultOwnedView>
-        for ::buffa::OwnedView<EnrollmentItemResultView<'static>> {
-            fn from(wrapper: EnrollmentItemResultOwnedView) -> Self {
+        impl ::core::convert::From<StoreItemResultOwnedView>
+        for ::buffa::OwnedView<StoreItemResultView<'static>> {
+            fn from(wrapper: StoreItemResultOwnedView) -> Self {
                 wrapper.0
             }
         }
-        impl ::core::convert::AsRef<
-            ::buffa::OwnedView<EnrollmentItemResultView<'static>>,
-        > for EnrollmentItemResultOwnedView {
-            fn as_ref(&self) -> &::buffa::OwnedView<EnrollmentItemResultView<'static>> {
+        impl ::core::convert::AsRef<::buffa::OwnedView<StoreItemResultView<'static>>>
+        for StoreItemResultOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<StoreItemResultView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::EnrollmentItemResult {
-            type View<'a> = EnrollmentItemResultView<'a>;
-            type ViewHandle = EnrollmentItemResultOwnedView;
+        impl ::buffa::HasMessageView for super::super::StoreItemResult {
+            type View<'a> = StoreItemResultView<'a>;
+            type ViewHandle = StoreItemResultOwnedView;
         }
-        impl ::serde::Serialize for EnrollmentItemResultOwnedView {
+        impl ::serde::Serialize for StoreItemResultOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -94166,18 +96856,18 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
-        pub struct BatchCreateEnrollmentsResponseView<'a> {
+        pub struct BatchCreateStoresResponseView<'a> {
             /// Field 1: `created`
             pub created: i32,
             /// Field 2: `results`
             pub results: ::buffa::RepeatedView<
                 'a,
-                super::super::__buffa::view::EnrollmentItemResultView<'a>,
+                super::super::__buffa::view::StoreItemResultView<'a>,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
-        impl<'a> ::buffa::MessageView<'a> for BatchCreateEnrollmentsResponseView<'a> {
-            type Owned = super::super::BatchCreateEnrollmentsResponse;
+        impl<'a> ::buffa::MessageView<'a> for BatchCreateStoresResponseView<'a> {
+            type Owned = super::super::BatchCreateStoresResponse;
             fn decode_view(
                 buf: &'a [u8],
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -94228,12 +96918,12 @@ pub mod __buffa {
                         let sub = ::buffa::types::borrow_bytes(&mut cur)?;
                         ctx.register_element_memory(
                             ::core::mem::size_of::<
-                                super::super::__buffa::view::EnrollmentItemResultView,
+                                super::super::__buffa::view::StoreItemResultView,
                             >(),
                         )?;
                         view.results
                             .push(
-                                <super::super::__buffa::view::EnrollmentItemResultView as ::buffa::MessageView>::decode_view_ctx(
+                                <super::super::__buffa::view::StoreItemResultView as ::buffa::MessageView>::decode_view_ctx(
                                     sub,
                                     __sub_ctx,
                                 )?,
@@ -94251,7 +96941,7 @@ pub mod __buffa {
             fn to_owned_message(
                 &self,
             ) -> ::core::result::Result<
-                super::super::BatchCreateEnrollmentsResponse,
+                super::super::BatchCreateStoresResponse,
                 ::buffa::DecodeError,
             > {
                 self.to_owned_from_source(None)
@@ -94261,13 +96951,13 @@ pub mod __buffa {
                 &self,
                 __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
             ) -> ::core::result::Result<
-                super::super::BatchCreateEnrollmentsResponse,
+                super::super::BatchCreateStoresResponse,
                 ::buffa::DecodeError,
             > {
                 #[allow(unused_imports)]
                 use ::buffa::alloc::string::ToString as _;
                 let _ = __buffa_src;
-                ::core::result::Result::Ok(super::super::BatchCreateEnrollmentsResponse {
+                ::core::result::Result::Ok(super::super::BatchCreateStoresResponse {
                     created: self.created,
                     results: self
                         .results
@@ -94282,7 +96972,7 @@ pub mod __buffa {
                 })
             }
         }
-        impl<'a> ::buffa::ViewEncode<'a> for BatchCreateEnrollmentsResponseView<'a> {
+        impl<'a> ::buffa::ViewEncode<'a> for BatchCreateStoresResponseView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
             fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
@@ -94336,7 +97026,7 @@ pub mod __buffa {
         /// fields depends on default-omission rules; serializers that require
         /// known map lengths (e.g. `bincode`) will return a runtime error.
         /// Use the owned message type for those formats.
-        impl<'__a> ::serde::Serialize for BatchCreateEnrollmentsResponseView<'__a> {
+        impl<'__a> ::serde::Serialize for BatchCreateStoresResponseView<'__a> {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -94356,24 +97046,24 @@ pub mod __buffa {
                 __map.end()
             }
         }
-        impl<'a> ::buffa::MessageName for BatchCreateEnrollmentsResponseView<'a> {
+        impl<'a> ::buffa::MessageName for BatchCreateStoresResponseView<'a> {
             const PACKAGE: &'static str = "programs.v1";
-            const NAME: &'static str = "BatchCreateEnrollmentsResponse";
-            const FULL_NAME: &'static str = "programs.v1.BatchCreateEnrollmentsResponse";
-            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateEnrollmentsResponse";
+            const NAME: &'static str = "BatchCreateStoresResponse";
+            const FULL_NAME: &'static str = "programs.v1.BatchCreateStoresResponse";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BatchCreateStoresResponse";
         }
-        ::buffa::impl_default_view_instance!(BatchCreateEnrollmentsResponseView);
-        ::buffa::impl_view_reborrow!(BatchCreateEnrollmentsResponseView);
-        /** Self-contained, `'static` owned view of a `BatchCreateEnrollmentsResponse` message.
+        ::buffa::impl_default_view_instance!(BatchCreateStoresResponseView);
+        ::buffa::impl_view_reborrow!(BatchCreateStoresResponseView);
+        /** Self-contained, `'static` owned view of a `BatchCreateStoresResponse` message.
 
- Wraps [`::buffa::OwnedView`]`<`[`BatchCreateEnrollmentsResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+ Wraps [`::buffa::OwnedView`]`<`[`BatchCreateStoresResponseView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
- Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BatchCreateEnrollmentsResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BatchCreateStoresResponseView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
         #[derive(Clone, Debug)]
-        pub struct BatchCreateEnrollmentsResponseOwnedView(
-            ::buffa::OwnedView<BatchCreateEnrollmentsResponseView<'static>>,
+        pub struct BatchCreateStoresResponseOwnedView(
+            ::buffa::OwnedView<BatchCreateStoresResponseView<'static>>,
         );
-        impl BatchCreateEnrollmentsResponseOwnedView {
+        impl BatchCreateStoresResponseOwnedView {
             /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
             ///
             /// The view borrows directly from the buffer's data; the buffer is
@@ -94387,7 +97077,7 @@ pub mod __buffa {
                 bytes: ::buffa::bytes::Bytes,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    BatchCreateEnrollmentsResponseOwnedView(
+                    BatchCreateStoresResponseOwnedView(
                         ::buffa::OwnedView::decode(bytes)?,
                     ),
                 )
@@ -94404,7 +97094,7 @@ pub mod __buffa {
                 opts: &::buffa::DecodeOptions,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    BatchCreateEnrollmentsResponseOwnedView(
+                    BatchCreateStoresResponseOwnedView(
                         ::buffa::OwnedView::decode_with_options(bytes, opts)?,
                     ),
                 )
@@ -94418,17 +97108,17 @@ pub mod __buffa {
             /// another [`::buffa::DecodeError`] if the re-encoded bytes are
             /// somehow invalid (should not happen for well-formed messages).
             pub fn from_owned(
-                msg: &super::super::BatchCreateEnrollmentsResponse,
+                msg: &super::super::BatchCreateStoresResponse,
             ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
                 ::core::result::Result::Ok(
-                    BatchCreateEnrollmentsResponseOwnedView(
+                    BatchCreateStoresResponseOwnedView(
                         ::buffa::OwnedView::from_owned(msg)?,
                     ),
                 )
             }
-            /// Borrow the full [`BatchCreateEnrollmentsResponseView`] with its lifetime tied to `&self`.
+            /// Borrow the full [`BatchCreateStoresResponseView`] with its lifetime tied to `&self`.
             #[must_use]
-            pub fn view(&self) -> &BatchCreateEnrollmentsResponseView<'_> {
+            pub fn view(&self) -> &BatchCreateStoresResponseView<'_> {
                 self.0.reborrow()
             }
             /// Convert to the owned message type.
@@ -94439,9 +97129,7 @@ pub mod __buffa {
             /// whose contract also governs handles converted from a raw
             /// [`::buffa::OwnedView`].
             #[must_use]
-            pub fn to_owned_message(
-                &self,
-            ) -> super::super::BatchCreateEnrollmentsResponse {
+            pub fn to_owned_message(&self) -> super::super::BatchCreateStoresResponse {
                 self.0.to_owned_message()
             }
             /// The underlying bytes buffer.
@@ -94465,40 +97153,40 @@ pub mod __buffa {
                 &self,
             ) -> &::buffa::RepeatedView<
                 '_,
-                super::super::__buffa::view::EnrollmentItemResultView<'_>,
+                super::super::__buffa::view::StoreItemResultView<'_>,
             > {
                 &self.0.reborrow().results
             }
         }
         impl ::core::convert::From<
-            ::buffa::OwnedView<BatchCreateEnrollmentsResponseView<'static>>,
-        > for BatchCreateEnrollmentsResponseOwnedView {
+            ::buffa::OwnedView<BatchCreateStoresResponseView<'static>>,
+        > for BatchCreateStoresResponseOwnedView {
             fn from(
-                inner: ::buffa::OwnedView<BatchCreateEnrollmentsResponseView<'static>>,
+                inner: ::buffa::OwnedView<BatchCreateStoresResponseView<'static>>,
             ) -> Self {
-                BatchCreateEnrollmentsResponseOwnedView(inner)
+                BatchCreateStoresResponseOwnedView(inner)
             }
         }
-        impl ::core::convert::From<BatchCreateEnrollmentsResponseOwnedView>
-        for ::buffa::OwnedView<BatchCreateEnrollmentsResponseView<'static>> {
-            fn from(wrapper: BatchCreateEnrollmentsResponseOwnedView) -> Self {
+        impl ::core::convert::From<BatchCreateStoresResponseOwnedView>
+        for ::buffa::OwnedView<BatchCreateStoresResponseView<'static>> {
+            fn from(wrapper: BatchCreateStoresResponseOwnedView) -> Self {
                 wrapper.0
             }
         }
         impl ::core::convert::AsRef<
-            ::buffa::OwnedView<BatchCreateEnrollmentsResponseView<'static>>,
-        > for BatchCreateEnrollmentsResponseOwnedView {
+            ::buffa::OwnedView<BatchCreateStoresResponseView<'static>>,
+        > for BatchCreateStoresResponseOwnedView {
             fn as_ref(
                 &self,
-            ) -> &::buffa::OwnedView<BatchCreateEnrollmentsResponseView<'static>> {
+            ) -> &::buffa::OwnedView<BatchCreateStoresResponseView<'static>> {
                 &self.0
             }
         }
-        impl ::buffa::HasMessageView for super::super::BatchCreateEnrollmentsResponse {
-            type View<'a> = BatchCreateEnrollmentsResponseView<'a>;
-            type ViewHandle = BatchCreateEnrollmentsResponseOwnedView;
+        impl ::buffa::HasMessageView for super::super::BatchCreateStoresResponse {
+            type View<'a> = BatchCreateStoresResponseView<'a>;
+            type ViewHandle = BatchCreateStoresResponseOwnedView;
         }
-        impl ::serde::Serialize for BatchCreateEnrollmentsResponseOwnedView {
+        impl ::serde::Serialize for BatchCreateStoresResponseOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -94507,7 +97195,7 @@ pub mod __buffa {
             }
         }
         /// ---------------------------------------------------------------------------
-        /// Store discounts (each enrolled store's effective discount: Program -\> Domain -\> Store)
+        /// Store discounts (each enrolled store's effective discount: Program -\> Business unit -\> Website -\> Store)
         /// ---------------------------------------------------------------------------
         ///
         /// What ONE level sets. A field that is unset is inherited from the level above.
@@ -95204,7 +97892,7 @@ pub mod __buffa {
                 ::serde::Serialize::serialize(&self.0, __s)
             }
         }
-        /// Which level each resolved field came from: "program", "domain" or "store".
+        /// Which level each resolved field came from: "program", "business_unit", "website" or "store".
         #[derive(Clone, Debug, Default)]
         pub struct DiscountSourcesView<'a> {
             /// Field 1: `enabled`
@@ -96000,6 +98688,16 @@ pub mod __buffa {
             pub inherited: ::buffa::MessageFieldView<
                 super::super::__buffa::view::ResolvedDiscountView<'a>,
             >,
+            /// The business unit of the store (code and name), the parent whose discount the website inherits.
+            ///
+            /// Field 13: `bu`
+            pub bu: ::buffa::MessageFieldView<
+                super::super::__buffa::view::BusinessUnitView<'a>,
+            >,
+            /// True when at least one field is taken from the business unit (the parent), not set on the website.
+            ///
+            /// Field 14: `inherited_from_parent`
+            pub inherited_from_parent: bool,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for StoreDiscountView<'a> {
@@ -96194,6 +98892,40 @@ pub mod __buffa {
                             }
                         }
                     }
+                    13u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.bu.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.bu = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::BusinessUnitView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    14u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.inherited_from_parent = ::buffa::types::decode_bool(
+                            &mut cur,
+                        )?;
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -96267,6 +98999,16 @@ pub mod __buffa {
                         }
                         None => ::buffa::MessageField::none(),
                     },
+                    bu: match self.bu.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::BusinessUnit,
+                                ::buffa::Inline<super::super::BusinessUnit>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    inherited_from_parent: self.inherited_from_parent,
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -96347,6 +99089,17 @@ pub mod __buffa {
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
+                if self.bu.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.bu.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if self.inherited_from_parent {
+                    size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -96413,6 +99166,21 @@ pub mod __buffa {
                         buf,
                     );
                     self.inherited.write_to(__cache, buf);
+                }
+                if self.bu.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        13u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.bu.write_to(__cache, buf);
+                }
+                if self.inherited_from_parent {
+                    ::buffa::types::put_bool_field(
+                        14u32,
+                        self.inherited_from_parent,
+                        buf,
+                    );
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -96485,6 +99253,18 @@ pub mod __buffa {
                     {
                         __map.serialize_entry("inherited", __v)?;
                     }
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.bu.as_option() {
+                        __map.serialize_entry("bu", __v)?;
+                    }
+                }
+                if self.inherited_from_parent {
+                    __map
+                        .serialize_entry(
+                            "inheritedFromParent",
+                            &self.inherited_from_parent,
+                        )?;
                 }
                 __map.end()
             }
@@ -96669,6 +99449,24 @@ pub mod __buffa {
             > {
                 &self.0.reborrow().inherited
             }
+            /// The business unit of the store (code and name), the parent whose discount the website inherits.
+            ///
+            /// Field 13: `bu`
+            #[must_use]
+            pub fn bu(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::BusinessUnitView<'_>,
+            > {
+                &self.0.reborrow().bu
+            }
+            /// True when at least one field is taken from the business unit (the parent), not set on the website.
+            ///
+            /// Field 14: `inherited_from_parent`
+            #[must_use]
+            pub fn inherited_from_parent(&self) -> bool {
+                self.0.reborrow().inherited_from_parent
+            }
         }
         impl ::core::convert::From<::buffa::OwnedView<StoreDiscountView<'static>>>
         for StoreDiscountOwnedView {
@@ -96706,6 +99504,10 @@ pub mod __buffa {
             pub program: &'a str,
             /// Field 2: `website_id`
             pub website_id: ::core::option::Option<&'a str>,
+            /// Only the stores of this business unit.
+            ///
+            /// Field 7: `bu_unit_code`
+            pub bu_unit_code: ::core::option::Option<&'a str>,
             /// A prefix of the store name (case-insensitive).
             ///
             /// Field 3: `store`
@@ -96770,6 +99572,13 @@ pub mod __buffa {
                         )?;
                         view.website_id = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    7u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.bu_unit_code = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -96831,6 +99640,7 @@ pub mod __buffa {
                 ::core::result::Result::Ok(super::super::ListStoreDiscountsRequest {
                     program: self.program.to_string(),
                     website_id: self.website_id.map(|s| s.to_string()),
+                    bu_unit_code: self.bu_unit_code.map(|s| s.to_string()),
                     store: self.store.map(|s| s.to_string()),
                     max_page_size: self.max_page_size,
                     page_token: self.page_token.map(|s| s.to_string()),
@@ -96869,6 +99679,9 @@ pub mod __buffa {
                 if !self.path.is_empty() {
                     size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
                 }
+                if let Some(ref v) = self.bu_unit_code {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -96898,6 +99711,9 @@ pub mod __buffa {
                 if !self.path.is_empty() {
                     ::buffa::types::put_string_field(6u32, &self.path, buf);
                 }
+                if let Some(ref v) = self.bu_unit_code {
+                    ::buffa::types::put_string_field(7u32, v, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -96924,6 +99740,9 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.website_id {
                     __map.serialize_entry("websiteId", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.bu_unit_code {
+                    __map.serialize_entry("buUnitCode", __v)?;
                 }
                 if let ::core::option::Option::Some(__v) = self.store {
                     __map.serialize_entry("store", __v)?;
@@ -97049,6 +99868,13 @@ pub mod __buffa {
             #[must_use]
             pub fn website_id(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().website_id
+            }
+            /// Only the stores of this business unit.
+            ///
+            /// Field 7: `bu_unit_code`
+            #[must_use]
+            pub fn bu_unit_code(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().bu_unit_code
             }
             /// A prefix of the store name (case-insensitive).
             ///
@@ -99605,6 +102431,381 @@ pub mod __buffa {
             }
         }
         #[derive(Clone, Debug, Default)]
+        pub struct BusinessUnitDiscountLevelView<'a> {
+            /// Field 1: `bu_unit_code`
+            pub bu_unit_code: &'a str,
+            /// Field 2: `discount`
+            pub discount: ::buffa::MessageFieldView<
+                super::super::__buffa::view::DiscountConfigView<'a>,
+            >,
+            /// The business unit's name, from the stores enrolled with it.
+            ///
+            /// Field 3: `name`
+            pub name: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for BusinessUnitDiscountLevelView<'a> {
+            type Owned = super::super::BusinessUnitDiscountLevel;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                let __elem = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                        .with_element_memory(&__elem),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            #[inline]
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.bu_unit_code = ::buffa::types::borrow_str(&mut cur)?;
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.discount.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.discount = ::buffa::MessageFieldView::set(
+                                    <super::super::__buffa::view::DiscountConfigView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.name = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::BusinessUnitDiscountLevel,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::BusinessUnitDiscountLevel,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::BusinessUnitDiscountLevel {
+                    bu_unit_code: self.bu_unit_code.to_string(),
+                    discount: match self.discount.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                super::super::DiscountConfig,
+                                ::buffa::Inline<super::super::DiscountConfig>,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    name: self.name.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for BusinessUnitDiscountLevelView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u64;
+                if !self.bu_unit_code.is_empty() {
+                    size
+                        += 1u64
+                            + ::buffa::types::string_encoded_len(&self.bu_unit_code)
+                                as u64;
+                }
+                if self.discount.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.discount.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                if let Some(ref v) = self.name {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u64;
+                ::buffa::saturate_size(size)
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                __cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::EncodeSink,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if !self.bu_unit_code.is_empty() {
+                    ::buffa::types::put_string_field(1u32, &self.bu_unit_code, buf);
+                }
+                if self.discount.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    self.discount.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.name {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for BusinessUnitDiscountLevelView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if !::buffa::json_helpers::skip_if::is_empty_str(self.bu_unit_code) {
+                    __map.serialize_entry("buUnitCode", self.bu_unit_code)?;
+                }
+                {
+                    if let ::core::option::Option::Some(__v) = self.discount.as_option()
+                    {
+                        __map.serialize_entry("discount", __v)?;
+                    }
+                }
+                if let ::core::option::Option::Some(__v) = self.name {
+                    __map.serialize_entry("name", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for BusinessUnitDiscountLevelView<'a> {
+            const PACKAGE: &'static str = "programs.v1";
+            const NAME: &'static str = "BusinessUnitDiscountLevel";
+            const FULL_NAME: &'static str = "programs.v1.BusinessUnitDiscountLevel";
+            const TYPE_URL: &'static str = "type.googleapis.com/programs.v1.BusinessUnitDiscountLevel";
+        }
+        ::buffa::impl_default_view_instance!(BusinessUnitDiscountLevelView);
+        ::buffa::impl_view_reborrow!(BusinessUnitDiscountLevelView);
+        /** Self-contained, `'static` owned view of a `BusinessUnitDiscountLevel` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`BusinessUnitDiscountLevelView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`BusinessUnitDiscountLevelView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct BusinessUnitDiscountLevelOwnedView(
+            ::buffa::OwnedView<BusinessUnitDiscountLevelView<'static>>,
+        );
+        impl BusinessUnitDiscountLevelOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BusinessUnitDiscountLevelOwnedView(
+                        ::buffa::OwnedView::decode(bytes)?,
+                    ),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BusinessUnitDiscountLevelOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+            /// message's encoded size exceeds the 2 GiB protobuf limit, or
+            /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::BusinessUnitDiscountLevel,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    BusinessUnitDiscountLevelOwnedView(
+                        ::buffa::OwnedView::from_owned(msg)?,
+                    ),
+                )
+            }
+            /// Borrow the full [`BusinessUnitDiscountLevelView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &BusinessUnitDiscountLevelView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// Infallible: this type's constructors wire-decode their
+            /// buffer, and a view produced by wire decoding always
+            /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+            /// whose contract also governs handles converted from a raw
+            /// [`::buffa::OwnedView`].
+            #[must_use]
+            pub fn to_owned_message(&self) -> super::super::BusinessUnitDiscountLevel {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `bu_unit_code`
+            #[must_use]
+            pub fn bu_unit_code(&self) -> &'_ str {
+                self.0.reborrow().bu_unit_code
+            }
+            /// Field 2: `discount`
+            #[must_use]
+            pub fn discount(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                super::super::__buffa::view::DiscountConfigView<'_>,
+            > {
+                &self.0.reborrow().discount
+            }
+            /// The business unit's name, from the stores enrolled with it.
+            ///
+            /// Field 3: `name`
+            #[must_use]
+            pub fn name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().name
+            }
+        }
+        impl ::core::convert::From<
+            ::buffa::OwnedView<BusinessUnitDiscountLevelView<'static>>,
+        > for BusinessUnitDiscountLevelOwnedView {
+            fn from(
+                inner: ::buffa::OwnedView<BusinessUnitDiscountLevelView<'static>>,
+            ) -> Self {
+                BusinessUnitDiscountLevelOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<BusinessUnitDiscountLevelOwnedView>
+        for ::buffa::OwnedView<BusinessUnitDiscountLevelView<'static>> {
+            fn from(wrapper: BusinessUnitDiscountLevelOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<
+            ::buffa::OwnedView<BusinessUnitDiscountLevelView<'static>>,
+        > for BusinessUnitDiscountLevelOwnedView {
+            fn as_ref(
+                &self,
+            ) -> &::buffa::OwnedView<BusinessUnitDiscountLevelView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::BusinessUnitDiscountLevel {
+            type View<'a> = BusinessUnitDiscountLevelView<'a>;
+            type ViewHandle = BusinessUnitDiscountLevelOwnedView;
+        }
+        impl ::serde::Serialize for BusinessUnitDiscountLevelOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        #[derive(Clone, Debug, Default)]
         pub struct DomainDiscountLevelView<'a> {
             /// Field 1: `website_id`
             pub website_id: &'a str,
@@ -100254,10 +103455,19 @@ pub mod __buffa {
             pub program: ::buffa::MessageFieldView<
                 super::super::__buffa::view::DiscountConfigView<'a>,
             >,
-            /// Field 2: `domains`
-            pub domains: ::buffa::RepeatedView<
+            /// The websites that set something of their own.
+            ///
+            /// Field 2: `websites`
+            pub websites: ::buffa::RepeatedView<
                 'a,
                 super::super::__buffa::view::DomainDiscountLevelView<'a>,
+            >,
+            /// The business units (parents of the websites) that set something.
+            ///
+            /// Field 3: `business_units`
+            pub business_units: ::buffa::RepeatedView<
+                'a,
+                super::super::__buffa::view::BusinessUnitDiscountLevelView<'a>,
             >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
@@ -100334,9 +103544,29 @@ pub mod __buffa {
                                 super::super::__buffa::view::DomainDiscountLevelView,
                             >(),
                         )?;
-                        view.domains
+                        view.websites
                             .push(
                                 <super::super::__buffa::view::DomainDiscountLevelView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            );
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        ctx.register_element_memory(
+                            ::core::mem::size_of::<
+                                super::super::__buffa::view::BusinessUnitDiscountLevelView,
+                            >(),
+                        )?;
+                        view.business_units
+                            .push(
+                                <super::super::__buffa::view::BusinessUnitDiscountLevelView as ::buffa::MessageView>::decode_view_ctx(
                                     sub,
                                     __sub_ctx,
                                 )?,
@@ -100380,8 +103610,13 @@ pub mod __buffa {
                         }
                         None => ::buffa::MessageField::none(),
                     },
-                    domains: self
-                        .domains
+                    websites: self
+                        .websites
+                        .iter()
+                        .map(|v| v.to_owned_from_source(__buffa_src))
+                        .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
+                    business_units: self
+                        .business_units
                         .iter()
                         .map(|v| v.to_owned_from_source(__buffa_src))
                         .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
@@ -100407,7 +103642,15 @@ pub mod __buffa {
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
-                for v in &self.domains {
+                for v in &self.websites {
+                    let __slot = __cache.reserve();
+                    let inner_size = v.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                            + inner_size as u64;
+                }
+                for v in &self.business_units {
                     let __slot = __cache.reserve();
                     let inner_size = v.compute_size(__cache);
                     __cache.set(__slot, inner_size);
@@ -100434,9 +103677,17 @@ pub mod __buffa {
                     );
                     self.program.write_to(__cache, buf);
                 }
-                for v in &self.domains {
+                for v in &self.websites {
                     ::buffa::types::put_len_delimited_header(
                         2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    v.write_to(__cache, buf);
+                }
+                for v in &self.business_units {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
@@ -100468,8 +103719,11 @@ pub mod __buffa {
                         __map.serialize_entry("program", __v)?;
                     }
                 }
-                if !self.domains.is_empty() {
-                    __map.serialize_entry("domains", &*self.domains)?;
+                if !self.websites.is_empty() {
+                    __map.serialize_entry("websites", &*self.websites)?;
+                }
+                if !self.business_units.is_empty() {
+                    __map.serialize_entry("businessUnits", &*self.business_units)?;
                 }
                 __map.end()
             }
@@ -100579,15 +103833,29 @@ pub mod __buffa {
             > {
                 &self.0.reborrow().program
             }
-            /// Field 2: `domains`
+            /// The websites that set something of their own.
+            ///
+            /// Field 2: `websites`
             #[must_use]
-            pub fn domains(
+            pub fn websites(
                 &self,
             ) -> &::buffa::RepeatedView<
                 '_,
                 super::super::__buffa::view::DomainDiscountLevelView<'_>,
             > {
-                &self.0.reborrow().domains
+                &self.0.reborrow().websites
+            }
+            /// The business units (parents of the websites) that set something.
+            ///
+            /// Field 3: `business_units`
+            #[must_use]
+            pub fn business_units(
+                &self,
+            ) -> &::buffa::RepeatedView<
+                '_,
+                super::super::__buffa::view::BusinessUnitDiscountLevelView<'_>,
+            > {
+                &self.0.reborrow().business_units
             }
         }
         impl ::core::convert::From<
@@ -100630,10 +103898,14 @@ pub mod __buffa {
         pub struct UpdateDiscountLevelRequestView<'a> {
             /// Field 1: `program`
             pub program: &'a str,
-            /// The website to change; unset changes the program level.
+            /// The website to change (the child). Give this or `bu_unit_code`; neither changes the program level.
             ///
             /// Field 2: `website_id`
             pub website_id: ::core::option::Option<&'a str>,
+            /// The business unit to change (the parent of its websites).
+            ///
+            /// Field 5: `bu_unit_code`
+            pub bu_unit_code: ::core::option::Option<&'a str>,
             /// Field 3: `discount`
             pub discount: ::buffa::MessageFieldView<
                 super::super::__buffa::view::DiscountChangeView<'a>,
@@ -100693,6 +103965,13 @@ pub mod __buffa {
                             ::buffa::encoding::WireType::LengthDelimited,
                         )?;
                         view.website_id = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.bu_unit_code = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -100757,6 +104036,7 @@ pub mod __buffa {
                 ::core::result::Result::Ok(super::super::UpdateDiscountLevelRequest {
                     program: self.program.to_string(),
                     website_id: self.website_id.map(|s| s.to_string()),
+                    bu_unit_code: self.bu_unit_code.map(|s| s.to_string()),
                     discount: match self.discount.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
@@ -100800,6 +104080,9 @@ pub mod __buffa {
                 if !self.path.is_empty() {
                     size += 1u64 + ::buffa::types::string_encoded_len(&self.path) as u64;
                 }
+                if let Some(ref v) = self.bu_unit_code {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -100828,6 +104111,9 @@ pub mod __buffa {
                 if !self.path.is_empty() {
                     ::buffa::types::put_string_field(4u32, &self.path, buf);
                 }
+                if let Some(ref v) = self.bu_unit_code {
+                    ::buffa::types::put_string_field(5u32, v, buf);
+                }
                 self.__buffa_unknown_fields.write_to(buf);
             }
         }
@@ -100854,6 +104140,9 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.website_id {
                     __map.serialize_entry("websiteId", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.bu_unit_code {
+                    __map.serialize_entry("buUnitCode", __v)?;
                 }
                 {
                     if let ::core::option::Option::Some(__v) = self.discount.as_option()
@@ -100968,12 +104257,19 @@ pub mod __buffa {
             pub fn program(&self) -> &'_ str {
                 self.0.reborrow().program
             }
-            /// The website to change; unset changes the program level.
+            /// The website to change (the child). Give this or `bu_unit_code`; neither changes the program level.
             ///
             /// Field 2: `website_id`
             #[must_use]
             pub fn website_id(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().website_id
+            }
+            /// The business unit to change (the parent of its websites).
+            ///
+            /// Field 5: `bu_unit_code`
+            #[must_use]
+            pub fn bu_unit_code(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().bu_unit_code
             }
             /// Field 3: `discount`
             #[must_use]
@@ -101030,12 +104326,14 @@ pub mod __buffa {
         }
         #[derive(Clone, Debug, Default)]
         pub struct UpdateDiscountLevelResponseView<'a> {
-            /// "program" or "domain".
+            /// "program", "business_unit" or "website".
             ///
             /// Field 1: `level`
             pub level: &'a str,
             /// Field 2: `website_id`
             pub website_id: ::core::option::Option<&'a str>,
+            /// Field 4: `bu_unit_code`
+            pub bu_unit_code: ::core::option::Option<&'a str>,
             /// What that level sets afterwards.
             ///
             /// Field 3: `discount`
@@ -101094,6 +104392,13 @@ pub mod __buffa {
                         )?;
                         view.website_id = Some(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.bu_unit_code = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
@@ -101150,6 +104455,7 @@ pub mod __buffa {
                 ::core::result::Result::Ok(super::super::UpdateDiscountLevelResponse {
                     level: self.level.to_string(),
                     website_id: self.website_id.map(|s| s.to_string()),
+                    bu_unit_code: self.bu_unit_code.map(|s| s.to_string()),
                     discount: match self.discount.as_option() {
                         Some(v) => {
                             ::buffa::MessageField::<
@@ -101188,6 +104494,9 @@ pub mod __buffa {
                         += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                             + inner_size as u64;
                 }
+                if let Some(ref v) = self.bu_unit_code {
+                    size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u64;
                 ::buffa::saturate_size(size)
             }
@@ -101212,6 +104521,9 @@ pub mod __buffa {
                         buf,
                     );
                     self.discount.write_to(__cache, buf);
+                }
+                if let Some(ref v) = self.bu_unit_code {
+                    ::buffa::types::put_string_field(4u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -101239,6 +104551,9 @@ pub mod __buffa {
                 }
                 if let ::core::option::Option::Some(__v) = self.website_id {
                     __map.serialize_entry("websiteId", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.bu_unit_code {
+                    __map.serialize_entry("buUnitCode", __v)?;
                 }
                 {
                     if let ::core::option::Option::Some(__v) = self.discount.as_option()
@@ -101345,7 +104660,7 @@ pub mod __buffa {
             pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
                 self.0.into_bytes()
             }
-            /// "program" or "domain".
+            /// "program", "business_unit" or "website".
             ///
             /// Field 1: `level`
             #[must_use]
@@ -101356,6 +104671,11 @@ pub mod __buffa {
             #[must_use]
             pub fn website_id(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().website_id
+            }
+            /// Field 4: `bu_unit_code`
+            #[must_use]
+            pub fn bu_unit_code(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().bu_unit_code
             }
             /// What that level sets afterwards.
             ///
@@ -120201,6 +123521,7 @@ pub mod __buffa {
         reg.register_json_any(super::__PROGRAM_BRANDING_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_RENEWAL_JSON_ANY);
         reg.register_json_any(super::__HIGHLIGHT_LIST_JSON_ANY);
+        reg.register_json_any(super::__DOMAIN_LIST_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_DOMAIN_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_LAST_ACTIVITY_JSON_ANY);
         reg.register_json_any(super::__PROGRAM_STATS_JSON_ANY);
@@ -120307,19 +123628,22 @@ pub mod __buffa {
         reg.register_json_any(super::__GET_SIGNOFF_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__CREATE_SIGNOFF_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CREATE_SIGNOFF_RESPONSE_JSON_ANY);
-        reg.register_json_any(super::__ENROLLMENT_JSON_ANY);
-        reg.register_json_any(super::__LIST_ENROLLMENTS_REQUEST_JSON_ANY);
-        reg.register_json_any(super::__LIST_ENROLLMENTS_RESPONSE_JSON_ANY);
-        reg.register_json_any(super::__GET_ENROLLMENT_REQUEST_JSON_ANY);
-        reg.register_json_any(super::__GET_ENROLLMENT_RESPONSE_JSON_ANY);
-        reg.register_json_any(super::__CREATE_ENROLLMENT_REQUEST_JSON_ANY);
-        reg.register_json_any(super::__CREATE_ENROLLMENT_RESPONSE_JSON_ANY);
-        reg.register_json_any(super::__UPDATE_ENROLLMENT_REQUEST_JSON_ANY);
-        reg.register_json_any(super::__UPDATE_ENROLLMENT_RESPONSE_JSON_ANY);
-        reg.register_json_any(super::__ENROLLMENT_ITEM_JSON_ANY);
-        reg.register_json_any(super::__BATCH_CREATE_ENROLLMENTS_REQUEST_JSON_ANY);
-        reg.register_json_any(super::__ENROLLMENT_ITEM_RESULT_JSON_ANY);
-        reg.register_json_any(super::__BATCH_CREATE_ENROLLMENTS_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__BU_LOCATION_JSON_ANY);
+        reg.register_json_any(super::__STORE_WEBSITE_JSON_ANY);
+        reg.register_json_any(super::__BUSINESS_UNIT_JSON_ANY);
+        reg.register_json_any(super::__STORE_JSON_ANY);
+        reg.register_json_any(super::__LIST_STORES_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__LIST_STORES_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__GET_STORE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__GET_STORE_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__CREATE_STORE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CREATE_STORE_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__UPDATE_STORE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__UPDATE_STORE_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__STORE_ITEM_JSON_ANY);
+        reg.register_json_any(super::__BATCH_CREATE_STORES_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__STORE_ITEM_RESULT_JSON_ANY);
+        reg.register_json_any(super::__BATCH_CREATE_STORES_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__DISCOUNT_CONFIG_JSON_ANY);
         reg.register_json_any(super::__RESOLVED_DISCOUNT_JSON_ANY);
         reg.register_json_any(super::__DISCOUNT_SOURCES_JSON_ANY);
@@ -120333,6 +123657,7 @@ pub mod __buffa {
         reg.register_json_any(super::__UPDATE_STORE_DISCOUNT_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__BATCH_UPDATE_STORE_DISCOUNTS_REQUEST_JSON_ANY);
         reg.register_json_any(super::__BATCH_UPDATE_STORE_DISCOUNTS_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__BUSINESS_UNIT_DISCOUNT_LEVEL_JSON_ANY);
         reg.register_json_any(super::__DOMAIN_DISCOUNT_LEVEL_JSON_ANY);
         reg.register_json_any(super::__LIST_DISCOUNT_LEVELS_REQUEST_JSON_ANY);
         reg.register_json_any(super::__LIST_DISCOUNT_LEVELS_RESPONSE_JSON_ANY);
@@ -120429,6 +123754,10 @@ pub use self::__buffa::view::ProgramRenewalOwnedView;
 pub use self::__buffa::view::HighlightListView;
 #[doc(inline)]
 pub use self::__buffa::view::HighlightListOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::DomainListView;
+#[doc(inline)]
+pub use self::__buffa::view::DomainListOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::ProgramDomainView;
 #[doc(inline)]
@@ -120854,57 +124183,69 @@ pub use self::__buffa::view::CreateSignoffResponseView;
 #[doc(inline)]
 pub use self::__buffa::view::CreateSignoffResponseOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::EnrollmentView;
+pub use self::__buffa::view::BuLocationView;
 #[doc(inline)]
-pub use self::__buffa::view::EnrollmentOwnedView;
+pub use self::__buffa::view::BuLocationOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::ListEnrollmentsRequestView;
+pub use self::__buffa::view::StoreWebsiteView;
 #[doc(inline)]
-pub use self::__buffa::view::ListEnrollmentsRequestOwnedView;
+pub use self::__buffa::view::StoreWebsiteOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::ListEnrollmentsResponseView;
+pub use self::__buffa::view::BusinessUnitView;
 #[doc(inline)]
-pub use self::__buffa::view::ListEnrollmentsResponseOwnedView;
+pub use self::__buffa::view::BusinessUnitOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::GetEnrollmentRequestView;
+pub use self::__buffa::view::StoreView;
 #[doc(inline)]
-pub use self::__buffa::view::GetEnrollmentRequestOwnedView;
+pub use self::__buffa::view::StoreOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::GetEnrollmentResponseView;
+pub use self::__buffa::view::ListStoresRequestView;
 #[doc(inline)]
-pub use self::__buffa::view::GetEnrollmentResponseOwnedView;
+pub use self::__buffa::view::ListStoresRequestOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::CreateEnrollmentRequestView;
+pub use self::__buffa::view::ListStoresResponseView;
 #[doc(inline)]
-pub use self::__buffa::view::CreateEnrollmentRequestOwnedView;
+pub use self::__buffa::view::ListStoresResponseOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::CreateEnrollmentResponseView;
+pub use self::__buffa::view::GetStoreRequestView;
 #[doc(inline)]
-pub use self::__buffa::view::CreateEnrollmentResponseOwnedView;
+pub use self::__buffa::view::GetStoreRequestOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::UpdateEnrollmentRequestView;
+pub use self::__buffa::view::GetStoreResponseView;
 #[doc(inline)]
-pub use self::__buffa::view::UpdateEnrollmentRequestOwnedView;
+pub use self::__buffa::view::GetStoreResponseOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::UpdateEnrollmentResponseView;
+pub use self::__buffa::view::CreateStoreRequestView;
 #[doc(inline)]
-pub use self::__buffa::view::UpdateEnrollmentResponseOwnedView;
+pub use self::__buffa::view::CreateStoreRequestOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::EnrollmentItemView;
+pub use self::__buffa::view::CreateStoreResponseView;
 #[doc(inline)]
-pub use self::__buffa::view::EnrollmentItemOwnedView;
+pub use self::__buffa::view::CreateStoreResponseOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::BatchCreateEnrollmentsRequestView;
+pub use self::__buffa::view::UpdateStoreRequestView;
 #[doc(inline)]
-pub use self::__buffa::view::BatchCreateEnrollmentsRequestOwnedView;
+pub use self::__buffa::view::UpdateStoreRequestOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::EnrollmentItemResultView;
+pub use self::__buffa::view::UpdateStoreResponseView;
 #[doc(inline)]
-pub use self::__buffa::view::EnrollmentItemResultOwnedView;
+pub use self::__buffa::view::UpdateStoreResponseOwnedView;
 #[doc(inline)]
-pub use self::__buffa::view::BatchCreateEnrollmentsResponseView;
+pub use self::__buffa::view::StoreItemView;
 #[doc(inline)]
-pub use self::__buffa::view::BatchCreateEnrollmentsResponseOwnedView;
+pub use self::__buffa::view::StoreItemOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::BatchCreateStoresRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::BatchCreateStoresRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::StoreItemResultView;
+#[doc(inline)]
+pub use self::__buffa::view::StoreItemResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::BatchCreateStoresResponseView;
+#[doc(inline)]
+pub use self::__buffa::view::BatchCreateStoresResponseOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::DiscountConfigView;
 #[doc(inline)]
@@ -120957,6 +124298,10 @@ pub use self::__buffa::view::BatchUpdateStoreDiscountsRequestOwnedView;
 pub use self::__buffa::view::BatchUpdateStoreDiscountsResponseView;
 #[doc(inline)]
 pub use self::__buffa::view::BatchUpdateStoreDiscountsResponseOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::BusinessUnitDiscountLevelView;
+#[doc(inline)]
+pub use self::__buffa::view::BusinessUnitDiscountLevelOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::DomainDiscountLevelView;
 #[doc(inline)]

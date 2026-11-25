@@ -22,6 +22,8 @@ pub struct CreateProgramBodyPayload {
     pub about: Option<String>,
     /// Up to 5 short selling points shown next to the summary.
     pub highlights: Option<Vec<String>>,
+    /// The program's domains, e.g. `["domain1", "domain2"]`.
+    pub domain: Option<Vec<String>>,
     pub branding: Option<BrandingPayload>,
     /// Omitted parts stay null (term, grace, reminder) or false (auto_renew).
     pub renewal: Option<RenewalPayload>,
@@ -81,6 +83,8 @@ pub struct ListProgramsPayload {
     /// operators: contains (default), not_contains, equals, not_equals, starts_with, ends_with,
     /// is_empty, is_not_empty; keys: program, description, domain, status, level.
     pub filter: Option<String>,
+    /// `name`, `name asc` or `name desc` (case-insensitive); omitted keeps creation order.
+    pub order_by: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -98,6 +102,8 @@ pub struct UpdateProgramBodyPayload {
     pub about: Option<Option<String>>,
     /// Replaces the whole list.
     pub highlights: Option<Vec<String>>,
+    /// Replaces the whole domain list (an empty list clears it).
+    pub domain: Option<Vec<String>>,
     pub branding: Option<BrandingPayload>,
     pub renewal: Option<RenewalPayload>,
     pub renewal_enabled: Option<bool>,

@@ -218,20 +218,20 @@ impl ProgramsService for ProgramsServiceImpl {
         self.signoff.create_signoff(actor_from(&ctx), request).await
     }
 
-    // ---- Enrollments ----
-    async fn list_enrollments(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListEnrollmentsRequest>) -> ServiceResult<ListEnrollmentsResponse> {
+    // ---- Stores ----
+    async fn list_stores(&self, _ctx: RequestContext, request: ServiceRequest<'_, ListStoresRequest>) -> ServiceResult<ListStoresResponse> {
         self.enrollment.list_enrollments(request).await
     }
-    async fn get_enrollment(&self, _ctx: RequestContext, request: ServiceRequest<'_, GetEnrollmentRequest>) -> ServiceResult<GetEnrollmentResponse> {
+    async fn get_store(&self, _ctx: RequestContext, request: ServiceRequest<'_, GetStoreRequest>) -> ServiceResult<GetStoreResponse> {
         self.enrollment.get_enrollment(request).await
     }
-    async fn create_enrollment(&self, ctx: RequestContext, request: ServiceRequest<'_, CreateEnrollmentRequest>) -> ServiceResult<CreateEnrollmentResponse> {
+    async fn create_store(&self, ctx: RequestContext, request: ServiceRequest<'_, CreateStoreRequest>) -> ServiceResult<CreateStoreResponse> {
         self.enrollment.create_enrollment(actor_from(&ctx), request).await
     }
-    async fn batch_create_enrollments(&self, ctx: RequestContext, request: ServiceRequest<'_, BatchCreateEnrollmentsRequest>) -> ServiceResult<BatchCreateEnrollmentsResponse> {
+    async fn batch_create_stores(&self, ctx: RequestContext, request: ServiceRequest<'_, BatchCreateStoresRequest>) -> ServiceResult<BatchCreateStoresResponse> {
         self.enrollment.batch_create_enrollments(actor_from(&ctx), request).await
     }
-    async fn update_enrollment(&self, ctx: RequestContext, request: ServiceRequest<'_, UpdateEnrollmentRequest>) -> ServiceResult<UpdateEnrollmentResponse> {
+    async fn update_store(&self, ctx: RequestContext, request: ServiceRequest<'_, UpdateStoreRequest>) -> ServiceResult<UpdateStoreResponse> {
         self.enrollment.update_enrollment(actor_from(&ctx), request).await
     }
 

@@ -20,11 +20,14 @@ pub const MAX_BATCH: usize = 500;
 
 const MAX_AMOUNT: f64 = 1_000_000.0;
 
-/// Where a value comes from. Priority: store over domain over program.
+/// Where a value comes from. Priority: store over website over business unit over program.
+/// The business unit is the PARENT of a website (the enrollment sends both), so a website with
+/// nothing of its own takes what its business unit sets.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Level {
     Program,
-    Domain,
+    BusinessUnit,
+    Website,
     Store,
 }
 
@@ -32,7 +35,8 @@ impl Level {
     pub fn as_str(&self) -> &'static str {
         match self {
             Level::Program => "program",
-            Level::Domain => "domain",
+            Level::BusinessUnit => "business_unit",
+            Level::Website => "website",
             Level::Store => "store",
         }
     }
@@ -125,24 +129,35 @@ pub struct Resolution {
     pub set_at: Level,
 }
 
-fn pick<T: Clone>(program: Option<T>, domain: Option<T>, store: Option<T>) -> (Option<T>, Level) {
+fn pick<T: Clone>(program: Option<T>, business_unit: Option<T>, website: Option<T>, store: Option<T>) -> (Option<T>, Level) {
     if store.is_some() {
         (store, Level::Store)
-    } else if domain.is_some() {
-        (domain, Level::Domain)
+    } else if website.is_some() {
+        (website, Level::Website)
+    } else if business_unit.is_some() {
+        (business_unit, Level::BusinessUnit)
     } else {
         (program, Level::Program)
     }
 }
 
-/// Program -> Domain -> Store, field by field. With nothing set anywhere the discount is disabled,
-/// a percentage, of zero.
-pub fn resolve(program: &DiscountConfig, domain: &DiscountConfig, store: &DiscountConfig) -> Resolution {
-    let (enabled, enabled_at) = pick(program.enabled, domain.enabled, store.enabled);
-    let (discount_type, type_at) = pick(program.discount_type.clone(), domain.discount_type.clone(), store.discount_type.clone());
-    let (amount, amount_at) = pick(program.amount, domain.amount, store.amount);
-    let (currency_code, currency_at) =
-        pick(program.currency_code.clone(), domain.currency_code.clone(), store.currency_code.clone());
+/// Program -> Business unit -> Website -> Store, field by field. With nothing set anywhere the
+/// discount is disabled, a percentage, of zero.
+pub fn resolve(program: &DiscountConfig, business_unit: &DiscountConfig, website: &DiscountConfig, store: &DiscountConfig) -> Resolution {
+    let (enabled, enabled_at) = pick(program.enabled, business_unit.enabled, website.enabled, store.enabled);
+    let (discount_type, type_at) = pick(
+        program.discount_type.clone(),
+        business_unit.discount_type.clone(),
+        website.discount_type.clone(),
+        store.discount_type.clone(),
+    );
+    let (amount, amount_at) = pick(program.amount, business_unit.amount, website.amount, store.amount);
+    let (currency_code, currency_at) = pick(
+        program.currency_code.clone(),
+        business_unit.currency_code.clone(),
+        website.currency_code.clone(),
+        store.currency_code.clone(),
+    );
 
     let sources = Sources { enabled: enabled_at, discount_type: type_at, amount: amount_at, currency_code: currency_at };
     let set_at = [sources.enabled, sources.discount_type, sources.amount, sources.currency_code]
@@ -208,10 +223,16 @@ pub struct StoreDiscountRow {
     pub store_name: Option<String>,
     pub website_id: String,
     pub website_name: Option<String>,
+    /// The parent of the website: the business unit the enrollment came with.
+    pub bu_unit_code: Option<String>,
+    pub bu_unit_name: Option<String>,
     pub enrollment_status: String,
     pub resolved: Resolved,
     pub sources: Sources,
     pub set_at: Level,
+    /// At least one field comes from the business unit: the website sets nothing for it and takes
+    /// the parent's value ("parent set").
+    pub inherited_from_parent: bool,
     /// What this store sets itself (empty = it inherits everything).
     pub store_override: DiscountConfig,
     /// What it would get if its own override were reverted (what "revert" drops back to).
@@ -222,14 +243,21 @@ impl StoreDiscountRow {
     pub fn build(
         enrollment_id: Uuid,
         program_id: Uuid,
-        store: (String, Option<String>, String, Option<String>, String),
+        store: (String, Option<String>, String, Option<String>, Option<(String, Option<String>)>, String),
         program: &DiscountConfig,
-        domain: &DiscountConfig,
+        business_unit: &DiscountConfig,
+        website: &DiscountConfig,
         store_override: DiscountConfig,
     ) -> Self {
-        let (store_id, store_name, website_id, website_name, enrollment_status) = store;
-        let resolution = resolve(program, domain, &store_override);
-        let inherited = resolve(program, domain, &DiscountConfig::default()).resolved;
+        let (store_id, store_name, website_id, website_name, bu, enrollment_status) = store;
+        let (bu_unit_code, bu_unit_name) = match bu {
+            Some((code, name)) => (Some(code), name),
+            None => (None, None),
+        };
+        let resolution = resolve(program, business_unit, website, &store_override);
+        let inherited = resolve(program, business_unit, website, &DiscountConfig::default()).resolved;
+        let s = &resolution.sources;
+        let inherited_from_parent = [s.enabled, s.discount_type, s.amount, s.currency_code].contains(&Level::BusinessUnit);
         Self {
             enrollment_id,
             program_id,
@@ -237,10 +265,13 @@ impl StoreDiscountRow {
             store_name,
             website_id,
             website_name,
+            bu_unit_code,
+            bu_unit_name,
             enrollment_status,
             resolved: resolution.resolved,
             sources: resolution.sources,
             set_at: resolution.set_at,
+            inherited_from_parent,
             store_override,
             inherited,
         }
@@ -250,22 +281,35 @@ impl StoreDiscountRow {
 #[derive(Debug, Clone, Default)]
 pub struct StoreDiscountFilter {
     pub website_id: Option<String>,
+    /// Only the stores of one business unit.
+    pub bu_unit_code: Option<String>,
     /// A prefix of the store name (case-insensitive).
     pub store_prefix: Option<String>,
 }
 
-/// The two levels above a store.
+/// The levels above a store.
 #[derive(Debug, Clone, PartialEq)]
 pub enum LevelTarget {
     Program,
-    Domain(String),
+    /// The parent of the websites that carry its code.
+    BusinessUnit(String),
+    Website(String),
 }
 
 #[derive(Debug, Clone)]
 pub struct DiscountLevels {
     pub program: DiscountConfig,
+    /// Business units that set something.
+    pub business_units: Vec<(String, Option<String>, DiscountConfig)>,
     /// Websites that set something of their own.
-    pub domains: Vec<(String, DiscountConfig)>,
+    pub websites: Vec<(String, DiscountConfig)>,
+}
+
+pub fn validate_bu_unit_code(code: &str) -> Result<(), ApplicationError> {
+    if code.trim().is_empty() || code.chars().count() > 64 {
+        return Err(ApplicationError::unprocessable_entity("bu_unit_code must be 1-64 characters"));
+    }
+    Ok(())
 }
 
 pub fn validate_website_id(website_id: &str) -> Result<(), ApplicationError> {
@@ -312,10 +356,11 @@ pub trait StoreDiscountRepository: Send + Sync {
         actor: &str,
     ) -> Result<(usize, Vec<StoreDiscountRow>), ApplicationError>;
 
-    /// The program level and every website that sets something.
+    /// The program level, every business unit and every website that sets something.
     async fn levels(&self, program_id: Uuid) -> Result<DiscountLevels, ApplicationError>;
 
-    /// Changes the program level or one website's level. Returns what that level sets afterwards.
+    /// Changes the program level, one business unit's level or one website's level. Returns what that
+    /// level sets afterwards.
     async fn update_level(
         &self,
         program_id: Uuid,
@@ -336,7 +381,7 @@ mod tests {
 
     #[test]
     fn nothing_set_means_disabled_percentage_of_zero_from_program() {
-        let r = resolve(&DiscountConfig::default(), &DiscountConfig::default(), &DiscountConfig::default());
+        let r = resolve(&DiscountConfig::default(), &DiscountConfig::default(), &DiscountConfig::default(), &DiscountConfig::default());
         assert_eq!(r.resolved, Resolved { enabled: false, discount_type: "percentage".into(), amount: 0.0, currency_code: None });
         assert_eq!(r.set_at, Level::Program);
         assert_eq!(r.sources.amount, Level::Program);
@@ -347,25 +392,25 @@ mod tests {
         let program = cfg(Some(true), Some("percentage"), Some(5.0));
         let domain = cfg(None, None, Some(10.0));
         let store = cfg(None, Some("fixed"), None);
-        let r = resolve(&program, &domain, &store);
+        let r = resolve(&program, &DiscountConfig::default(), &domain, &store);
         assert!(r.resolved.enabled);
         assert_eq!(r.resolved.discount_type, "fixed");
         assert_eq!(r.resolved.amount, 10.0);
         assert_eq!(r.sources.enabled, Level::Program);
         assert_eq!(r.sources.discount_type, Level::Store);
-        assert_eq!(r.sources.amount, Level::Domain);
+        assert_eq!(r.sources.amount, Level::Website);
         assert_eq!(r.set_at, Level::Store, "the badge is the highest level that set anything");
     }
 
     #[test]
     fn set_at_is_domain_when_only_the_domain_overrides() {
-        let r = resolve(&cfg(Some(true), None, Some(5.0)), &cfg(None, None, Some(8.0)), &DiscountConfig::default());
-        assert_eq!(r.set_at, Level::Domain);
+        let r = resolve(&cfg(Some(true), None, Some(5.0)), &DiscountConfig::default(), &cfg(None, None, Some(8.0)), &DiscountConfig::default());
+        assert_eq!(r.set_at, Level::Website);
     }
 
     #[test]
     fn a_store_can_switch_a_program_discount_off() {
-        let r = resolve(&cfg(Some(true), None, Some(5.0)), &DiscountConfig::default(), &cfg(Some(false), None, None));
+        let r = resolve(&cfg(Some(true), None, Some(5.0)), &DiscountConfig::default(), &DiscountConfig::default(), &cfg(Some(false), None, None));
         assert!(!r.resolved.enabled);
         assert_eq!(r.sources.enabled, Level::Store);
         assert_eq!(r.resolved.amount, 5.0);
@@ -431,14 +476,52 @@ mod tests {
         let row = StoreDiscountRow::build(
             Uuid::nil(),
             Uuid::nil(),
-            ("s".into(), None, "w".into(), None, "active".into()),
+            ("s".into(), None, "w".into(), None, None, "active".into()),
             &program,
+            &DiscountConfig::default(),
             &DiscountConfig::default(),
             store,
         );
         assert_eq!(row.resolved.amount, 9.0);
         assert_eq!(row.inherited.amount, 5.0);
         assert_eq!(row.set_at, Level::Store);
+    }
+
+    #[test]
+    fn a_website_with_nothing_of_its_own_takes_the_business_unit() {
+        let bu = cfg(Some(true), Some("percentage"), Some(10.0));
+        let none = DiscountConfig::default();
+        let row = |website: DiscountConfig| {
+            StoreDiscountRow::build(Uuid::nil(), Uuid::nil(), ("s".into(), None, "w".into(), None, Some(("bu1".into(), Some("Business One".into()))), "active".into()), &none, &bu, &website, none.clone())
+        };
+
+        let child = row(none.clone());
+        assert_eq!(child.resolved.amount, 10.0);
+        assert!(child.resolved.enabled);
+        assert!(child.inherited_from_parent, "the parent's value is applied and flagged");
+        assert_eq!(child.set_at, Level::BusinessUnit);
+        assert_eq!(child.bu_unit_code.as_deref(), Some("bu1"));
+        assert_eq!(child.bu_unit_name.as_deref(), Some("Business One"));
+
+        // The website sets its own amount: that field is its own, the rest still comes from the parent.
+        let own = row(cfg(None, None, Some(4.0)));
+        assert_eq!(own.resolved.amount, 4.0);
+        assert_eq!(own.sources.amount, Level::Website);
+        assert_eq!(own.sources.enabled, Level::BusinessUnit);
+        assert!(own.inherited_from_parent);
+
+        // The website sets every field itself: nothing is taken from the parent.
+        let full = row(DiscountConfig { enabled: Some(false), discount_type: Some("fixed".into()), amount: Some(2.0), currency_code: Some("USD".into()) });
+        assert!(!full.inherited_from_parent);
+        assert!(!full.resolved.enabled);
+    }
+
+    #[test]
+    fn without_a_parent_value_the_website_is_disabled_by_default() {
+        let none = DiscountConfig::default();
+        let r = resolve(&none, &none, &none, &none);
+        assert!(!r.resolved.enabled);
+        assert_eq!(r.set_at, Level::Program);
     }
 
     #[test]

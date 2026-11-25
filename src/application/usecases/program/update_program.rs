@@ -3,7 +3,7 @@ use crate::application::usecases::interface::UseCase;
 use crate::domain::aep::ResourceIdentifier;
 use crate::domain::program::{
     BrandingPatch, Program, ProgramRepository, RenewalPatch, UpdateProgram, clean_about, clean_branding,
-    clean_highlights, validate_level, validate_renewal,
+    clean_domains, clean_highlights, validate_level, validate_renewal,
 };
 use crate::domain::program_module::ProgramModule;
 use crate::domain::program_setting::{ModuleChange, validate_changes};
@@ -29,6 +29,7 @@ pub struct UpdateProgramInput {
     pub description: Option<Option<String>>,
     pub about: Option<Option<String>>,
     pub highlights: Option<Vec<String>>,
+    pub domain: Option<Vec<String>>,
     pub branding: Option<BrandingPatch>,
     pub renewal: Option<RenewalPatch>,
     pub level: Option<String>,
@@ -85,6 +86,7 @@ impl UseCase<UpdateProgramOutput, UpdateProgramInput> for UpdateProgramUseCase {
             None => None,
         };
         let highlights = input.highlights.map(clean_highlights).transpose()?;
+        let domain = input.domain.map(clean_domains).transpose()?;
         let branding = input
             .branding
             .map(|patch| clean_branding(patch.apply(&existing.branding)))
@@ -107,6 +109,7 @@ impl UseCase<UpdateProgramOutput, UpdateProgramInput> for UpdateProgramUseCase {
                     description: input.description.map(|d| d.map(|d| d.trim().to_string()).filter(|d| !d.is_empty())),
                     about,
                     highlights,
+                    domain,
                     branding,
                     renewal,
                     level: input.level,

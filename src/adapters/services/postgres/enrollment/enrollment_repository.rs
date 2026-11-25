@@ -2,6 +2,8 @@ use crate::adapters::services::postgres::db_error::db_error;
 use crate::adapters::services::postgres::db_connection::PostgresDbConnection;
 use crate::adapters::services::postgres::program::program_repository::record_event;
 use crate::application::errors::application_error::ApplicationError;
+use crate::domain::program_query::TextOp;
+use crate::domain::store_query::{StoreField, StoreTerm};
 use crate::domain::enrollment::{
     ACTIVE, BatchOutcome, Enrollment, EnrollmentFilter, EnrollmentRepository, NewEnrollment, UpdateEnrollment,
     active_delta, can_change,
@@ -15,7 +17,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 const COLUMNS: &str = "id, program_id, application_id, store_id, store_name, store_resolved, website_id, website_name, \
-    customer_group, status, enrolled_time, contracts_count, last_contract_time, create_time, update_time";
+    website_domain, bu_unit_code, bu_unit_name, customer_group, status, enrolled_time, contracts_count, last_contract_time, create_time, update_time";
 
 #[derive(Debug, FromRow)]
 struct EnrollmentDbModel {
@@ -27,6 +29,9 @@ struct EnrollmentDbModel {
     store_resolved: bool,
     website_id: String,
     website_name: Option<String>,
+    website_domain: Option<String>,
+    bu_unit_code: Option<String>,
+    bu_unit_name: Option<String>,
     customer_group: Option<String>,
     status: String,
     enrolled_time: Option<DateTime<Utc>>,
@@ -47,6 +52,9 @@ impl From<EnrollmentDbModel> for Enrollment {
             store_resolved: model.store_resolved,
             website_id: model.website_id,
             website_name: model.website_name,
+            website_domain: model.website_domain,
+            bu_unit_code: model.bu_unit_code,
+            bu_unit_name: model.bu_unit_name,
             customer_group: model.customer_group,
             status: model.status,
             enrolled_time: model.enrolled_time,
@@ -67,6 +75,9 @@ fn snapshot(enrollment: &Enrollment) -> Value {
         "id": enrollment.id,
         "store_id": enrollment.store_id,
         "website_id": enrollment.website_id,
+        "website_domain": enrollment.website_domain,
+        "bu_unit_code": enrollment.bu_unit_code,
+        "bu_unit_name": enrollment.bu_unit_name,
         "status": enrollment.status,
         "customer_group": enrollment.customer_group,
         "application_id": enrollment.application_id,
@@ -97,8 +108,8 @@ async fn bump_enrollment_stats(conn: &mut PgConnection, program_id: Uuid, total:
 async fn insert_live(conn: &mut PgConnection, input: &NewEnrollment, id: Uuid) -> Result<Option<Enrollment>, sqlx::Error> {
     let query = format!(
         "INSERT INTO enrollments (id, program_id, application_id, store_id, store_name, store_resolved, website_id, \
-            website_name, customer_group, status, enrolled_time) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CASE WHEN $10 = 'active' THEN now() END) \
+            website_name, customer_group, status, website_domain, bu_unit_code, bu_unit_name, enrolled_time) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CASE WHEN $10 = 'active' THEN now() END) \
          ON CONFLICT (program_id, store_id, website_id) WHERE status IN ('pending', 'active', 'suspended') DO NOTHING \
          RETURNING {COLUMNS}"
     );
@@ -114,6 +125,9 @@ async fn insert_live(conn: &mut PgConnection, input: &NewEnrollment, id: Uuid) -
         .bind(clean(input.website_name.as_deref()))
         .bind(clean(input.customer_group.as_deref()))
         .bind(&input.status)
+        .bind(clean(input.website_domain.as_deref()))
+        .bind(clean(input.bu_unit_code.as_deref()))
+        .bind(clean(input.bu_unit_name.as_deref()))
         .fetch_optional(conn)
         .await?;
     Ok(row.map(Enrollment::from))
@@ -139,6 +153,9 @@ pub(crate) async fn enroll_after_approval(
         store_name: store_name.map(String::from),
         website_id: website_id.to_string(),
         website_name: website_name.map(String::from),
+        website_domain: None,
+        bu_unit_code: None,
+        bu_unit_name: None,
         customer_group: None,
         status: ACTIVE.to_string(),
         actor: actor.to_string(),
@@ -163,18 +180,78 @@ pub(crate) async fn enroll_after_approval(
     Ok(())
 }
 
+fn escape_like(term: &str) -> String {
+    term.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_")
+}
+
+const BU_COLUMNS: &[&str] = &["lower(store_id)"];
+const WEBSITE_COLUMNS: &[&str] = &["lower(website_id)", "lower(COALESCE(website_name, ''))", "lower(COALESCE(website_domain, ''))"];
+const CUSTOMER_COLUMNS: &[&str] = &["lower(COALESCE(customer_group, ''))"];
+
+/// One text condition. A field with several columns matches when ANY column does; the negative
+/// operators need ALL of them to miss. Values are bound, never spliced in.
+fn push_term(qb: &mut QueryBuilder<'_, Postgres>, term: &StoreTerm) {
+    if matches!(term.op, TextOp::IsEmpty | TextOp::IsNotEmpty) {
+        let negate = if term.op == TextOp::IsNotEmpty { "NOT " } else { "" };
+        qb.push(format!("{negate}(COALESCE(btrim(customer_group), '') = '')"));
+        return;
+    }
+    let columns: Vec<&str> = match term.field {
+        StoreField::BuLocation => BU_COLUMNS.to_vec(),
+        StoreField::Website => WEBSITE_COLUMNS.to_vec(),
+        StoreField::CustomerName => CUSTOMER_COLUMNS.to_vec(),
+        StoreField::Any => [BU_COLUMNS, WEBSITE_COLUMNS, CUSTOMER_COLUMNS].concat(),
+    };
+    let value = term.value.to_lowercase();
+    let (negate, op, pattern) = match term.op {
+        TextOp::Contains => (false, "LIKE", format!("%{}%", escape_like(&value))),
+        TextOp::NotContains => (true, "LIKE", format!("%{}%", escape_like(&value))),
+        TextOp::StartsWith => (false, "LIKE", format!("{}%", escape_like(&value))),
+        TextOp::EndsWith => (false, "LIKE", format!("%{}", escape_like(&value))),
+        TextOp::Equals => (false, "=", value),
+        TextOp::NotEquals => (true, "=", value),
+        TextOp::IsEmpty | TextOp::IsNotEmpty => unreachable!("handled above"),
+    };
+    qb.push(if negate { "NOT (" } else { "(" });
+    for (i, column) in columns.iter().enumerate() {
+        if i > 0 {
+            qb.push(" OR ");
+        }
+        qb.push(format!("{column} {op} ")).push_bind(pattern.clone());
+    }
+    qb.push(")");
+}
+
+/// A website list: the code, the name or the domain equals any of the values.
+fn push_websites(qb: &mut QueryBuilder<'_, Postgres>, websites: &[String], negate: bool) {
+    let lowered: Vec<String> = websites.iter().map(|w| w.to_lowercase()).collect();
+    qb.push(if negate { " AND NOT (" } else { " AND (" });
+    for (i, column) in WEBSITE_COLUMNS.iter().enumerate() {
+        if i > 0 {
+            qb.push(" OR ");
+        }
+        qb.push(format!("{column} = ANY(")).push_bind(lowered.clone()).push(")");
+    }
+    qb.push(")");
+}
+
 fn push_filters(qb: &mut QueryBuilder<'_, Postgres>, program_id: Uuid, filter: &EnrollmentFilter) {
     qb.push(" WHERE program_id = ").push_bind(program_id);
-    if let Some(website) = &filter.website_id {
-        qb.push(" AND website_id = ").push_bind(website.clone());
+    for term in filter.search.iter().chain(filter.list.text.iter()) {
+        qb.push(" AND ");
+        push_term(qb, term);
     }
-    if !filter.statuses.is_empty() {
-        qb.push(" AND status = ANY(").push_bind(filter.statuses.clone()).push(")");
+    if !filter.list.statuses.is_empty() {
+        qb.push(" AND status = ANY(").push_bind(filter.list.statuses.clone()).push(")");
     }
-    if let Some(prefix) = &filter.store_prefix {
-        // A prefix match on the lower-cased name (idx_enrollments_program_store_name).
-        let escaped = prefix.to_lowercase().replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_");
-        qb.push(" AND lower(store_name) LIKE ").push_bind(format!("{escaped}%"));
+    if !filter.list.not_statuses.is_empty() {
+        qb.push(" AND NOT (status = ANY(").push_bind(filter.list.not_statuses.clone()).push("))");
+    }
+    if !filter.list.websites.is_empty() {
+        push_websites(qb, &filter.list.websites, false);
+    }
+    if !filter.list.not_websites.is_empty() {
+        push_websites(qb, &filter.list.not_websites, true);
     }
 }
 
@@ -281,6 +358,9 @@ impl EnrollmentRepository for EnrollmentRepositoryPostgresImpl {
                     "store_name": clean(item.store_name.as_deref()),
                     "website_id": item.website_id.trim(),
                     "website_name": clean(item.website_name.as_deref()),
+                    "website_domain": clean(item.website_domain.as_deref()),
+                    "bu_unit_code": clean(item.bu_unit_code.as_deref()),
+                    "bu_unit_name": clean(item.bu_unit_name.as_deref()),
                     "customer_group": clean(item.customer_group.as_deref()),
                     "status": item.status,
                 })
@@ -291,11 +371,11 @@ impl EnrollmentRepository for EnrollmentRepositoryPostgresImpl {
         // in the batch) conflicts with the live-enrollment index and is skipped, not failed.
         let inserted: Vec<(Uuid, String, String, String)> = sqlx::query_as(
             "INSERT INTO enrollments (id, program_id, store_id, store_name, store_resolved, website_id, website_name, \
-                customer_group, status, enrolled_time) \
+                customer_group, status, website_domain, bu_unit_code, bu_unit_name, enrolled_time) \
              SELECT x.id, $1, x.store_id, x.store_name, x.store_name IS NOT NULL, x.website_id, x.website_name, \
-                    x.customer_group, x.status, CASE WHEN x.status = 'active' THEN now() END \
+                    x.customer_group, x.status, x.website_domain, x.bu_unit_code, x.bu_unit_name, CASE WHEN x.status = 'active' THEN now() END \
              FROM jsonb_to_recordset($2::jsonb) AS x(id uuid, store_id text, store_name text, website_id text, \
-                    website_name text, customer_group text, status text) \
+                    website_name text, website_domain text, bu_unit_code text, bu_unit_name text, customer_group text, status text) \
              ON CONFLICT (program_id, store_id, website_id) WHERE status IN ('pending', 'active', 'suspended') DO NOTHING \
              RETURNING id, store_id, website_id, status",
         )
@@ -360,8 +440,8 @@ impl EnrollmentRepository for EnrollmentRepositoryPostgresImpl {
         if let Some(to) = new_status
             && !can_change(&existing.status, to)
         {
-            return Err(ApplicationError::conflict(&format!(
-                "an enrollment cannot move from {} to {to}",
+            return Err(ApplicationError::unprocessable_entity(&format!(
+                "a store cannot move from {} to {to}",
                 existing.status
             )));
         }
@@ -370,15 +450,26 @@ impl EnrollmentRepository for EnrollmentRepositoryPostgresImpl {
             Some("") => None,
             Some(group) => Some(group.to_string()),
         };
+        let (new_bu_code, new_bu_name) = match &input.bu {
+            None => (existing.bu_unit_code.clone(), existing.bu_unit_name.clone()),
+            Some(None) => (None, None),
+            Some(Some(bu)) => (clean(Some(&bu.code)), clean(bu.name.as_deref())),
+        };
+        let new_store_name = match input.store_name.as_deref().map(str::trim) {
+            None => existing.store_name.clone(),
+            Some("") => None,
+            Some(name) => Some(name.to_string()),
+        };
+        let bu_changed = new_store_name != existing.store_name || new_bu_code != existing.bu_unit_code || new_bu_name != existing.bu_unit_name;
         // Nothing differs: write nothing.
-        if new_status.is_none() && new_group == existing.customer_group {
+        if new_status.is_none() && new_group == existing.customer_group && !bu_changed {
             tx.rollback().await.map_err(db_error)?;
             return Ok(existing);
         }
 
         let status = new_status.unwrap_or(&existing.status).to_string();
         let query = format!(
-            "UPDATE enrollments SET status = $3, customer_group = $4, update_time = now(), \
+            "UPDATE enrollments SET status = $3, customer_group = $4, bu_unit_code = $5, bu_unit_name = $6, store_name = $7, store_resolved = $8, update_time = now(), \
                 enrolled_time = CASE WHEN $3 = 'active' AND enrolled_time IS NULL THEN now() ELSE enrolled_time END \
              WHERE id = $1 AND program_id = $2 RETURNING {COLUMNS}"
         );
@@ -388,9 +479,18 @@ impl EnrollmentRepository for EnrollmentRepositoryPostgresImpl {
                 .bind(program_id)
                 .bind(&status)
                 .bind(&new_group)
+                .bind(&new_bu_code)
+                .bind(&new_bu_name)
+                .bind(&new_store_name)
+                .bind(new_store_name.is_some())
                 .fetch_one(&mut *tx)
                 .await
-                .map_err(db_error)?,
+                .map_err(|err| match &err {
+                    sqlx::Error::Database(db) if db.constraint() == Some("uq_enrollments_live") => ApplicationError::conflict(
+                        "this store already has another pending, active or suspended enrollment on this website; end that one first",
+                    ),
+                    _ => db_error(err),
+                })?,
         );
 
         let delta = active_delta(&existing.status, &updated.status);

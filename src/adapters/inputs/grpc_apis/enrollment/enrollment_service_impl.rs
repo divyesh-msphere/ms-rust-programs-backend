@@ -1,7 +1,9 @@
 use crate::adapters::generated::grpc_services::buffa::programs::v1::{
-    BatchCreateEnrollmentsRequest, BatchCreateEnrollmentsResponse, CreateEnrollmentRequest, CreateEnrollmentResponse,
-    GetEnrollmentRequest, GetEnrollmentResponse, ListEnrollmentsRequest, ListEnrollmentsResponse,
-    UpdateEnrollmentRequest, UpdateEnrollmentResponse,
+    BatchCreateStoresRequest as BatchCreateEnrollmentsRequest, BatchCreateStoresResponse as BatchCreateEnrollmentsResponse,
+    CreateStoreRequest as CreateEnrollmentRequest, CreateStoreResponse as CreateEnrollmentResponse,
+    GetStoreRequest as GetEnrollmentRequest, GetStoreResponse as GetEnrollmentResponse,
+    ListStoresRequest as ListEnrollmentsRequest, ListStoresResponse as ListEnrollmentsResponse,
+    UpdateStoreRequest as UpdateEnrollmentRequest, UpdateStoreResponse as UpdateEnrollmentResponse,
 };
 use crate::adapters::inputs::grpc_apis::enrollment::enrollment_mappers::{
     BatchCreateEnrollmentsGrpcMapper, CreateEnrollmentGrpcMapper, GetEnrollmentGrpcMapper, ListEnrollmentsGrpcMapper,

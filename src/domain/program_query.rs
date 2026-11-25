@@ -49,7 +49,7 @@ impl TextOp {
     pub const ALL: &'static str =
         "contains, not_contains, equals, not_equals, starts_with, ends_with, is_empty, is_not_empty";
 
-    fn parse(name: &str) -> Result<Self, ApplicationError> {
+    pub(crate) fn parse(name: &str) -> Result<Self, ApplicationError> {
         match name {
             "contains" => Ok(Self::Contains),
             "not_contains" => Ok(Self::NotContains),
@@ -63,7 +63,7 @@ impl TextOp {
         }
     }
 
-    fn takes_value(self) -> bool {
+    pub(crate) fn takes_value(self) -> bool {
         !matches!(self, Self::IsEmpty | Self::IsNotEmpty)
     }
 }
@@ -91,12 +91,12 @@ pub struct ListFilter {
     pub not_levels: Vec<String>,
 }
 
-fn bad(msg: &str) -> ApplicationError {
+pub(crate) fn bad(msg: &str) -> ApplicationError {
     ApplicationError::validation_error(msg)
 }
 
 /// Splits on `&` that is outside `[...]` and quotes.
-fn split_terms(input: &str) -> Vec<String> {
+pub(crate) fn split_terms(input: &str) -> Vec<String> {
     split_on(input, '&')
 }
 
@@ -127,7 +127,7 @@ fn split_on(input: &str, separator: char) -> Vec<String> {
     terms.into_iter().map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect()
 }
 
-fn unquote(value: &str) -> String {
+pub(crate) fn unquote(value: &str) -> String {
     let v = value.trim();
     for q in ['"', '\''] {
         if v.len() >= 2 && v.starts_with(q) && v.ends_with(q) {
@@ -180,7 +180,7 @@ pub fn parse_search(input: Option<&str>) -> Result<Vec<SearchTerm>, ApplicationE
     Ok(out)
 }
 
-fn values(raw: &str) -> Vec<String> {
+pub(crate) fn values(raw: &str) -> Vec<String> {
     let raw = raw.trim();
     let items = match raw.strip_prefix('[').and_then(|r| r.strip_suffix(']')) {
         Some(inner) => split_items(inner).iter().map(|v| unquote(v)).collect(),
@@ -204,12 +204,28 @@ pub fn parse_filter(input: Option<&str>) -> Result<ListFilter, ApplicationError>
         };
         let list = values(raw);
         let key = key.trim().to_lowercase();
-        let (key, negated) = match key.strip_suffix('!') {
+        let (key, mut negated) = match key.strip_suffix('!') {
             Some(k) => (k.trim_end().to_string(), true),
             None => (key, false),
         };
+        // `status.not_equals=active` is `status!=active`; `.equals` / `.in` keep it positive.
+        let key = match key.split_once('.') {
+            Some((field, op)) => {
+                match op.trim() {
+                    "equals" | "equal" | "eq" | "is" | "in" => {}
+                    "not_equals" | "not_equal" | "not_eq" | "ne" | "not" | "is_not" | "not_in" => negated = !negated,
+                    other => {
+                        return Err(bad(&format!(
+                            "{term:?}: operator {other:?} is not known for {field}; use equals or not_equals (or `!=`)"
+                        )));
+                    }
+                }
+                field.trim().to_string()
+            }
+            None => key,
+        };
         match key.as_str() {
-            "domain" => if negated { filter.not_domains.extend(list) } else { filter.domains.extend(list) },
+            "domain" | "domains" => if negated { filter.not_domains.extend(list) } else { filter.domains.extend(list) },
             "status" | "state" => {
                 for v in list {
                     let flag = match v.to_lowercase().as_str() {
@@ -304,6 +320,16 @@ mod tests {
         assert_eq!(f.not_levels, vec!["user"]);
         assert!(f.active.is_empty() && f.domains.is_empty() && f.levels.is_empty());
         assert!(parse_filter(Some("status!=maybe")).is_err());
+    }
+
+    #[test]
+    fn list_keys_take_equals_operators() {
+        let f = parse_filter(Some("status.not_equal=active&domain.not_equals=[a,b]&level.equals=user&status.in=[inactive]")).unwrap();
+        assert_eq!(f.not_active, vec![true]);
+        assert_eq!(f.not_domains, vec!["a", "b"]);
+        assert_eq!(f.levels, vec!["user"]);
+        assert_eq!(f.active, vec![false]);
+        assert!(parse_filter(Some("status.contains=active")).is_err());
     }
 
     #[test]

@@ -14,13 +14,13 @@ use crate::domain::store_discount::{
 };
 use crate::dto::payloads::json::store_discount::{
     BatchUpdateStoreDiscountsBodyPayload, BatchUpdateStoreDiscountsPathPayload, DiscountPatchPayload, GetStoreDiscountPayload,
-    ListDiscountLevelsPayload, ListStoreDiscountsPathPayload, ListStoreDiscountsQueryPayload, UpdateDiscountLevelBodyPayload,
-    UpdateDomainLevelPathPayload, UpdateProgramLevelPathPayload, UpdateStoreDiscountBodyPayload,
+    ListDiscountLevelsPayload, ListStoreDiscountsPathPayload, ListStoreDiscountsQueryPayload, UpdateBusinessUnitLevelPathPayload, UpdateDiscountLevelBodyPayload, UpdateWebsiteLevelPathPayload, UpdateProgramLevelPathPayload, UpdateStoreDiscountBodyPayload,
     UpdateStoreDiscountPathPayload,
 };
+use crate::dto::presenters::json::enrollment::BuPresenter;
 use crate::dto::presenters::json::store_discount::{
-    BatchStoreDiscountsPresenter, DiscountConfigPresenter, DiscountLevelPresenter, DiscountLevelsPresenter,
-    DiscountSourcesPresenter, DomainLevelPresenter, ListStoreDiscountsPresenter, ResolvedDiscountPresenter,
+    BatchStoreDiscountsPresenter, BusinessUnitLevelPresenter, DiscountConfigPresenter, DiscountLevelPresenter, DiscountLevelsPresenter,
+    DiscountSourcesPresenter, WebsiteLevelPresenter, ListStoreDiscountsPresenter, ResolvedDiscountPresenter,
     StoreDiscountPresenter,
 };
 
@@ -59,10 +59,12 @@ pub fn to_presenter(row: StoreDiscountRow) -> StoreDiscountPresenter {
         store_name: row.store_name,
         website_id: row.website_id,
         website_name: row.website_name,
+        bu: row.bu_unit_code.map(|code| BuPresenter { code, name: row.bu_unit_name }),
         enrollment_status: row.enrollment_status,
         resolved: resolved_presenter(row.resolved),
         sources: sources_presenter(row.sources),
         set_at: Level::as_str(&row.set_at),
+        inherited_from_parent: row.inherited_from_parent,
         store_override: config_presenter(row.store_override),
         inherited: resolved_presenter(row.inherited),
     }
@@ -95,6 +97,7 @@ impl ListStoreDiscountsMapper {
         Ok(ListStoreDiscountsInput {
             program: ResourceIdentifier::parse(&path.program),
             website_id: query.website_id,
+            bu_unit_code: query.bu_unit_code,
             store: query.store,
             page_size: query.max_page_size,
             page_token: parse::optional_uuid("page_token", query.page_token.as_deref())?,
@@ -177,10 +180,15 @@ impl ListDiscountLevelsMapper {
     pub fn output_success(output: DiscountLevels) -> DiscountLevelsPresenter {
         DiscountLevelsPresenter {
             program: config_presenter(output.program),
-            domains: output
-                .domains
+            business_units: output
+                .business_units
                 .into_iter()
-                .map(|(website_id, config)| DomainLevelPresenter { website_id, discount: config_presenter(config) })
+                .map(|(bu_unit_code, name, config)| BusinessUnitLevelPresenter { bu_unit_code, name, discount: config_presenter(config) })
+                .collect(),
+            websites: output
+                .websites
+                .into_iter()
+                .map(|(website_id, config)| WebsiteLevelPresenter { website_id, discount: config_presenter(config) })
                 .collect(),
         }
     }
@@ -202,24 +210,38 @@ impl UpdateDiscountLevelMapper {
         })
     }
 
-    pub fn domain_input(
-        path: UpdateDomainLevelPathPayload,
+    pub fn business_unit_input(
+        path: UpdateBusinessUnitLevelPathPayload,
         body: UpdateDiscountLevelBodyPayload,
         actor: String,
     ) -> Result<UpdateDiscountLevelInput, ApplicationError> {
         Ok(UpdateDiscountLevelInput {
             program: ResourceIdentifier::parse(&path.program),
-            target: LevelTarget::Domain(path.website_id.trim().to_string()),
+            target: LevelTarget::BusinessUnit(path.bu_unit_code.trim().to_string()),
+            change: change_from(body.discount)?,
+            actor,
+        })
+    }
+
+    pub fn website_input(
+        path: UpdateWebsiteLevelPathPayload,
+        body: UpdateDiscountLevelBodyPayload,
+        actor: String,
+    ) -> Result<UpdateDiscountLevelInput, ApplicationError> {
+        Ok(UpdateDiscountLevelInput {
+            program: ResourceIdentifier::parse(&path.program),
+            target: LevelTarget::Website(path.website_id.trim().to_string()),
             change: change_from(body.discount)?,
             actor,
         })
     }
 
     pub fn output_success(output: UpdateDiscountLevelOutput) -> DiscountLevelPresenter {
-        let (level, website_id) = match output.target {
-            LevelTarget::Program => ("program", None),
-            LevelTarget::Domain(website) => ("domain", Some(website)),
+        let (level, website_id, bu_unit_code) = match output.target {
+            LevelTarget::Program => ("program", None, None),
+            LevelTarget::BusinessUnit(code) => ("business_unit", None, Some(code)),
+            LevelTarget::Website(website) => ("website", Some(website), None),
         };
-        DiscountLevelPresenter { level, website_id, discount: config_presenter(output.discount) }
+        DiscountLevelPresenter { level, website_id, bu_unit_code, discount: config_presenter(output.discount) }
     }
 }

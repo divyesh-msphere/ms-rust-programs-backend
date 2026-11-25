@@ -7,6 +7,7 @@ pub mod module_catalog_item;
 pub mod object_storage;
 pub mod program;
 pub mod program_query;
+pub mod store_query;
 pub mod signoff;
 pub mod store_discount;
 pub mod program_setting_value;
